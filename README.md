@@ -29,6 +29,13 @@ reflections, or from above (PLAN); the keys are at its bottom right.
   them on the magic sheet), the lights' network settings, audio, sync, which scenes auto mode
   uses, a channel test, and the output switch.
 
+## First light
+
+<img src="docs/first-test.jpg" alt="A beam-curtain bar lit cyan on the floor next to a laptop running an early version of the control page" width="480">
+
+One of the bars on its first test, on the floor before it was mounted, with an early version
+of the control page.
+
 ## Beam safety
 
 Beams only light while they point between the lowest and highest allowed angle (by default
@@ -153,3 +160,7 @@ If you added the 2.x alias while testing, remove it:
 | `lightlaland/web/index.html` | The control page |
 | `tests/` | Synthetic vinyl mix plus a tracker accuracy test (`python -m tests.test_analyzer`), scene checks (`python -m tests.test_scenes`) and the beam-safety simulation (`python -m tests.test_safety`) |
 | `tools/channel_probe.py` | Webcam channel probe used to measure the bars (see its docstring) |
+
+## License
+
+MIT, see [LICENSE](LICENSE).
