@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Local state: the calibration, room and network settings for one install, and its backups
+lightlaland.json
+lightlaland.json.*
+
+# Webcam probe output (summarised in HANDOFF.md)
+probe/
+
+# Local notes for coding assistants
+CLAUDE.md

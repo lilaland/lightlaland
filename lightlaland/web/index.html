@@ -1,0 +1,2175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#16171a">
+<title>lightlaland</title>
+<style>
+/* An old lighting desk: charcoal panels with screws, rubber keys with LEDs, a teal VFD and
+   a green phosphor radar for the magic sheet. System fonts only, so it works offline. */
+:root {
+  --desk: #121315;
+  --panel: #26272b; --panel-2: #1f2023; --panel-hi: #3a3b41; --panel-lo: #0b0b0d;
+  --key: #34353b; --key-2: #27282d; --key-hi: #4a4b52;
+  --silk: #cfc8b4; --silk-dim: #8d887a; --amber: #ffb52e;
+  --vfd: #6bfbe6; --vfd-mid: #2fbfae; --vfd-off: #0f2b28; --vfd-bg: #041311;
+  --crt: #3dff86; --crt-dim: #1b8f4b; --crt-bg: #020a05;
+  --red: #ff3b30; --green: #3dff86;
+  --ui: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: Menlo, Monaco, "Lucida Console", "Courier New", monospace;
+  --top: 52px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--desk); color: var(--silk); }
+body {
+  font: 13px/1.4 var(--ui); overflow: hidden; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(ellipse at 50% -20%, #24252a, transparent 70%), repeating-linear-gradient(90deg, #131416 0 2px, #121315 2px 4px);
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* ---------- panels: painted metal with a screw in each corner ---------- */
+.panel {
+  position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0;
+  background:
+    radial-gradient(circle at 9px 9px, #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
+    radial-gradient(circle at calc(100% - 9px) 9px, #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
+    radial-gradient(circle at 9px calc(100% - 9px), #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
+    linear-gradient(#2b2c31, #222327);
+  border: 1px solid #08080a; border-radius: 6px;
+  box-shadow: inset 0 1px 0 var(--panel-hi), inset 0 -1px 0 #000, 0 2px 6px rgba(0, 0, 0, .55);
+  padding: 22px 12px 12px;
+}
+.panel > .label {
+  position: absolute; top: 5px; left: 20px; right: 20px; display: flex; align-items: center; gap: 8px;
+  font: 600 10px/1 var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--silk);
+}
+.panel > .label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, #5a574e, transparent); }
+.silk { font: 600 10px/1.2 var(--ui); letter-spacing: .16em; text-transform: uppercase; color: var(--silk-dim); }
+
+/* ---------- rubber keys ---------- */
+.key, .btn {
+  position: relative; padding: 8px 12px; border: 1px solid #070708; border-radius: 6px;
+  background: linear-gradient(#3d3e44, #2c2d32 60%, #26272b);
+  box-shadow: inset 0 1px 0 #55565d, 0 3px 0 #0a0a0b, 0 4px 6px rgba(0, 0, 0, .45);
+  font: 700 12px/1.1 var(--ui); letter-spacing: .06em; color: #e6e1d2; white-space: nowrap; text-transform: uppercase;
+  transition: transform .04s, box-shadow .04s;
+}
+.key:active, .btn:active, .key.hit, .btn.hit { transform: translateY(3px); box-shadow: inset 0 1px 0 #4a4b52, 0 0 0 #0a0a0b, 0 1px 2px rgba(0, 0, 0, .5); }
+.btn[aria-pressed="true"], .key[aria-pressed="true"] { color: var(--amber); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.small { padding: 6px 9px; font-size: 11px; }
+.led {
+  display: inline-block; width: 9px; height: 5px; border-radius: 2px; margin-right: 7px; vertical-align: 2px;
+  background: #3a2a10; box-shadow: inset 0 0 0 1px #000;
+}
+.btn[aria-pressed="true"] .led, .key.on .led, .pad.on .led { background: var(--amber); box-shadow: 0 0 8px var(--amber), inset 0 0 0 1px #6b4a00; }
+.led.green { background: #10301c; }
+.pad.on .led.green, .btn[aria-pressed="true"] .led.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.pad {
+  position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px;
+  border: 1px solid #070708; border-radius: 8px; padding: 8px;
+  background: linear-gradient(#3d3e44, #2c2d32 60%, #26272b);
+  box-shadow: inset 0 1px 0 #55565d, 0 4px 0 #0a0a0b, 0 5px 8px rgba(0, 0, 0, .5);
+  color: #ece7d8; font: 800 18px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  transition: transform .04s, box-shadow .04s;
+}
+.pad small { font: 600 10px/1.2 var(--ui); letter-spacing: .12em; color: #a9a392; text-align: center; }
+.pad .led { position: absolute; top: 9px; right: 9px; margin: 0; }
+.pad:active, .pad.hit { transform: translateY(4px); box-shadow: inset 0 1px 0 #4a4b52, 0 0 0 #0a0a0b, 0 1px 2px rgba(0, 0, 0, .5); }
+.pad.cap-red { background: linear-gradient(#c0443d, #9a2e29 60%, #852723); box-shadow: inset 0 1px 0 #e0706a, 0 4px 0 #2a0b09, 0 5px 8px rgba(0,0,0,.5); }
+.pad.cap-blue { background: linear-gradient(#3b63b4, #2a4c94 60%, #233f7d); box-shadow: inset 0 1px 0 #6f93d8, 0 4px 0 #0b1530, 0 5px 8px rgba(0,0,0,.5); }
+.pad.cap-green { background: linear-gradient(#3b9658, #2c7744 60%, #24653a); box-shadow: inset 0 1px 0 #6cc488, 0 4px 0 #0b2414, 0 5px 8px rgba(0,0,0,.5); }
+.pad.cap-purple { background: linear-gradient(#7d4cb3, #643a96 60%, #553182); box-shadow: inset 0 1px 0 #a780d6, 0 4px 0 #1f0f33, 0 5px 8px rgba(0,0,0,.5); }
+.pad[class*="cap-"] small { color: #f0e6e6; opacity: .85; }
+.pad[class*="cap-"]:active, .pad[class*="cap-"].hit { box-shadow: 0 0 0 #000, 0 1px 2px rgba(0,0,0,.5); }
+.pad.flash { background: #fff8e6 !important; color: #000; }
+.pad.flash small { color: #333; }
+.pad.dark { background: #050506 !important; color: #444; }
+
+/* ---------- top: brand plate, mode keys, status ---------- */
+.top {
+  height: var(--top); display: flex; align-items: center; gap: 14px;
+  padding: 0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
+  background: linear-gradient(#2a2b30, #1b1c1f); border-bottom: 1px solid #000; box-shadow: inset 0 1px 0 #44454b, 0 2px 8px rgba(0,0,0,.6);
+}
+.plate {
+  display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: 4px;
+  background: linear-gradient(#bdb9ad, #8f8b80); box-shadow: inset 0 1px 0 #e8e4d8, inset 0 -1px 0 #5d5a52, 0 1px 3px #000;
+  color: #1f1e1b; white-space: nowrap;
+}
+.plate b { font: 900 16px/1 var(--ui); letter-spacing: .04em; font-style: italic; }
+.plate span { font: 700 9px/1 var(--ui); letter-spacing: .2em; }
+.tabs { display: flex; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 4px 2px 8px; margin-top: 4px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs .key { padding: 8px 12px; }
+.status { margin-left: auto; display: flex; align-items: center; gap: 10px; white-space: nowrap; min-width: 0; }
+.vfd-mini { padding: 4px 8px; border-radius: 3px; font: 11px/1 var(--mono); }
+.src { overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.meter { display: flex; gap: 2px; }
+.meter i { width: 5px; height: 12px; border-radius: 1px; background: #102a10; }
+.meter i.on { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.meter i.on.hot { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
+.meter i.on.clip { background: var(--red); box-shadow: 0 0 4px var(--red); }
+.out { display: inline-flex; gap: 8px; font: 700 11px var(--ui); letter-spacing: .1em; }
+.out span { display: inline-flex; align-items: center; gap: 4px; }
+.out span::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #333; box-shadow: inset 0 0 0 1px #000; }
+.out span.ok::before { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.out span.bad::before { background: var(--red); box-shadow: 0 0 6px var(--red); }
+#conn { color: var(--amber); font-size: 11px; }
+
+/* ---------- VFD and CRT glass ---------- */
+.vfd {
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .25) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 50% 40%, #07211d, var(--vfd-bg) 75%);
+  border: 1px solid #000; border-radius: 4px; box-shadow: inset 0 2px 8px #000, 0 1px 0 #3a3b41;
+  color: var(--vfd); text-shadow: 0 0 6px rgba(107, 251, 230, .55); font-family: var(--mono);
+}
+.crt {
+  position: relative; background: var(--crt-bg); border-radius: 14px; overflow: hidden;
+  border: 3px solid #0b0b0c; box-shadow: inset 0 0 0 2px #2a2b30, 0 0 0 4px #1a1b1e, inset 0 0 40px rgba(0, 0, 0, .9);
+}
+.crt::after {   /* scanlines and a bit of curvature shading */
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .28) 0 1px, transparent 1px 3px),
+              radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .55) 100%);
+}
+.crt canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.seven svg { height: 100%; width: auto; display: block; }
+.seven .on { fill: var(--vfd); filter: drop-shadow(0 0 3px rgba(107, 251, 230, .8)); }
+.seven .off { fill: var(--vfd-off); }
+
+/* ---------- main layout (Show, Mount, Make, Setup) ---------- */
+.layout {
+  height: calc(100dvh - var(--top)); display: grid; gap: 8px; padding: 8px;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "vis side" "pl side";
+}
+body:not(.tab-show) .layout { grid-template-rows: minmax(0, 1fr); grid-template-areas: "vis side"; }
+body.tab-setup .layout, body.tab-make .layout, body.tab-mount .layout { grid-template-columns: minmax(0, 1fr) 480px; }
+.vis { grid-area: vis; }
+.side { grid-area: side; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.pl { grid-area: pl; }
+body:not(.tab-show) .show-only { display: none !important; }
+body:not(.tab-mount) .mount-only { display: none !important; }
+body:not(.tab-make) .make-only { display: none !important; }
+body:not(.tab-setup) .setup-only { display: none !important; }
+body.tab-perform .layout { display: none; }
+
+.vis-grid { flex: 1; min-height: 0; display: grid; gap: 10px; grid-template-rows: minmax(0, 1fr) auto; }
+.sheet { min-height: 160px; }
+.sheet canvas { touch-action: none; }
+body.editing .sheet canvas { cursor: move; }
+.viewkeys { position: absolute; right: 12px; bottom: 10px; z-index: 2; display: flex; gap: 4px; }
+.viewkeys button { font: 700 10px var(--mono); letter-spacing: .1em; color: rgba(61, 255, 134, .5); background: rgba(2, 10, 5, .75);
+  border: 1px solid rgba(61, 255, 134, .3); border-radius: 4px; padding: 5px 8px; cursor: pointer; }
+.viewkeys button[aria-pressed="true"] { color: #3dff86; border-color: #3dff86; text-shadow: 0 0 6px rgba(61, 255, 134, .7); }
+.preview-flag { position: absolute; top: 10px; right: 14px; z-index: 2; color: var(--amber); font: 700 11px var(--mono); letter-spacing: .1em; pointer-events: none; }
+.rigs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rig { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 8px; align-items: stretch; }
+.rig .bars { position: relative; min-height: 58px; }
+.rig .bars canvas, .rig .tilt canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rig .tilt { position: relative; min-height: 84px; border-radius: 10px; }
+
+/* VFD (Show) */
+.disp { padding: 10px 12px 8px; }
+.disp-top { display: flex; align-items: flex-end; gap: 12px; }
+.bpm7 { height: 52px; }
+.bpm-unit { font-size: 11px; color: var(--vfd-mid); margin-bottom: 4px; letter-spacing: .15em; }
+.beats { display: flex; gap: 5px; margin-bottom: 8px; }
+.beats i { width: 15px; height: 8px; border-radius: 1px; background: var(--vfd-off); }
+.beats i.on { background: var(--vfd); box-shadow: 0 0 8px var(--vfd); }
+.spec { margin-left: auto; width: 100px; height: 44px; }
+.marquee { overflow: hidden; white-space: nowrap; margin-top: 8px; font-size: 13px; letter-spacing: .12em; }
+.marquee span { display: inline-block; padding-left: 100%; animation: marquee 16s linear infinite; }
+@keyframes marquee { to { transform: translateX(-100%); } }
+.disp-bottom { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--vfd-mid); margin-top: 6px; letter-spacing: .12em; }
+.phrase { display: flex; gap: 2px; margin-top: 8px; height: 9px; }
+.phrase i { flex: 1; background: var(--vfd-off); border-radius: 1px; }
+.phrase i.on { background: var(--vfd-mid); }
+.phrase i.now { background: var(--vfd); box-shadow: 0 0 6px var(--vfd); }
+
+/* pads (Show) */
+.pads { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(54px, 1fr); gap: 10px; padding: 4px 2px 6px; }
+.pads .pad.wide { grid-column: span 2; font-size: 24px; }
+
+/* scene list (Show) */
+.pl-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 6px; padding: 6px; max-height: 30vh; overflow-y: auto; }
+.pl-list .track { padding: 4px 6px; }
+.pl-col { display: flex; flex-direction: column; min-width: 0; }
+.pl-col .silk { color: var(--vfd-mid); padding: 2px 6px 4px; }
+.track {
+  display: flex; align-items: center; gap: 7px; width: 100%; padding: 6px 6px; min-width: 0;
+  border: 0; border-radius: 2px; background: none; color: var(--vfd); font: 12px/1.15 var(--mono); text-align: left;
+  text-shadow: 0 0 5px rgba(107, 251, 230, .45);
+}
+.track span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.track .sw { display: inline-flex; gap: 1px; flex: 0 0 auto; }
+.track .sw i { width: 5px; height: 9px; }
+.track[aria-pressed="true"] { background: var(--vfd); color: #031512; text-shadow: none; }
+.track.off { opacity: .45; }
+.pl-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 10px; }
+.swatches { display: inline-flex; align-items: center; gap: 5px; }
+.swatch {
+  position: relative; display: block; width: 28px; height: 28px; border-radius: 4px; flex: 0 0 auto; padding: 0;
+  border: 1px solid #000; box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.35), 0 1px 2px #000;
+}
+.swatch input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; border: 0; padding: 0; cursor: pointer; }
+.swatch.sel { outline: 2px solid var(--amber); outline-offset: 2px; }
+.seg { display: inline-flex; gap: 4px; }
+.fader { display: inline-flex; align-items: center; gap: 8px; }
+input[type=range] { accent-color: var(--amber); width: 150px; }
+
+/* dialogs (mount, make, setup) */
+.dlg { flex: 1; min-height: 0; overflow-y: auto; padding: 2px 4px 14px; -webkit-overflow-scrolling: touch; }
+.dlg p { margin: 6px 0 10px; color: var(--silk-dim); max-width: 64ch; }
+fieldset {
+  margin: 12px 0 0; padding: 10px 12px 12px; border: 1px solid #0a0a0c; border-radius: 6px;
+  background: rgba(0, 0, 0, .14); box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 1px 0 #3a3b41;
+}
+legend { padding: 0 6px; font: 700 10px var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.form label { display: flex; flex-direction: column; gap: 5px; font: 600 10px var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--silk-dim); min-width: 0; }
+.form .full { grid-column: span 2; }
+.form .check { flex-direction: row; align-items: center; gap: 8px; color: var(--silk); letter-spacing: .06em; }
+.form input:not([type=checkbox]):not([type=range]), .form select, .dlg select {
+  width: 100%; padding: 7px 8px; border-radius: 3px; border: 1px solid #000;
+  background: var(--vfd-bg); color: var(--vfd); font: 13px var(--mono); box-shadow: inset 0 2px 5px #000;
+}
+.form input[type=range] { width: 100%; }
+.form .val { color: var(--vfd); font-family: var(--mono); letter-spacing: 0; text-transform: none; }
+.form .fhint { font: 11px/1.3 var(--ui); letter-spacing: 0; text-transform: none; color: #77736a; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hint { font-size: 12px; color: var(--silk-dim); }
+.warn { color: var(--amber); }
+.danger { color: #ff6b62; }
+.readout { padding: 10px 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.big-value { font: 40px/1 var(--mono); }
+.nudge { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+.nudge .btn { padding: 12px 0; font-size: 14px; }
+.list { margin: 6px 0 0; padding: 4px; list-style: none; }
+.list li { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto auto; gap: 6px 10px; align-items: center; padding: 6px 6px; }
+.list li + li { border-top: 1px solid #0d2b27; }
+.list .sub { color: var(--vfd-mid); font-size: 12px; }
+.node { padding: 8px 10px; }
+.node + .node { border-top: 1px solid #0d2b27; }
+.node b { color: #e7fffb; }
+.node .sub { color: var(--vfd-mid); font-size: 12px; margin: 3px 0 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips .btn { min-width: 38px; }
+.mk-bar { position: sticky; top: 0; z-index: 2; padding: 6px 0 10px; background: linear-gradient(#26272b 85%, transparent); }
+.mk-pal { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.status-vfd { padding: 8px 10px; font-size: 13px; letter-spacing: .06em; line-height: 1.45; }
+.status-vfd .bad { color: #ff8a80; text-shadow: 0 0 6px rgba(255, 90, 80, .6); }
+
+/* ---------- perform (iPad / phone) ---------- */
+.perform {
+  display: none; height: calc(100dvh - var(--top)); overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 8px max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  grid-template-columns: minmax(0, 1fr); align-content: start; gap: 8px;
+}
+body.tab-perform .perform { display: grid; }
+.pf-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pf-rigs { display: grid; gap: 8px; }
+.pf-rig { display: grid; grid-template-columns: minmax(0, 1fr) 84px; gap: 8px; }
+.pf-rig .bars { position: relative; height: clamp(58px, 11vw, 74px); }
+.pf-rig .tilt { position: relative; height: clamp(58px, 11vw, 74px); border-radius: 8px; }
+.pf-rig canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pf-group { padding: 6px 10px 10px; }
+.pf-head {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 4px; min-height: 52px;
+  background: none; border: 0; color: var(--silk); text-align: left; font: 700 12px/1.2 var(--ui); letter-spacing: .16em; text-transform: uppercase;
+}
+.pf-head .chev { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto;
+  background: linear-gradient(#3d3e44, #26272b); box-shadow: inset 0 1px 0 #55565d, 0 2px 0 #0a0a0b; color: var(--amber); transition: transform .15s; }
+.pf-head .chev::before { content: "\25BE"; font-size: 14px; }
+.pf-group.open > .pf-head .chev { transform: rotate(180deg); }
+.pf-body { display: none; padding: 2px 0 6px; }
+.pf-group.open > .pf-body { display: block; }
+.pf-room { height: min(60vh, 560px); }
+.pf-lcd { display: flex; align-items: center; gap: 12px; padding: 6px 10px; text-transform: none; letter-spacing: .08em; }
+.pf-lcd .seven { height: 34px; }
+.pf-lcd .sub { font-size: 11px; color: var(--vfd-mid); }
+.pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pf-grid .pad { min-height: 66px; }
+.pf-grid .wide { grid-column: span 2; }
+.pf-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.pf-row .btn { min-height: 44px; padding: 8px 14px; }
+.pal-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.pal-strip .swatch { width: 100%; height: 48px; }
+.wheel-wrap { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: 6px auto; }
+#wheel { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; }
+.preset { border: 1px solid #000; border-radius: 4px; padding: 0; overflow: hidden; background: #0c0c0e; text-align: left; box-shadow: 0 2px 0 #050506; }
+.preset .bar { display: flex; height: 26px; }
+.preset .bar i { flex: 1; }
+.preset b { display: block; padding: 4px 6px; font: 600 10px var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--silk-dim); }
+.pf-scene-pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 4px 0 2px; }
+.pf-scene-pads .pad { min-height: 78px; }
+.pf-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.pf-cols .col { display: flex; flex-direction: column; gap: 1px; padding: 4px; min-width: 0; }
+.pf-cols .track { padding: 10px 6px; white-space: normal; }
+.pf-cols .track span { white-space: normal; }
+.pf-foot {
+  position: sticky; bottom: 0; z-index: 3; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  padding: 8px 0 calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--desk) 22%);
+}
+.pf-foot .pad { min-height: 70px; }
+.cur { color: var(--vfd); font-family: var(--mono); font-weight: normal; letter-spacing: .04em; text-transform: none; text-shadow: 0 0 5px rgba(107,251,230,.5); }
+.safety-banner { padding: 8px 12px; border-radius: 4px; background: #3a1512; border: 1px solid #000; color: #ffb0a8; font-size: 12px; }
+
+#toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); display: none; z-index: 10;
+  padding: 10px 14px; max-width: 90vw; border-radius: 4px;
+}
+#toast.show { display: block; }
+
+@media (min-width: 1000px) {
+  .perform { grid-template-columns: minmax(0, 1fr) minmax(400px, 460px); }
+  .perform .pf-left { position: sticky; top: 0; height: calc(100dvh - var(--top) - 16px); }
+  .perform .pf-left .pf-group.room { flex: 1; display: flex; flex-direction: column; }
+  .perform .pf-left .pf-group.room.open .pf-body { flex: 1; display: flex; }
+  .perform .pf-left .pf-room { height: auto; flex: 1; }
+}
+@media (max-width: 760px) {
+  .rigs { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .plate { display: none; }
+}
+@media (max-width: 980px) {
+  body { overflow: auto; }
+  .layout, body.tab-setup .layout, body.tab-make .layout, body.tab-mount .layout {
+    height: auto; grid-template-columns: 1fr; grid-template-rows: auto;
+    grid-template-areas: "vis" "side" "pl";
+  }
+  body:not(.tab-show) .layout { grid-template-areas: "vis" "side"; }
+  .vis { height: auto; }
+  .sheet { height: 46vh; }
+  .pads { min-height: 360px; }
+  .pl-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 6px; max-height: none; }
+  .src { display: none; }
+}
+@media (max-width: 640px) {
+  :root { --top: 54px; }
+  .top { gap: 8px; }
+  .plate { display: none; }
+  .tabs .key { padding: 7px 7px; font-size: 10px; letter-spacing: .02em; }
+  .tabs { gap: 4px; }
+  .meter, #conn { display: none; }
+  .form { grid-template-columns: 1fr; }
+  .form .full { grid-column: span 1; }
+  .pf-scene-pads, .pf-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .presets { grid-template-columns: repeat(2, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee span { animation: none; padding-left: 0; }
+}
+</style>
+</head>
+<body class="tab-show">
+
+<header class="top">
+  <div class="plate"><b>lightlaland</b><span>LX-84 &middot; DUAL BAR</span></div>
+  <nav class="tabs" role="tablist" aria-label="Screens">
+    <button class="key" role="tab" data-tab="perform" aria-selected="false" aria-pressed="false">Perform</button>
+    <button class="key" role="tab" data-tab="show" aria-selected="true" aria-pressed="true">Show</button>
+    <button class="key" role="tab" data-tab="mount" aria-selected="false" aria-pressed="false">Mount</button>
+    <button class="key" role="tab" data-tab="make" aria-selected="false" aria-pressed="false">Make</button>
+    <button class="key" role="tab" data-tab="setup" aria-selected="false" aria-pressed="false">Setup</button>
+  </nav>
+  <div class="status">
+    <span id="conn"></span>
+    <span class="vfd vfd-mini src" id="src">NO AUDIO</span>
+    <span class="meter" id="level" title="Input level"></span>
+    <span class="out" id="out"></span>
+  </div>
+</header>
+
+<!-- Perform: one column on a phone, two on a wide iPad. -->
+<main class="perform" id="perform">
+  <div class="pf-col pf-left">
+    <section class="panel pf-rigs" aria-label="Both bars: beam side, LED side and tilt">
+      <span class="label">Bars</span>
+      <div class="pf-rig"><div class="bars"><canvas id="pfBarA"></canvas></div><div class="tilt crt"><canvas id="pfTiltA" aria-label="Light A tilt"></canvas></div></div>
+      <div class="pf-rig"><div class="bars"><canvas id="pfBarB"></canvas></div><div class="tilt crt"><canvas id="pfTiltB" aria-label="Light B tilt"></canvas></div></div>
+      <div class="safety-banner" id="pfSafety" hidden></div>
+    </section>
+    <section class="panel pf-group room" data-group="room">
+      <span class="label">Magic sheet</span>
+      <button class="pf-head" aria-expanded="false">Room radar<span class="hint" id="pfRoomHint"></span><span class="chev"></span></button>
+      <div class="pf-body"><div class="pf-room crt sheet" style="width:100%"><canvas id="pfSheet" aria-label="Magic sheet: the room, the curtains and where they land"></canvas><div class="viewkeys" role="group" aria-label="Magic sheet view"><button type="button" data-view="room">ROOM</button><button type="button" data-view="plan">PLAN</button></div></div></div>
+    </section>
+  </div>
+  <div class="pf-col">
+    <section class="panel pf-group" data-group="bpm">
+      <span class="label">Tempo</span>
+      <button class="pf-head" aria-expanded="false">
+        <span class="vfd pf-lcd"><span class="seven" id="pfBpm"></span><span class="beats" id="pfBeats" style="margin:0"><i></i><i></i><i></i><i></i></span><span class="sub" id="pfWhere">BAR 1/16</span></span>
+        <span class="hint" id="pfLock"></span><span class="chev"></span>
+      </button>
+      <div class="pf-body">
+        <div class="pf-grid">
+          <button class="pad" data-pad="tap">Tap<small>4+ times on the beat</small></button>
+          <button class="pad" data-pad="one">One<small>this beat is the 1</small></button>
+          <button class="pad wide" data-pad="phrase">Phrase starts now<small>restart the bar count, no flash</small></button>
+        </div>
+        <div class="pf-row"><span class="silk">Nudge</span>
+          <button class="btn" data-nudge="-0.05">&#9664; Earlier</button><button class="btn" data-nudge="0.05">Later &#9654;</button></div>
+        <div class="pf-row"><span class="silk">Phrase</span><span class="seg" id="pfPhrase">
+          <button class="btn" data-v="8">8</button><button class="btn" data-v="16">16</button><button class="btn" data-v="32">32</button></span><span class="silk">bars</span></div>
+        <div class="pf-row"><button class="btn" id="pfFollow"><span class="led green"></span>Follow music</button>
+          <button class="btn" data-tempo="-1">&minus;1 BPM</button><button class="btn" data-tempo="1">+1 BPM</button></div>
+      </div>
+    </section>
+
+    <section class="panel pf-group" data-group="colors">
+      <span class="label">Palette</span>
+      <button class="pf-head" aria-expanded="false"><span class="swatches" id="pfPalHead"></span>
+        <span class="hint" id="pfColState"></span><span class="chev"></span></button>
+      <div class="pf-body">
+        <div class="pal-strip" id="pfPal"></div>
+        <div class="pf-row"><span class="silk">Wheel</span><span class="seg" id="pfGen">
+          <button class="btn small" data-gen="edit">Edit one</button><button class="btn small" data-gen="one">1 colour</button><button class="btn small" data-gen="two">2 colours</button></span></div>
+        <div class="pf-row" id="pfGenOpts"></div>
+        <div class="wheel-wrap"><canvas id="wheel" aria-label="Colour wheel: drag to pick"></canvas></div>
+        <div class="row" style="margin:6px 0 12px"><button class="btn" id="pfLive"><span class="led"></span>Live palette</button>
+          <span class="hint">On: every scene uses these colours. Off: each scene's own.</span></div>
+        <div class="presets" id="pfPresets"></div>
+      </div>
+    </section>
+
+    <section class="panel pf-group" data-group="scenes">
+      <span class="label">Scenes</span>
+      <div class="pf-scene-pads">
+        <button class="pad cap-green" data-gpad="groove"><span class="led green"></span>Groove<small>random</small></button>
+        <button class="pad cap-blue" data-gpad="calm"><span class="led"></span>Break<small>random calm</small></button>
+        <button class="pad cap-red" data-gpad="peak"><span class="led"></span>Drop<small>flash + random</small></button>
+        <button class="pad cap-purple" data-gpad="ambient"><span class="led"></span>Ambient<small>no music needed</small></button>
+      </div>
+      <button class="pf-head" aria-expanded="false">Scene <span class="cur" id="pfScene"></span><span class="chev"></span></button>
+      <div class="pf-body"><div class="pf-cols" id="pfCols"></div></div>
+    </section>
+
+    <div class="pf-foot">
+      <button class="pad" id="pfAuto"><span class="led green"></span>Auto<small>follow the music</small></button>
+      <button class="pad" data-hold="strobe"><span class="led"></span>Strobe<small>hold</small></button>
+      <button class="pad" data-hold="blackout"><span class="led"></span>Blackout<small>hold</small></button>
+    </div>
+  </div>
+</main>
+
+<main class="layout">
+  <section class="panel vis">
+    <span class="label">Magic sheet</span>
+    <div class="vis-grid">
+      <div class="crt sheet"><canvas id="sheet" aria-label="Magic sheet: the room, the curtains and where they land"></canvas><span class="preview-flag" id="previewFlag"></span><div class="viewkeys" role="group" aria-label="Magic sheet view"><button type="button" data-view="room">ROOM</button><button type="button" data-view="plan">PLAN</button></div></div>
+      <div class="rigs">
+        <div class="rig"><div class="bars"><canvas id="barA" aria-label="Light A: beam side and LED side"></canvas></div><div class="tilt crt"><canvas id="tiltA" aria-label="Light A tilt"></canvas></div></div>
+        <div class="rig"><div class="bars"><canvas id="barB" aria-label="Light B: beam side and LED side"></canvas></div><div class="tilt crt"><canvas id="tiltB" aria-label="Light B tilt"></canvas></div></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <section class="panel show-only">
+      <span class="label">Display</span>
+      <div class="vfd disp">
+        <div class="disp-top">
+          <div class="seven bpm7" id="bpm"></div><div class="bpm-unit">BPM</div>
+          <div class="beats" id="beats"><i></i><i></i><i></i><i></i></div>
+          <canvas class="spec" id="spec" aria-label="Spectrum"></canvas>
+        </div>
+        <div class="marquee"><span id="marq">LIGHTLALAND</span></div>
+        <div class="disp-bottom"><span id="where">BAR 1 OF 16</span><span id="lock">LISTENING</span></div>
+        <div class="phrase" id="phrase"></div>
+      </div>
+    </section>
+
+    <section class="panel show-only" style="flex:1">
+      <span class="label">Pads</span>
+      <div class="pads">
+        <button class="pad cap-red wide" data-pad="drop">Drop<small>flash, then peak scenes</small></button>
+        <button class="pad cap-blue" data-pad="break"><span class="led"></span>Break<small>calm scenes</small></button>
+        <button class="pad" data-pad="next">Next<small>another scene</small></button>
+        <button class="pad" data-hold="strobe"><span class="led"></span>Strobe<small>hold</small></button>
+        <button class="pad" data-hold="blackout"><span class="led"></span>Blackout<small>hold</small></button>
+        <button class="pad" data-pad="tap">Tap<small>tempo</small></button>
+        <button class="pad" data-pad="one">One<small>mark the downbeat</small></button>
+        <button class="pad cap-purple wide" data-showgroup="ambient"><span class="led"></span>Ambient<small>rain, storms, campfire&hellip;</small></button>
+      </div>
+    </section>
+
+    <section class="panel mount-only" style="flex:1">
+      <span class="label">Mount &amp; aim</span>
+      <div class="dlg" id="mount"></div>
+    </section>
+
+    <section class="panel make-only" style="flex:1">
+      <span class="label">Scene maker</span>
+      <div class="dlg" id="make"></div>
+    </section>
+
+    <section class="panel setup-only" style="flex:1">
+      <span class="label">Setup</span>
+      <div class="dlg" id="setup"></div>
+    </section>
+  </aside>
+
+  <section class="panel pl show-only">
+    <span class="label">Scenes</span>
+    <div class="vfd pl-list" id="scenes"></div>
+    <div class="pl-foot">
+      <span class="swatches" id="livePal"></span>
+      <button class="btn small" id="liveToggle"><span class="led"></span>Live palette</button>
+      <button class="btn" id="auto" aria-pressed="true" title="Change scenes with the music"><span class="led green"></span>Auto</button>
+      <span class="fader"><span class="silk">Speed</span><span class="seg" id="speed"><button class="btn small" data-v="0.5">½×</button><button class="btn small" data-v="1">1×</button><button class="btn small" data-v="2">2×</button></span></span>
+      <span class="fader"><span class="silk">Master</span><input type="range" id="intensity" min="0" max="100" value="100" aria-label="Brightness"></span>
+    </div>
+  </section>
+</main>
+<div id="toast" class="vfd" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+if (!CanvasRenderingContext2D.prototype.roundRect) {   // Safari before 16
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h) { this.rect(x, y, w, h); };
+}
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+let DEG_PER_STEP = 540 / 255, STEPS_PER_TURN = 170;   // replaced by /api/meta (geometry.py) on load
+const MONO = getComputedStyle(document.documentElement).getPropertyValue("--mono").trim();
+const CRT = "#3dff86", CRT_DIM = "rgba(61,255,134,0.35)", CRT_FAINT = "rgba(61,255,134,0.10)";
+const GROUP_LABEL = { groove: "Groove", calm: "Break", peak: "Drop", ambient: "Ambient" };
+const S = { meta: null, cfg: null, vis: null, tab: "show", mountFx: 0, testFx: 0, editing: false, view: "room",
+            lastVis: 0, dragging: null, sliding: false, testing: false, search: null, searching: false,
+            open: new Set(), palSel: 0, gen: "edit", genStyle: "similar", genBases: null, genSel: 0,
+            make: { name: null, draft: null, dirty: false, preview: true } };
+const narrow = () => matchMedia("(max-width: 999px)").matches;
+
+// ---------- helpers ----------
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function rgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+const hex2 = v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, "0");
+const toHex = c => `#${hex2(c[0])}${hex2(c[1])}${hex2(c[2])}`;
+const wrap180 = a => ((a + 180) % 360 + 360) % 360 - 180;
+const clone = o => JSON.parse(JSON.stringify(o));
+const D2R = Math.PI / 180;
+function hsvToRgb(h, s, v) {   // h 0..1
+  const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+  const [r, g, b] = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][((i % 6) + 6) % 6];
+  return [r * 255, g * 255, b * 255];
+}
+function rgbToHsv([r, g, b]) {
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0;
+  if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [((h / 6) % 1 + 1) % 1, mx ? d / mx : 0, mx / 255];
+}
+const hsvHex = (h, s, v) => toHex(hsvToRgb(((h % 1) + 1) % 1, clamp(s, 0, 1), clamp(v, 0, 1)));
+function hash(i) { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove("show"), 3200);
+}
+function fit(cv) {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = Math.max(1, Math.round(r.width * dpr)), H = Math.max(1, Math.round(r.height * dpr));
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  return dpr;
+}
+const visible = el => !!(el && el.offsetParent);
+const targetText = ip => ip === "broadcast" ? "broadcast" : ip;
+function holdButton(b, start, stop) {   // pointer down/up with capture, for hold pads
+  let held = false;
+  b.addEventListener("pointerdown", e => { e.preventDefault(); if (held) return; held = true; b.setPointerCapture?.(e.pointerId); start(); });
+  const off = () => { if (!held) return; held = false; stop(); };
+  for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) b.addEventListener(ev, off);
+}
+function tapButton(b, fn) {   // fires on press (no click delay on touch)
+  b.addEventListener("pointerdown", e => { e.preventDefault(); fn(); b.classList.add("hit"); setTimeout(() => b.classList.remove("hit"), 160); });
+}
+
+// ---------- geometry (mirrors geometry.py) ----------
+const elevationOf = (fx, ch) => wrap180(90 - fx.dir * (ch - fx.up) * DEG_PER_STEP);
+const rawCh1 = (fx, e) => fx.up + fx.dir * (90 - e) / DEG_PER_STEP;
+function safeRange(fx) {   // this light's allowed beam elevations (mirrors geometry.safe_range)
+  const sf = S.cfg.safety;
+  let low = sf.low;
+  if (fx.limit !== null && fx.limit !== undefined) low = Math.max(low, elevationOf(fx, fx.limit - 0.5 * fx.dir));
+  return [low, sf.high];
+}
+function safeWindows(fx, low, high) {   // every copy of the safe arc in CH1 0..255
+  const a = rawCh1(fx, low), b = rawCh1(fx, high), lo = Math.min(a, b), hi = Math.max(a, b), out = [];
+  for (let k = -3; k <= 3; k++) {
+    const l = Math.max(0, lo + k * STEPS_PER_TURN), h = Math.min(255, hi + k * STEPS_PER_TURN);
+    if (h > l) out.push([l, h]);
+  }
+  return out;
+}
+function rayLen(x, y, ang, w, d) {
+  const dx = Math.cos(ang * D2R), dy = Math.sin(ang * D2R);
+  let best = 50;
+  for (const t of [dx < -1e-9 ? -x / dx : null, dx > 1e-9 ? (w - x) / dx : null,
+                   dy < -1e-9 ? -y / dy : null, dy > 1e-9 ? (d - y) / dy : null]) {
+    if (t !== null && t > 0 && t < best) best = t;
+  }
+  return best;
+}
+
+// ---------- seven-segment digits for the VFD ----------
+const SEGS = { "0": "abcdef", "1": "bc", "2": "abged", "3": "abgcd", "4": "fgbc", "5": "afgcd", "6": "afgedc",
+               "7": "abc", "8": "abcdefg", "9": "abcfgd", "-": "g", " ": "" };
+const SEG_PATH = {   // a 40 x 70 cell
+  a: "M10 4 L34 4 L30 9 L14 9 Z", b: "M35 6 L36 32 L32 34 L31 10 Z", c: "M32 38 L36 40 L35 64 L30 60 Z",
+  d: "M9 66 L33 66 L29 61 L13 61 Z", e: "M5 40 L9 38 L10 60 L5 64 Z", f: "M6 6 L10 10 L10 32 L6 34 Z",
+  g: "M9 35 L13 32 L29 32 L33 35 L29 38 L13 38 Z",
+};
+function sevenSeg(text) {
+  const cells = [];
+  for (const ch of String(text)) {
+    if (ch === "." && cells.length) { cells[cells.length - 1].dot = true; continue; }
+    cells.push({ ch, dot: false });
+  }
+  const w = 40 * cells.length + 4;
+  let svg = `<svg viewBox="0 0 ${w} 70" aria-hidden="true">`;
+  cells.forEach((c, i) => {
+    const on = SEGS[c.ch] || "";
+    svg += `<g transform="translate(${i * 40 + 4} 0) skewX(-6)">`;
+    for (const s of "abcdefg") svg += `<path d="${SEG_PATH[s]}" class="${on.includes(s) ? "on" : "off"}"/>`;
+    svg += `<circle cx="38" cy="64" r="3" class="${c.dot ? "on" : "off"}"/></g>`;
+  });
+  return svg + "</svg>";
+}
+const segCache = new Map();
+function setSeven(el, text) { if (segCache.get(el) !== text) { segCache.set(el, text); el.innerHTML = sevenSeg(text); el.setAttribute("aria-label", text.trim()); } }
+
+// ---------- palettes ----------
+const PALETTES = [
+  ["Neon Tokyo", ["#ff2e88", "#00e5ff", "#7a2cff", "#ff9e00", "#ffffff"]],
+  ["Sunset", ["#ff7b00", "#ff3d6e", "#9b2fff", "#ffb347", "#ff6fb5"]],
+  ["Ocean", ["#0047ab", "#00c2ff", "#00a6a6", "#5ab4ff", "#00ffd0"]],
+  ["Aurora", ["#00ff9c", "#00c2ff", "#7b2cff", "#00ffd0", "#c77dff"]],
+  ["Fire", ["#ff2a00", "#ff7a00", "#ffb000", "#c21800", "#ffd36b"]],
+  ["Ice", ["#6ec1ff", "#bfe9ff", "#3a86ff", "#ffffff", "#d6f5ff"]],
+  ["Candy", ["#ff5fa2", "#ffb86b", "#9b8cff", "#5ce1ff", "#fff3c4"]],
+  ["Vapor", ["#ff71ce", "#01cdfe", "#05ffa1", "#b967ff", "#fffb96"]],
+  ["Halloween", ["#ff6a00", "#8a2be2", "#ff9e3d", "#5a189a", "#ffd166"]],
+  ["Forest", ["#2ecc71", "#9be15d", "#00a35c", "#c6ff6b", "#0b6e4f"]],
+  ["Berry", ["#e91e63", "#7b1fa2", "#c2185b", "#9c27b0", "#f48fb1"]],
+  ["Lava", ["#ff1e00", "#ff006e", "#ff8800", "#b5179e", "#ffd000"]],
+  ["Mint", ["#00d1b2", "#a8e6cf", "#3eb489", "#dcedc1", "#7fffd4"]],
+  ["Gold", ["#ffb700", "#ffd166", "#ff8c00", "#fff1c1", "#e0a100"]],
+  ["Club red", ["#ff0000", "#ff3355", "#990000", "#ff6666", "#ffffff"]],
+  ["Deep blue", ["#0033ff", "#0099ff", "#3300cc", "#66a3ff", "#ffffff"]],
+];
+const GEN_STYLES = [["similar", "Similar"], ["accent", "With accent"], ["soft", "Soft"]];
+function genFromOne(hex, style) {   // a family around one colour; colour 2 differs enough to tell A from B
+  const [h, s] = rgbToHsv(rgb(hex)), S0 = Math.max(s, 0.15);
+  const H = d => h + d / 360;
+  if (style === "accent") return [hsvHex(h, S0, 1), hsvHex(H(180), S0, 1), hsvHex(H(18), S0 * 0.8, 1), hsvHex(H(-18), S0, 0.85), hsvHex(H(195), S0 * 0.55, 1)];
+  if (style === "soft") return [hsvHex(h, S0 * 0.55, 1), hsvHex(H(35), S0 * 0.45, 1), hsvHex(H(-25), S0 * 0.5, 1), hsvHex(h, S0, 1), hsvHex(H(60), S0 * 0.3, 1)];
+  return [hsvHex(h, S0, 1), hsvHex(H(32), S0, 1), hsvHex(H(14), S0 * 0.8, 1), hsvHex(H(-22), S0, 0.9), hsvHex(H(55), S0 * 0.6, 1)];
+}
+function genFromTwo(a, b) {   // the two picks, then the colours between them
+  const [h1, s1, v1] = rgbToHsv(rgb(a)), [h2, s2, v2] = rgbToHsv(rgb(b));
+  let dh = h2 - h1; if (dh > 0.5) dh -= 1; if (dh < -0.5) dh += 1;
+  const at = t => hsvHex(h1 + dh * t, clamp(s1 + (s2 - s1) * t + 0.08 * Math.sin(Math.PI * t), 0, 1), Math.max(0.6, v1 + (v2 - v1) * t));
+  return [a, b, at(0.5), at(0.25), at(0.75)];
+}
+
+// ---------- server ----------
+async function api(cmd, body = {}) {
+  try {
+    const r = await fetch("/api/cmd", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cmd, ct: performance.now(), ...body }) });
+    const j = await r.json();
+    if (j.scenes) { S.meta.scenes = j.scenes; onScenes(); }
+    if (j.config) { S.cfg = j.config; onConfig(); }
+    if (!j.ok) toast(j.error || "The Mac didn't accept that.");
+    return j;
+  } catch (e) {
+    toast("Can't reach the Mac. Is lightlaland still running?");
+    return { ok: false };
+  }
+}
+async function loadMeta() {
+  const r = await fetch("/api/meta");
+  S.meta = await r.json();
+  ({ deg_per_step: DEG_PER_STEP, steps_per_turn: STEPS_PER_TURN } = S.meta.geometry);
+  S.cfg = S.meta.config;
+  if (S.meta.search && S.meta.search.at) S.search = S.meta.search;
+  onScenes();
+  onConfig();
+}
+function connect() {
+  const es = new EventSource("/api/stream");
+  es.onmessage = e => { S.vis = JSON.parse(e.data); S.lastVis = performance.now(); };
+}
+
+// ---------- scenes and palettes ----------
+const scenes = () => S.meta.scenes;
+const sceneBy = name => scenes().find(s => s.name === name);
+const groups = () => S.meta.groups;
+function livePalette() { return (S.vis && S.vis.palette) || S.cfg.show.palette; }
+function shownPalette() {   // what the lights use right now: the live palette, or the scene's own
+  const live = livePalette();
+  if (live.on) return { colors: live.colors, on: true };
+  const sc = S.vis && sceneBy(S.vis.scene);
+  return { colors: sc ? sc.palette : live.colors, on: false };
+}
+function setPalette(colors, save = true) { return api("palette", { on: true, colors, save }); }
+function onScenes() {
+  buildPlaylist();
+  buildPerformScenes();
+  if (S.tab === "make") renderMake();
+  if (S.tab === "setup" && !document.activeElement?.closest?.("#setup input, #setup select")) renderSetup();
+}
+
+// ---------- Show tab ----------
+function buildPlaylist() {
+  $("#scenes").innerHTML = groups().map(g => `<div class="pl-col"><span class="silk">${GROUP_LABEL[g]}</span>${
+    scenes().filter(s => s.group === g).map(sc => `<button class="track" data-name="${esc(sc.name)}" title="${esc(sc.blurb)}" aria-pressed="false">
+      <span class="sw">${sc.palette.slice(0, 3).map(c => `<i style="background:${c}"></i>`).join("")}</span><span>${esc(sc.label)}</span></button>`).join("")}</div>`).join("");
+  for (const b of $$("#scenes .track")) b.addEventListener("click", () => api("scene", { name: b.dataset.name }));
+  paintPlaylist();
+}
+function paintPlaylist() {
+  for (const b of $$("#scenes .track")) b.classList.toggle("off", (S.cfg.rotation || {})[b.dataset.name] === false);
+}
+function paintLivePal() {
+  const host = $("#livePal"); if (!host || document.activeElement?.closest?.("#livePal")) return;
+  const p = shownPalette();
+  const key = p.colors.join() + p.on;
+  if (host.dataset.key === key) return;
+  host.dataset.key = key;
+  host.innerHTML = p.colors.map((c, i) => `<label class="swatch" style="background:${c}" title="Colour ${i + 1}"><input type="color" data-i="${i}" value="${c}"></label>`).join("");
+  for (const inp of $$("input", host)) {
+    inp.addEventListener("input", () => { inp.parentElement.style.background = inp.value; });
+    inp.addEventListener("change", () => { const cols = [...shownPalette().colors]; cols[+inp.dataset.i] = inp.value; setPalette(cols); });
+  }
+}
+function setupShowControls() {
+  for (const b of $$(".pads .pad[data-pad]")) tapButton(b, () => {
+    api("pad", { pad: b.dataset.pad });
+    if (b.dataset.pad === "drop") { b.classList.add("flash"); setTimeout(() => b.classList.remove("flash"), 380); }
+  });
+  for (const b of $$(".pads .pad[data-showgroup]")) tapButton(b, () => api("group", { group: b.dataset.showgroup }));
+  for (const b of $$(".pad[data-hold]")) holdButton(b,
+    () => api("hold", { what: b.dataset.hold, on: true }), () => api("hold", { what: b.dataset.hold, on: false }));
+  // Keys on the Mac (Show and Perform): D drop, B break, N next, T tap, 1 one, A ambient; hold S strobe, X blackout.
+  const keyPad = { d: "drop", b: "break", n: "next", t: "tap", "1": "one" };
+  const keyHold = { s: "strobe", x: "blackout" };
+  const keysOn = () => S.tab === "show" || S.tab === "perform";
+  addEventListener("keydown", e => {
+    if (e.repeat || e.metaKey || e.ctrlKey || e.target.closest("input, select, textarea") || !keysOn()) return;
+    const k = e.key.toLowerCase();
+    if (keyPad[k]) api("pad", { pad: keyPad[k] });
+    else if (k === "a") api("group", { group: "ambient" });
+    else if (keyHold[k]) api("hold", { what: keyHold[k], on: true });
+  });
+  addEventListener("keyup", e => {
+    const what = keyHold[e.key.toLowerCase()];
+    if (what && keysOn()) api("hold", { what, on: false });
+  });
+  $("#auto").addEventListener("click", () => api("show", { auto: !(S.vis && S.vis.auto) }));
+  for (const b of $$("#speed .btn")) b.addEventListener("click", () => api("show", { speed: +b.dataset.v }));
+  const inten = $("#intensity");
+  let pending = null;
+  inten.addEventListener("input", () => {
+    S.sliding = true;
+    if (!pending) pending = setTimeout(() => { pending = null; api("show", { intensity: inten.value / 100 }); }, 60);
+  });
+  inten.addEventListener("change", () => { S.sliding = false; api("show", { intensity: inten.value / 100 }); });
+  $("#liveToggle").addEventListener("click", () => api("palette", { on: !livePalette().on }));
+  $("#phrase").innerHTML = Array.from({ length: 32 }, () => "<i></i>").join("");
+}
+
+// ---------- Perform tab ----------
+function setGroupOpen(g, open) {
+  const el = $(`.pf-group[data-group="${g}"]`); if (!el) return;
+  if (open && narrow()) for (const o of [...S.open]) if (o !== g) setGroupOpen(o, false);   // one at a time on phones
+  el.classList.toggle("open", open);
+  for (const h of $$(":scope > .pf-head", el)) h.setAttribute("aria-expanded", String(open));
+  if (open) S.open.add(g); else S.open.delete(g);
+  S.wheelKey = null;
+}
+function buildPerformScenes() {
+  const host = $("#pfCols"); if (!host) return;
+  host.innerHTML = groups().map(g => `<div class="col vfd"><span class="silk" style="padding:4px 6px;color:var(--vfd-mid)">${GROUP_LABEL[g]}</span>${
+    scenes().filter(s => s.group === g).map(s => `<button class="track" data-pick="${esc(s.name)}" data-g="${g}" aria-pressed="false"><span>${esc(s.label)}</span></button>`).join("")}</div>`).join("");
+  for (const b of $$("[data-pick]", host)) b.addEventListener("click", () => api("group", { group: b.dataset.g, name: b.dataset.pick }));
+}
+function renderGenOpts() {
+  for (const b of $$("#pfGen .btn")) b.setAttribute("aria-pressed", String(b.dataset.gen === S.gen));
+  const host = $("#pfGenOpts");
+  if (S.gen === "one") {
+    host.innerHTML = `<span class="silk">Style</span><span class="seg">${GEN_STYLES.map(([k, l]) =>
+      `<button class="btn small" data-style="${k}" aria-pressed="${k === S.genStyle}">${l}</button>`).join("")}</span>
+      <span class="hint">Pick a colour on the wheel: the palette is built around it.</span>`;
+    for (const b of $$("[data-style]", host)) b.addEventListener("click", () => {
+      S.genStyle = b.dataset.style; renderGenOpts(); setPalette(genFromOne(shownPalette().colors[0], S.genStyle));
+    });
+  } else if (S.gen === "two") {
+    const bases = S.genBases || shownPalette().colors.slice(0, 2);
+    host.innerHTML = `<span class="silk">Picks</span>${bases.map((c, i) =>
+      `<button class="swatch ${i === S.genSel ? "sel" : ""}" data-base="${i}" style="background:${c}" aria-label="Pick ${i + 1}"></button>`).join("")}
+      <span class="hint">Choose a pick, then a colour on the wheel. The palette blends between them.</span>`;
+    for (const b of $$("[data-base]", host)) b.addEventListener("click", () => { S.genSel = +b.dataset.base; renderGenOpts(); S.wheelKey = null; });
+  } else {
+    host.innerHTML = `<span class="hint">Tap a colour above, then pick on the wheel to change just that one.</span>`;
+  }
+}
+function paintPerformPalette() {
+  const p = shownPalette(), key = p.colors.join() + p.on + S.palSel + S.gen;
+  if ($("#pfPal").dataset.key === key) return;
+  $("#pfPal").dataset.key = key;
+  $("#pfPal").innerHTML = p.colors.map((c, i) => `<button class="swatch ${S.gen === "edit" && i === S.palSel ? "sel" : ""}" data-pal="${i}" style="background:${c}" aria-label="Colour ${i + 1}"></button>`).join("");
+  for (const b of $$("[data-pal]", $("#pfPal"))) b.addEventListener("click", () => { S.palSel = +b.dataset.pal; S.gen = "edit"; renderGenOpts(); S.wheelKey = null; $("#pfPal").dataset.key = ""; });
+  $("#pfPalHead").innerHTML = p.colors.map(c => `<span class="swatch" style="background:${c};width:22px;height:22px"></span>`).join("");
+}
+function setupPerform() {
+  for (const g of $$(".pf-group")) for (const h of $$(":scope > .pf-head", g))
+    h.addEventListener("click", () => setGroupOpen(g.dataset.group, !g.classList.contains("open")));
+  if (!narrow()) setGroupOpen("room", true);
+  for (const b of $$("#perform .pad[data-pad]")) tapButton(b, () => api("pad", { pad: b.dataset.pad }));
+  for (const b of $$("[data-gpad]")) tapButton(b, () => {
+    api("group", { group: b.dataset.gpad });
+    if (b.dataset.gpad === "peak") { b.classList.add("flash"); setTimeout(() => b.classList.remove("flash"), 380); }
+  });
+  for (const b of $$("[data-nudge]")) b.addEventListener("click", () => api("nudge", { beats: +b.dataset.nudge }));
+  for (const b of $$("[data-tempo]")) b.addEventListener("click", () => api("tempo", { delta: +b.dataset.tempo }));
+  for (const b of $$("#pfPhrase .btn")) b.addEventListener("click", () => api("audio", { phrase_bars: +b.dataset.v }));
+  $("#pfFollow").addEventListener("click", () => api("follow", { on: !(S.vis && S.vis.follow) }));
+  $("#pfAuto").addEventListener("click", () => api("show", { auto: !(S.vis && S.vis.auto) }));
+  for (const b of $$("#pfGen .btn")) b.addEventListener("click", () => {
+    S.gen = b.dataset.gen;
+    if (S.gen === "two") S.genBases = shownPalette().colors.slice(0, 2);
+    renderGenOpts(); S.wheelKey = null; $("#pfPal").dataset.key = "";
+  });
+  renderGenOpts();
+  $("#pfLive").addEventListener("click", () => api("palette", { on: !livePalette().on }));
+  $("#pfPresets").innerHTML = PALETTES.map(([name, cols], i) =>
+    `<button class="preset" data-preset="${i}"><span class="bar">${cols.map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${esc(name)}</b></button>`).join("");
+  for (const b of $$("[data-preset]")) b.addEventListener("click", () => setPalette(PALETTES[+b.dataset.preset][1]));
+  // colour wheel: hue around, saturation outwards (lights want full brightness)
+  const wheel = $("#wheel");
+  let dragging = false, last = 0, pend = null;
+  const pick = e => {
+    const r = wheel.getBoundingClientRect(), x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
+    const R = r.width / 2 - 2, s = clamp(Math.hypot(x, y) / R, 0, 1), h = (Math.atan2(y, x) / (2 * Math.PI) + 1) % 1;
+    return toHex(hsvToRgb(h, s, 1));
+  };
+  const paletteFor = hex => {
+    if (S.gen === "one") return genFromOne(hex, S.genStyle);
+    if (S.gen === "two") {
+      S.genBases = S.genBases || shownPalette().colors.slice(0, 2);
+      S.genBases[S.genSel] = hex;
+      return genFromTwo(S.genBases[0], S.genBases[1]);
+    }
+    const cols = [...shownPalette().colors]; cols[S.palSel] = hex; return cols;
+  };
+  const send = (hex, save) => {
+    S.wheelLocal = hex; S.wheelKey = null;
+    const now = performance.now();
+    clearTimeout(pend);
+    if (save || now - last > 70) { last = now; setPalette(paletteFor(hex), save); if (S.gen === "two") renderGenOpts(); }
+    else pend = setTimeout(() => { last = performance.now(); setPalette(paletteFor(hex), false); }, 70);
+  };
+  wheel.addEventListener("pointerdown", e => { dragging = true; wheel.setPointerCapture(e.pointerId); send(pick(e), false); });
+  wheel.addEventListener("pointermove", e => { if (dragging) send(pick(e), false); });
+  const up = e => { if (!dragging) return; dragging = false; send(pick(e), true); setTimeout(() => { S.wheelLocal = null; }, 500); };
+  wheel.addEventListener("pointerup", up); wheel.addEventListener("pointercancel", () => { dragging = false; S.wheelLocal = null; });
+}
+let wheelImg = null;
+function drawWheel() {
+  const cv = $("#wheel"); if (!visible(cv)) return;
+  const p = shownPalette();
+  const hex = S.wheelLocal || (S.gen === "two" ? (S.genBases || p.colors)[S.genSel] : S.gen === "one" ? p.colors[0] : p.colors[S.palSel]);
+  const key = `${cv.clientWidth}:${hex}:${p.colors.join()}:${S.gen}`;
+  if (S.wheelKey === key) return;
+  S.wheelKey = key;
+  const ctx = cv.getContext("2d"), dpr = fit(cv), W = cv.width, H = cv.height, R = Math.min(W, H) / 2 - 2 * dpr;
+  if (!wheelImg || wheelImg.w !== W) {
+    const img = ctx.createImageData(W, H), d = img.data;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const dx = x - W / 2, dy = y - H / 2, dist = Math.hypot(dx, dy), o = (y * W + x) * 4;
+      if (dist > R + dpr) continue;
+      const [r, g, b] = hsvToRgb((Math.atan2(dy, dx) / (2 * Math.PI) + 1) % 1, Math.min(1, dist / R), 1);
+      d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = dist > R ? 255 * (R + dpr - dist) / dpr : 255;
+    }
+    wheelImg = { w: W, img };
+  }
+  ctx.clearRect(0, 0, W, H);
+  ctx.putImageData(wheelImg.img, 0, 0);
+  const marks = S.gen === "edit" ? p.colors.map((c, i) => [c, i === S.palSel]) : [[hex, true]];
+  for (const [c, sel] of marks) {
+    const [h, s] = rgbToHsv(rgb(c)), a = h * 2 * Math.PI, mx = W / 2 + Math.cos(a) * s * R, my = H / 2 + Math.sin(a) * s * R;
+    const r = (sel ? 11 : 7) * dpr;
+    ctx.lineWidth = 3 * dpr; ctx.strokeStyle = "#000"; ctx.beginPath(); ctx.arc(mx, my, r, 0, 2 * Math.PI); ctx.stroke();
+    ctx.lineWidth = 1.5 * dpr; ctx.strokeStyle = sel ? "#fff" : "rgba(255,255,255,.6)"; ctx.stroke();
+    ctx.fillStyle = c; ctx.beginPath(); ctx.arc(mx, my, r - 3 * dpr, 0, 2 * Math.PI); ctx.fill();
+  }
+}
+function safetyNote() {   // a sentence for the banner when beams are held off
+  if (!S.cfg.safety.on) return "Beam safety is OFF (Setup). Beams can point anywhere.";
+  const off = S.cfg.fixtures.filter(f => !f.calibrated).map(f => f.id);
+  if (off.length) return `Beams stay off on ${off.join(" and ")} until the tilt is set on the Mount tab.`;
+  return "";
+}
+function updatePerform(v) {
+  const k = v.clock;
+  setSeven($("#pfBpm"), k.bpm.toFixed(1).padStart(5, " "));
+  $("#pfWhere").textContent = `BAR ${k.bar_in_phrase + 1}/${k.phrase_bars}`;
+  $("#pfLock").textContent = lockText(v);
+  for (const b of $$("#pfPhrase .btn")) b.setAttribute("aria-pressed", String(+b.dataset.v === k.phrase_bars));
+  $("#pfFollow").setAttribute("aria-pressed", String(v.follow));
+  for (const b of $$("[data-tempo]")) b.disabled = v.follow && v.audio.state !== "off";
+  paintPerformPalette();
+  $("#pfColState").textContent = livePalette().on ? "live" : "the scene's own";
+  $("#pfLive").setAttribute("aria-pressed", String(livePalette().on));
+  const sc = sceneBy(v.scene);
+  $("#pfScene").textContent = sc ? sc.label : v.scene;
+  for (const b of $$("#pfCols .track")) b.setAttribute("aria-pressed", String(b.dataset.pick === v.scene));
+  const stateGroup = { groove: "groove", breakdown: "calm", drop: "peak", ambient: "ambient" }[v.state];
+  for (const b of $$("[data-gpad]")) b.classList.toggle("on", b.dataset.gpad === stateGroup);
+  $("#pfAuto").classList.toggle("on", v.auto);
+  $("#pfRoomHint").textContent = v.preview ? "previewing a scene" : "";
+  const note = safetyNote();
+  $("#pfSafety").hidden = !note; $("#pfSafety").textContent = note;
+}
+
+// ---------- tabs ----------
+function setTab(tab) {
+  if (S.tab === tab) return;
+  const was = S.tab;
+  S.tab = tab;
+  document.body.className = `tab-${tab}`;
+  for (const b of $$(".tabs .key")) {
+    b.setAttribute("aria-selected", String(b.dataset.tab === tab));
+    b.setAttribute("aria-pressed", String(b.dataset.tab === tab));
+  }
+  try { if (tab === "show" || tab === "perform") localStorage.setItem("lightlaland.tab", tab); } catch (e) { /* private mode */ }
+  if (was === "mount") api("calib", { action: "stop" });
+  if (was === "setup") { if (S.testing) api("test", { action: "stop" }); S.testing = false; S.editing = false; document.body.classList.remove("editing"); }
+  if (was === "make") api("preview", { spec: null });
+  if (tab === "mount") { api("calib", { action: "start", fixture: S.mountFx }); renderMount(); }
+  if (tab === "setup") renderSetup();
+  if (tab === "make") { renderMake(); sendPreview(); }
+  if (tab === "show") buildPlaylist();
+  S.wheelKey = null;
+}
+function onConfig() {
+  if (!S.meta) return;
+  paintPlaylist();
+  if (S.tab === "mount") renderMount();
+  if (S.tab === "setup" && !document.activeElement?.closest?.("#setup input, #setup select")) renderSetup();
+}
+
+// ---------- mount (tilt calibration and aims) ----------
+function fxName(i) { const f = S.cfg.fixtures[i]; return `${f.id} ${f.name.split(" (")[0]}`; }
+function renderMount() {
+  const fx = S.cfg.fixtures[S.mountFx], pts = S.cfg.points;
+  const pos = (S.vis && S.vis.calib) ? S.vis.calib.pos : fx.up;
+  const [low, high] = safeRange(fx), wins = safeWindows(fx, low, high);
+  const status = fx.calibrated && wins.length
+    ? `${fx.id}: TILT SET (UP AT ${fx.up}). BEAMS ALLOWED FROM ${Math.round(low)}&deg; TO ${Math.round(high)}&deg;: CH1 ${wins.map(w => `${Math.ceil(w[0] + 0.5)}&ndash;${Math.floor(w[1] - 0.5)}`).join(" OR ")}${fx.ball_span ? `. BALLS AT ${fx.ball_span[0]}&ndash;${fx.ball_span[1]}` : ""}`
+    : `<span class="bad">${fx.id}: NOT CALIBRATED. BEAMS STAY OFF IN THE SHOW.</span>`;
+  $("#mount").innerHTML = `
+    <div class="row">${S.cfg.fixtures.map((f, i) =>
+      `<button class="btn" data-fx="${i}" aria-pressed="${i === S.mountFx}">${esc(fxName(i))}</button>`).join("")}</div>
+    <div class="vfd status-vfd" style="margin-top:10px">${status}</div>
+    <div class="vfd readout" style="margin-top:8px"><span class="big-value" id="mPos">${pos}</span>
+      <span class="hint" id="mElev">${fx.calibrated ? `${Math.round(elevationOf(fx, pos))}&deg; (0 = level, 90 = up)` : "angle unknown until set"}</span></div>
+    <div class="nudge">
+      <button class="btn" data-n="-10">&minus;10</button><button class="btn" data-n="-1">&minus;1</button>
+      <button class="btn" data-n="1">+1</button><button class="btn" data-n="10">+10</button>
+    </div>
+    <input type="range" id="mSlider" min="0" max="255" value="${pos}" style="width:100%" aria-label="Position (CH1)">
+    <p class="warn">The show pauses while you're here. ${fx.id} shows plain white beams and a blue LED side.
+      While its tilt isn't set, or it points somewhere unsafe, the beams are dimmed to a glimmer. Still, don't look into them.</p>
+    <fieldset><legend>Step 1 &middot; straight up</legend>
+      <p>Turn the bar (buttons or slider) until the beams point straight up at the ceiling.</p>
+      <div class="row"><button class="btn" id="setUp">Beams point straight up</button>
+        <span class="hint">${fx.up_set ? `Set at ${fx.up}` : "Not set yet"}</span></div>
+    </fieldset>
+    <fieldset><legend>Step 2 &middot; which way is the room</legend>
+      <p>From straight up, press +10. Did the beams lean out over the room, or back toward the wall?</p>
+      <div class="row">
+        <button class="btn" data-dir="1" aria-pressed="${fx.calibrated && fx.dir === 1}" ${fx.up_set ? "" : "disabled"}>Over the room</button>
+        <button class="btn" data-dir="0" aria-pressed="${fx.calibrated && fx.dir === -1}" ${fx.up_set ? "" : "disabled"}>Toward the wall</button>
+      </div>
+    </fieldset>
+    <fieldset><legend>Step 3 &middot; check</legend>
+      <p>These go where the software thinks they are. If "level" isn't level, go back to step 1.</p>
+      <div class="row">${[["up", "Up"], ["ceiling", "Ceiling, mid-room"], ["corner", "Far edge"], ["out", "Level"]].map(([t, l]) =>
+        `<button class="btn small" data-go="${t}" ${fx.calibrated ? "" : "disabled"}>${l}</button>`).join("")}</div>
+    </fieldset>
+    <fieldset><legend>Step 4 &middot; targets</legend>
+      <p>Tilt until the curtain lands on each target and save it. Saved aims win over the room measurements.
+        A curtain only hits what's in front of its bar, and anything below the bars is off limits for beams.</p>
+      <ul class="list vfd">${pts.map(p => {
+        const saved = fx.targets[p.id];
+        return `<li><span>${esc(p.label)}</span>
+          <span class="sub">${saved !== undefined ? `saved at ${saved}` : "from the room"}</span>
+          <button class="btn small" data-go="${p.id}" ${fx.calibrated ? "" : "disabled"}>Go</button>
+          <button class="btn small" data-save="${p.id}" ${fx.calibrated ? "" : "disabled"}>Save aim</button></li>`;
+      }).join("")}</ul>
+    </fieldset>
+    <fieldset><legend>Start over</legend>
+      <div class="row"><button class="btn" id="forget">Forget ${fx.id}'s tilt and aims</button></div>
+    </fieldset>`;
+  const send = v => api("calib", { action: "set", pos: clamp(Math.round(v), 0, 255) });
+  for (const b of $$("[data-fx]", $("#mount"))) b.addEventListener("click", () => {
+    S.mountFx = +b.dataset.fx; api("calib", { action: "start", fixture: S.mountFx }); renderMount();
+  });
+  for (const b of $$("[data-n]", $("#mount"))) b.addEventListener("click", () => {
+    const cur = (S.vis && S.vis.calib) ? S.vis.calib.pos : pos; send(cur + +b.dataset.n);
+  });
+  const sl = $("#mSlider");
+  sl.addEventListener("input", () => { $("#mPos").textContent = sl.value; send(+sl.value); });
+  $("#setUp").addEventListener("click", () => api("calib", { action: "up" }));
+  for (const b of $$("[data-dir]", $("#mount"))) b.addEventListener("click", () => api("calib", { action: "dir", toward_room: b.dataset.dir === "1" }));
+  for (const b of $$("[data-go]", $("#mount"))) b.addEventListener("click", () => api("calib", { action: "go", target: b.dataset.go }));
+  for (const b of $$("[data-save]", $("#mount"))) b.addEventListener("click", () => api("calib", { action: "save", target: b.dataset.save }));
+  $("#forget").addEventListener("click", () => { if (confirm(`Forget ${fx.id}'s tilt? Its beams stay off until you set it again.`)) api("calib", { action: "forget" }); });
+}
+function updateMountReadout() {
+  if (S.tab !== "mount" || !S.vis || !S.vis.calib || !$("#mPos")) return;
+  const fx = S.cfg.fixtures[S.mountFx], pos = S.vis.calib.pos;
+  if (document.activeElement !== $("#mSlider")) { $("#mPos").textContent = pos; $("#mSlider").value = pos; }
+  if (fx.calibrated) $("#mElev").innerHTML = `${Math.round(elevationOf(fx, pos))}&deg; (0 = level, 90 = up)`;
+}
+
+// ---------- make (scene maker) ----------
+const SECTIONS = [["general", "Scene"], ["move", "Movement"], ["beams", "Beams"], ["strip", "LED strip"], ["white", "White strobes"], ["fx", "Effects"]];
+const has = (list, v) => list.includes(v);
+const SHOW_IF = {   // hide fields that don't apply to the current choices
+  move: {
+    target: m => has(["aim", "sweep"], m.mode), face: m => m.mode !== "spin", lift: m => m.mode !== "spin",
+    sweep: m => m.mode === "sweep", period: m => m.mode === "sweep",
+    spin: m => m.mode === "spin", hops: m => m.mode === "hop", hop_every: m => m.mode === "hop",
+    converge: m => m.mode === "aim", jitter_rate: m => m.jitter > 0,
+    trade_bars: m => m.pair === "trade", rest: m => m.pair === "trade",
+  },
+  layer: {
+    _on: l => l.pattern !== "off",
+    floor: l => !has(["off", "solid"], l.pattern),
+    depth: l => l.pulse !== "none", decay: l => !has(["none", "breathe"], l.pulse) || l.pattern === "rain",
+    rate: l => !has(["off", "solid"], l.pattern) || has(["scroll", "random", "rainbow"], l.color),
+    width: l => has(["chase", "bounce", "midout", "wave"], l.pattern), count: l => l.pattern === "sparkle",
+    density: l => has(["rain", "twinkle"], l.pattern),
+    reverse: l => has(["chase", "bounce", "fill", "wave"], l.pattern) || has(["ab", "spread", "scroll", "rainbow"], l.color),
+    flip_bars: l => has(["chase", "bounce", "midout", "fill"], l.pattern),
+  },
+  fx: { lightning_level: f => f.lightning > 0, lightning_beams: f => f.lightning > 0 },
+};
+function blankSpec() {
+  const sp = { palette: ["#ff1f5a", "#ff6a3d", "#ffb000", "#00e1ff", "#7b2cff"] };
+  for (const [sec] of SECTIONS) {
+    const vals = {};
+    for (const f of S.meta.schema[sec]) vals[f.key] = f.default;
+    if (sec === "general") Object.assign(sp, vals); else sp[sec] = vals;
+  }
+  return sp;
+}
+function fieldShown(sec, f, d) {
+  const part = sec === "general" ? d : d[sec];
+  if (sec === "move") return (SHOW_IF.move[f.key] || (() => true))(part);
+  if (sec === "fx") return (SHOW_IF.fx[f.key] || (() => true))(part);
+  if (sec === "general") return true;
+  if (f.key !== "pattern" && !SHOW_IF.layer._on(part)) return false;
+  return (SHOW_IF.layer[f.key] || (() => true))(part);
+}
+function fmtNum(f, v, d) {
+  if (["level", "floor", "depth", "speed", "spin", "density", "lightning_level"].includes(f.key)) return `${Math.round(v * 100)}%`;
+  if (f.key === "width") return `${Math.round(v * 100)}% of the bar`;
+  if (f.key === "rate") return `${+(+v).toFixed(2)} ${d && d.clock === "seconds" ? "s" : "beats"}`;
+  return String(+(+v).toFixed(2));
+}
+function fieldHtml(sec, f, v, d) {
+  const id = `mk-${sec}-${f.key}`, hint = f.hint ? `<span class="fhint">${esc(f.hint)}</span>` : "";
+  if (f.kind === "choice") return `<label>${esc(f.label)}<select id="${id}" data-sec="${sec}" data-key="${f.key}">${
+    f.options.map(([o, l]) => `<option value="${o}" ${o === v ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>${hint}</label>`;
+  if (f.kind === "num") return `<label>${esc(f.label)}: <span class="val" id="${id}-v">${fmtNum(f, v, d)}</span>
+    <input type="range" id="${id}" data-sec="${sec}" data-key="${f.key}" min="${f.min}" max="${f.max}" step="${f.step}" value="${v}">${hint}</label>`;
+  if (f.kind === "bool") return `<label class="check"><input type="checkbox" id="${id}" data-sec="${sec}" data-key="${f.key}" ${v ? "checked" : ""}>${esc(f.label)}</label>`;
+  return `<label class="full">${esc(f.label)}<input id="${id}" data-sec="${sec}" data-key="${f.key}" value="${esc(v)}" maxlength="80">${hint}</label>`;
+}
+function selectMake(name) {
+  const sc = sceneBy(name) || scenes()[0];
+  S.make = { ...S.make, name: sc.name, draft: clone(sc.spec), dirty: false, isNew: false };
+}
+let previewTimer = null, previewKeepAlive = null;
+function sendPreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(() => {
+    if (S.tab !== "make") return;
+    api("preview", { spec: S.make.preview && S.make.draft ? S.make.draft : null });
+  }, 90);
+  clearInterval(previewKeepAlive);
+  previewKeepAlive = setInterval(() => { if (S.tab === "make" && S.make.preview) api("preview", { spec: S.make.draft }); }, 45000);
+}
+function renderMake() {
+  if (!S.make.draft || (!S.make.isNew && !sceneBy(S.make.name))) selectMake(S.vis ? S.vis.scene : "cross");
+  const m = S.make, d = m.draft, cur = sceneBy(m.name);
+  const saved = !m.isNew && cur;
+  const delLabel = !saved ? "" : cur.builtin ? (cur.modified ? "Reset to original" : "") : "Delete";
+  const sections = SECTIONS.map(([sec, title]) => {
+    const vals = sec === "general" ? d : d[sec];
+    const fields = S.meta.schema[sec].filter(f => fieldShown(sec, f, d)).map(f => fieldHtml(sec, f, vals[f.key], d)).join("");
+    const pal = sec === "general" ? `<div class="full mk-pal"><span class="silk">Palette</span>${d.palette.map((c, i) =>
+      `<label class="swatch" style="background:${c}" title="Colour ${i + 1}"><input type="color" data-pal="${i}" value="${c}"></label>`).join("")}
+      <button class="btn small" id="mkGen1">Build from colour 1</button><button class="btn small" id="mkGen2">Blend 1 &rarr; 2</button>
+      <span class="fhint">The live palette (Perform) replaces these while it's on.</span></div>` : "";
+    return `<fieldset><legend>${title}</legend><div class="form">${fields}${pal}</div></fieldset>`;
+  }).join("");
+  $("#make").innerHTML = `
+    <div class="mk-bar">
+      <div class="row">
+        <select id="mkPick" style="flex:1;min-width:0">${groups().map(g => `<optgroup label="${GROUP_LABEL[g]}">${
+          scenes().filter(s => s.group === g).map(s => `<option value="${esc(s.name)}" ${!m.isNew && s.name === m.name ? "selected" : ""}>${esc(s.label)}${s.builtin ? (s.modified ? " (edited)" : "") : " (yours)"}</option>`).join("")}</optgroup>`).join("")}
+          ${m.isNew ? `<option selected>${esc(d.label)} (not saved)</option>` : ""}</select>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn small" id="mkNew">New</button>
+        <button class="btn small" id="mkDup">Duplicate</button>
+        ${delLabel ? `<button class="btn small" id="mkDel">${delLabel}</button>` : ""}
+        <button class="btn small" id="mkPreview" aria-pressed="${m.preview}"><span class="led"></span>Preview on the lights</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="mkSave" ${m.dirty || m.isNew ? "" : "disabled"}>${m.isNew ? "Save new scene" : "Save"}</button>
+        <button class="btn" id="mkRevert" ${m.dirty ? "" : "disabled"}>Undo changes</button>
+        <button class="btn" id="mkPlay" ${saved ? "" : "disabled"}>Play in the show</button>
+        <span class="hint">${m.dirty ? "Unsaved changes" : m.isNew ? "Not saved yet" : cur.builtin ? (cur.modified ? "Edited built-in scene" : "Built-in scene") : "Your scene"}</span>
+      </div>
+    </div>
+    ${sections}
+    <p class="hint">Beam safety still applies to anything you make: beams go dark wherever they'd point below level, and while spinning.</p>`;
+  function changed(rerender) { S.make.dirty = true; if (rerender) renderMake(); else { $("#mkSave").disabled = false; $("#mkRevert").disabled = false; } sendPreview(); }
+  $("#mkPick").addEventListener("change", e => { selectMake(e.target.value); renderMake(); sendPreview(); });
+  $("#mkNew").addEventListener("click", () => {
+    S.make = { ...S.make, name: null, draft: blankSpec(), dirty: true, isNew: true }; renderMake(); sendPreview();
+  });
+  $("#mkDup").addEventListener("click", () => {
+    const d2 = clone(S.make.draft); d2.label = `${d2.label} copy`.slice(0, 80); delete d2.name;
+    S.make = { ...S.make, name: null, draft: d2, dirty: true, isNew: true }; renderMake(); sendPreview();
+  });
+  if ($("#mkDel")) $("#mkDel").addEventListener("click", async () => {
+    const name = S.make.name, builtin = cur.builtin;
+    if (!builtin && !confirm(`Delete "${cur.label}"?`)) return;
+    const r = await api("scene_delete", { name });
+    if (r.ok) { selectMake(builtin ? name : "cross"); renderMake(); sendPreview(); toast(builtin ? "Original restored." : "Deleted."); }
+  });
+  $("#mkPreview").addEventListener("click", () => { S.make.preview = !S.make.preview; renderMake(); sendPreview(); });
+  $("#mkSave").addEventListener("click", async () => {
+    const r = await api("scene_save", S.make.isNew ? { spec: S.make.draft, as_new: true } : { spec: S.make.draft });
+    if (r.ok) { selectMake(r.name); renderMake(); sendPreview(); toast("Saved."); }
+  });
+  $("#mkRevert").addEventListener("click", () => { selectMake(S.make.name); renderMake(); sendPreview(); });
+  $("#mkPlay").addEventListener("click", () => api("scene", { name: S.make.name }).then(() => sendPreview()));
+  $("#mkGen1").addEventListener("click", () => { S.make.draft.palette = genFromOne(S.make.draft.palette[0], "similar"); changed(true); });
+  $("#mkGen2").addEventListener("click", () => { S.make.draft.palette = genFromTwo(S.make.draft.palette[0], S.make.draft.palette[1]); changed(true); });
+  for (const el of $$("[data-sec]", $("#make"))) {
+    const sec = el.dataset.sec, key = el.dataset.key, f = S.meta.schema[sec].find(x => x.key === key);
+    const target = () => sec === "general" ? S.make.draft : S.make.draft[sec];
+    if (f.kind === "num") {
+      el.addEventListener("input", () => { target()[key] = +el.value; $(`#${el.id}-v`).textContent = fmtNum(f, +el.value, S.make.draft); changed(false); });
+      el.addEventListener("change", () => changed(true));
+    } else if (f.kind === "bool") {
+      el.addEventListener("change", () => { target()[key] = el.checked; changed(true); });
+    } else if (f.kind === "choice") {
+      el.addEventListener("change", () => { target()[key] = el.value; changed(true); });
+    } else {
+      el.addEventListener("input", () => { target()[key] = el.value; changed(false); });
+    }
+  }
+  for (const el of $$("[data-pal]", $("#make"))) {
+    el.addEventListener("input", () => { el.parentElement.style.background = el.value; S.make.draft.palette[+el.dataset.pal] = el.value; changed(false); });
+  }
+}
+
+// ---------- setup ----------
+const FACINGS = [[90, "Top wall of the plan"], [0, "Left wall"], [180, "Right wall"], [270, "Bottom wall"]];
+
+function searchHtml() {
+  if (S.searching) return `<p class="hint">Asking every node on the network to answer…</p>`;
+  const r = S.search;
+  if (!r) return `<p class="hint">Not searched yet.</p>`;
+  if (r.error) return `<p class="warn">Search failed: ${esc(r.error)}</p>`;
+  const when = new Date(r.at * 1000).toLocaleTimeString();
+  if (!r.nodes.length) {
+    return `<div class="vfd node">No node answered (${when}).<div class="sub">A node on a different IP range,
+      like the 2.x.x.x factory setting, answers to its own range, so this Mac can't hear it.
+      Sending by broadcast still reaches it.</div>
+      <button class="btn small" data-use="broadcast">Send to both lights by broadcast</button></div>`;
+  }
+  return `<div class="vfd">${r.nodes.map((n, i) => `
+    <div class="node"><b>${esc(n.long || n.short || "Art-Net node")}</b> at ${esc(n.ip)}
+      <div class="sub">DMX outputs: universe ${n.outputs.map(String).join(" and ") || "?"}. Answered at ${when}.</div>
+      ${n.same_range ? "" : `<div class="warn">Different IP range from this Mac (${esc(r.mac || "?")}), so this Mac can only reach it by broadcast.</div>`}
+      <div class="row">
+        <button class="btn small" data-use="broadcast" data-node="${i}">Use it by broadcast</button>
+        <button class="btn small" data-use="ip" data-node="${i}" ${n.same_range ? "" : "disabled"}>Use it by IP</button>
+      </div></div>`).join("")}</div>`;
+}
+
+async function useNode(how, idx) {
+  const node = S.search && S.search.nodes[idx];
+  const outs = node ? node.outputs : [];
+  const ip = how === "ip" && node ? node.ip : "broadcast";
+  for (let i = 0; i < S.cfg.fixtures.length; i++) {
+    const fields = { ip };
+    if (outs.length) fields.universe = outs[Math.min(i, outs.length - 1)];
+    await api("fixture", { index: i, fields });
+  }
+  toast(node ? `Both lights now go to ${node.long || node.ip} ${how === "ip" ? "at " + node.ip : "by broadcast"}.` : "Both lights now send by broadcast.");
+}
+
+function renderSetup() {
+  const c = S.cfg, a = c.audio, sh = c.show, sf = c.safety, devs = S.meta.devices || [];
+  const cl = c.points.find(p => p.kind === "cluster");
+  const facingOptions = f => {
+    const opts = FACINGS.map(([v, l]) => `<option value="${v}" ${Math.round(f.facing) === v ? "selected" : ""}>${l}</option>`);
+    if (!FACINGS.some(([v]) => v === Math.round(f.facing))) opts.push(`<option value="${f.facing}" selected>Custom (${Math.round(f.facing)}°)</option>`);
+    return opts.join("");
+  };
+  const ft = m => `${(m * 3.281).toFixed(1)} ft`;
+  $("#setup").innerHTML = `
+    <fieldset><legend>Beam safety</legend>
+      <p>Beams only light while they point between these angles (0 = level out, 90 = straight up, 180 = level into the wall, 270 = straight down the wall),
+        never while spinning or while the head may still be moving through somewhere unsafe, and not at all until a light's tilt is set on the Mount tab.</p>
+      <div class="form">
+        <label>Lowest beam angle: <span class="val" id="sfLowV">${sf.low}&deg;</span>
+          <input type="range" id="sfLow" min="-20" max="60" step="1" value="${sf.low}"><span class="fhint">0 = level. Raise it if level beams still reach anyone (stairs, a loft).</span></label>
+        <label>Highest beam angle: <span class="val" id="sfHighV">${sf.high}&deg;</span>
+          <input type="range" id="sfHigh" min="100" max="270" step="1" value="${sf.high}"><span class="fhint">180 = level into the wall; 270 = straight down the wall under the bar (lights the wall, not the room).</span></label>
+      </div>
+      <div class="form" style="margin-top:10px">${c.fixtures.map((f, i) => `
+        <label>${esc(f.id)}: beams stop at CH1<input data-limit="${i}" type="number" min="0" max="255" placeholder="none" value="${f.limit ?? ""}">
+          <span class="fhint">The first step toward the room where beams would reach people; it and everything past it is dark.</span></label>
+        <label>${esc(f.id)}: balls from / to (CH1)<span class="row"><input data-span="${i}" data-end="0" type="number" min="0" max="255" value="${f.ball_span ? f.ball_span[0] : ""}" style="width:45%">
+          <input data-span="${i}" data-end="1" type="number" min="0" max="255" value="${f.ball_span ? f.ball_span[1] : ""}" style="width:45%"></span>
+          <span class="fhint">Where the curtain hits the disco balls (used by the ball scenes).</span></label>`).join("")}</div>
+      <div class="vfd status-vfd" style="margin-top:10px">${c.fixtures.map(f => {
+        if (!f.calibrated) return `<span class="bad">${f.id}: TILT NOT SET, BEAMS OFF (MOUNT TAB)</span>`;
+        const [lo, hi] = safeRange(f), w = safeWindows(f, lo, hi);
+        return `${f.id}: BEAMS ALLOWED AT CH1 ${w.map(x => `${Math.ceil(x[0] + 0.5)}&ndash;${Math.floor(x[1] - 0.5)}`).join(" OR ")} (${Math.round(lo)}&deg; TO ${Math.round(hi)}&deg;)`;
+      }).join("<br>")}</div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="sfOn" aria-pressed="${sf.on}"><span class="led green"></span>Beam safety ${sf.on ? "on" : "OFF"}</button>
+        ${sf.on ? "" : `<span class="danger">Off: beams light wherever they point.</span>`}</div>
+    </fieldset>
+
+    <fieldset><legend>Room</legend>
+      <div class="form">
+        <label>Width (m)<input id="roomW" type="number" step="0.1" value="${c.room.w}"></label>
+        <label>Depth (m)<input id="roomD" type="number" step="0.1" value="${c.room.d}"></label>
+        <label>Ceiling height (m)<input id="roomH" type="number" step="0.05" value="${c.room.h}"><span class="fhint">${ft(c.room.h)}</span></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="editLayout" aria-pressed="${S.editing}"><span class="led"></span>Edit the magic sheet</button>
+      </div>
+      <p class="hint">On the magic sheet: drag a bar onto a wall (it snaps to the nearest one), or the ball cluster or one of its corners. ROOM view moves the cluster at its own height; PLAN (bottom right of the sheet) is easier for exact placement.</p>
+    </fieldset>
+
+    <fieldset><legend>Targets</legend>
+      <div class="form">
+        ${cl ? `<label>Ball cluster width (m)<input data-pt="${cl.id}" data-k="w" type="number" step="0.1" min="0.2" value="${cl.w}"></label>
+        <label>Ball cluster depth (m)<input data-pt="${cl.id}" data-k="h" type="number" step="0.1" min="0.2" value="${cl.h}"></label>
+        <label class="full">Balls hang at (m)<input data-pt="${cl.id}" data-k="z" type="number" step="0.05" value="${cl.z}">
+          <span class="fhint">Only balls at or above the bars (${S.cfg.fixtures[0].z} m) can be hit without pointing beams below level.</span></label>` : ""}
+      </div>
+    </fieldset>
+
+    <fieldset><legend>Lights</legend>
+    ${c.fixtures.map((f, i) => `
+      <div class="lightcard" data-fx="${i}" style="${i ? "margin-top:14px;border-top:1px solid #0a0a0c;padding-top:12px" : ""}">
+        <div class="form">
+          <label class="full">${esc(f.id)}: name<input data-k="name" value="${esc(f.name)}"></label>
+          <label class="full">On the wall<select data-k="facing">${facingOptions(f)}</select></label>
+          <label>Height (m)<input data-k="z" type="number" step="0.05" value="${f.z}"><span class="fhint">${ft(f.z)}</span></label>
+          <label>Bar length (m)<input data-k="length" type="number" step="0.05" value="${f.length}"></label>
+          <label class="check full"><input data-k="flip" type="checkbox" ${f.flip ? "checked" : ""}>Number segments from the other end</label>
+          <label class="full">Send to
+            <select data-k="target"><option value="broadcast" ${f.ip === "broadcast" ? "selected" : ""}>Every node (broadcast)</option>
+            <option value="ip" ${f.ip !== "broadcast" ? "selected" : ""}>One node by IP</option></select></label>
+          <label class="full" ${f.ip === "broadcast" ? "hidden" : ""} data-ipfield>Node IP<input data-k="ip" value="${f.ip === "broadcast" ? "" : esc(f.ip)}" inputmode="decimal" placeholder="192.168.1.250"></label>
+          <label>Universe<input data-k="universe" type="number" min="0" max="32767" value="${f.universe}"></label>
+          <label>DMX address<input data-k="address" type="number" min="1" max="429" value="${f.address}"></label>
+          <label>Spin with CH1 up: CH2 from<input data-k="spin_fwd.0" type="number" min="0" max="255" value="${f.spin_fwd[0]}"></label>
+          <label>to (fastest)<input data-k="spin_fwd.1" type="number" min="0" max="255" value="${f.spin_fwd[1]}"></label>
+          <label>Spin with CH1 down: from<input data-k="spin_rev.0" type="number" min="0" max="255" value="${f.spin_rev[0]}"></label>
+          <label>to (fastest)<input data-k="spin_rev.1" type="number" min="0" max="255" value="${f.spin_rev[1]}"></label>
+          <label class="full">Motor speed
+            <select data-k="speed_fast"><option value="0" ${f.speed_fast === 0 ? "selected" : ""}>CH3 0 is fastest</option><option value="255" ${f.speed_fast === 255 ? "selected" : ""}>CH3 255 is fastest</option></select></label>
+        </div>
+      </div>`).join("")}
+      <p class="hint">Spin and motor speed were measured on light A with the webcam probe. Tilt is set on the Mount tab.</p>
+    </fieldset>
+
+    <fieldset><legend>Find lights</legend>
+      <p>Asks every Art-Net node on your network to answer, then sets both lights to use it.</p>
+      <div class="row"><button class="btn" id="searchBtn" ${S.searching ? "disabled" : ""}>Search the network</button></div>
+      <div id="searchOut" style="margin-top:8px">${searchHtml()}</div>
+    </fieldset>
+
+    <fieldset><legend>Music</legend>
+      <div class="form">
+        <label class="full">Audio input
+          <select id="dev"><option value="default">System default</option>${devs.map(d =>
+            `<option value="${d.index}" ${a.device === d.index ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>
+        <label>Slowest BPM<input id="bpmMin" type="number" value="${a.bpm_min}"></label>
+        <label>Fastest BPM<input id="bpmMax" type="number" value="${a.bpm_max}"></label>
+        <label class="full">Sync: <span class="val" id="syncVal">${a.sync_ms} ms</span> ahead
+          <input id="sync" type="range" min="-100" max="300" step="5" value="${a.sync_ms}"></label>
+        <label>Phrase length
+          <select id="phrase">${[8, 16, 32].map(n => `<option ${a.phrase_bars === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        <label class="check"><input id="songDetect" type="checkbox" ${a.song_detect ? "checked" : ""}>Guess record changes</label>
+        <label class="check full"><input id="follow" type="checkbox" ${a.follow_audio ? "checked" : ""}>Follow the music's tempo (off: tap tempo only)</label>
+        <label class="check full"><input id="ambSil" type="checkbox" ${sh.ambient_on_silence ? "checked" : ""}>When the music stops, auto mode plays an ambient scene</label>
+        <label class="check full"><input id="smooth" type="checkbox" ${sh.smooth !== false ? "checked" : ""}>Smooth movement (the motor only runs as fast as the move needs)</label>
+      </div>
+      <p class="hint">If flashes land after the kick, raise Sync; if early, lower it.</p>
+    </fieldset>
+
+    <fieldset><legend>Moves</legend>
+      <div class="form">
+        <label>Tilt width<select id="sweep">${[15, 20, 30, 40, 50, 60, 75, 90].map(n => `<option value="${n}" ${Math.round(sh.sweep_width) === n ? "selected" : ""}>±${n}°</option>`).join("")}</select></label>
+      </div>
+      <p class="hint">Scenes whose tilt width is 0 use this. Everything else is set per scene in Make.</p>
+      <p class="silk" style="margin-top:12px">Auto mode picks from</p>
+      <div class="chips">${scenes().filter(s => s.group !== "ambient").map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
+      <p class="silk" style="margin-top:12px">Ambient when the music stops</p>
+      <div class="chips">${scenes().filter(s => s.group === "ambient").map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
+    </fieldset>
+
+    <fieldset><legend>Channel test</legend>
+      <p>Lights one part at a time to check the channel map. The show pauses while testing; beam safety still applies.</p>
+      <div class="row">
+        ${c.fixtures.map((f, i) => `<button class="btn" data-tfx="${i}" aria-pressed="${i === S.testFx}">${esc(f.id)}</button>`).join("")}
+        <button class="btn" id="testToggle" aria-pressed="${S.testing}"><span class="led"></span>${S.testing ? "Stop test" : "Start test"}</button>
+      </div>
+      <div ${S.testing ? "" : "hidden"}>
+        <p class="silk" style="margin-top:10px">Beam groups (white)</p>
+        <div class="chips">${[...Array(S.meta.layout.beams).keys()].map(n => `<button class="btn small" data-pat="beam:${n}">${n + 1}</button>`).join("")}</div>
+        <p class="silk" style="margin-top:8px">Strip segments (red, both rows)</p>
+        <div class="chips">${[...Array(S.meta.layout.strip).keys()].map(n => `<button class="btn small" data-pat="strip:${n}">${n + 1}</button>`).join("")}</div>
+        <p class="silk" style="margin-top:8px">White strobe segments</p>
+        <div class="chips">${[...Array(S.meta.layout.white).keys()].map(n => `<button class="btn small" data-pat="white:${n}">${n + 1}</button>`).join("")}</div>
+        <div class="form" style="margin-top:10px">
+          <label>Channel<input id="tCh" type="number" min="2" max="83" value="2"></label>
+          <label>Value <span class="val" id="tValOut">0</span><input id="tVal" type="range" min="0" max="255" value="0"></label>
+          <p class="hint full" id="tDesc" style="margin:0">${esc(S.meta.channels[1])}</p>
+          <label class="full">Position (CH1)<input id="tPos" type="range" min="0" max="255" value="127"></label>
+        </div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="tClear">All off</button></div>
+      </div>
+    </fieldset>
+
+    <fieldset><legend>Output</legend>
+      <div class="row"><button class="btn" id="outToggle" aria-pressed="${c.output.enabled}"><span class="led green"></span>Send Art-Net</button></div>
+      <p class="hint" style="margin-top:10px">Keys on the Mac (Show and Perform): D drop, B break, A ambient, N next, T tap, 1 one, hold S strobe, hold X blackout.</p>
+      <p class="hint">Settings save to lightlaland.json on the Mac. lightlaland ${esc(S.meta.version)}</p>
+    </fieldset>`;
+
+  // safety
+  const sfLow = $("#sfLow"), sfHigh = $("#sfHigh");
+  sfLow.addEventListener("input", () => { $("#sfLowV").innerHTML = `${sfLow.value}&deg;`; });
+  sfHigh.addEventListener("input", () => { $("#sfHighV").innerHTML = `${sfHigh.value}&deg;`; });
+  sfLow.addEventListener("change", () => {
+    if (+sfLow.value < 0 && !confirm(`Allow beams ${-sfLow.value}° below level? They can reach people's eyes.`)) { renderSetup(); return; }
+    api("safety", { low: +sfLow.value });
+  });
+  sfHigh.addEventListener("change", () => api("safety", { high: +sfHigh.value }));
+  for (const inp of $$("[data-limit]", $("#setup"))) inp.addEventListener("change", () =>
+    api("fixture", { index: +inp.dataset.limit, fields: { limit: inp.value === "" ? null : +inp.value } }));
+  for (const inp of $$("[data-span]", $("#setup"))) inp.addEventListener("change", () => {
+    const i = +inp.dataset.span, ends = $$(`[data-span="${i}"]`, $("#setup")).map(e => e.value);
+    api("fixture", { index: i, fields: { ball_span: ends.every(v => v !== "") ? ends.map(Number) : null } });
+  });
+  $("#sfOn").addEventListener("click", () => {
+    if (sf.on && !confirm("Turn beam safety OFF? Beams will light wherever they point, including into the crowd.")) return;
+    api("safety", { on: !sf.on });
+  });
+  // room and targets
+  const room = () => api("room", { w: +$("#roomW").value, d: +$("#roomD").value, h: +$("#roomH").value });
+  for (const id of ["#roomW", "#roomD", "#roomH"]) $(id).addEventListener("change", room);
+  for (const inp of $$("[data-pt]", $("#setup"))) inp.addEventListener("change", () => {
+    const p = pt(inp.dataset.pt), body = { action: "move", id: p.id, x: p.x, y: p.y };
+    if (p.kind === "cluster") { body.w = p.w; body.h = p.h; }
+    body[inp.dataset.k] = +inp.value;
+    api("point", body);
+  });
+  $("#editLayout").addEventListener("click", e => {
+    S.editing = !S.editing; e.currentTarget.setAttribute("aria-pressed", String(S.editing));
+    document.body.classList.toggle("editing", S.editing);
+  });
+  // find lights
+  $("#searchBtn").addEventListener("click", async () => {
+    S.searching = true; $("#searchOut").innerHTML = searchHtml(); $("#searchBtn").disabled = true;
+    const r = await api("search");
+    S.searching = false;
+    if (r.ok) S.search = r.search;
+    renderSetup();
+  });
+  for (const b of $$("[data-use]", $("#setup"))) b.addEventListener("click", () => useNode(b.dataset.use, +(b.dataset.node || 0)));
+  // lights
+  for (const card of $$(".lightcard")) {
+    const i = +card.dataset.fx;
+    for (const inp of $$("[data-k]", card)) {
+      inp.addEventListener("change", () => {
+        const k = inp.dataset.k;
+        let v = inp.type === "checkbox" ? inp.checked : inp.value;
+        if (k === "target") {
+          if (v === "broadcast") return api("fixture", { index: i, fields: { ip: "broadcast" } });
+          card.querySelector("[data-ipfield]").hidden = false;
+          const found = S.search && S.search.nodes.find(n => n.same_range);
+          if (found) return api("fixture", { index: i, fields: { ip: found.ip } });
+          card.querySelector('[data-k="ip"]').focus();
+          return;
+        }
+        if (k.includes(".")) {
+          const [key, idx] = k.split(".");
+          const pair = [...S.cfg.fixtures[i][key]]; pair[+idx] = +v;
+          return api("fixture", { index: i, fields: { [key]: pair } });
+        }
+        if (k === "speed_fast") return api("fixture", { index: i, fields: { speed_fast: +v, speed_slow: 255 - +v } });
+        if (k === "ip" && !v.trim()) return;
+        if (["universe", "address", "facing", "z", "length"].includes(k)) v = +v;
+        if (k === "facing") return api("fixture", { index: i, fields: { facing: v, ...snapToWall(S.cfg.fixtures[i], v) } });
+        api("fixture", { index: i, fields: { [k]: v } });
+      });
+    }
+  }
+  $("#dev").addEventListener("change", e => api("audio", { device: e.target.value }));
+  const bpm = () => api("audio", { bpm_min: +$("#bpmMin").value, bpm_max: +$("#bpmMax").value });
+  $("#bpmMin").addEventListener("change", bpm); $("#bpmMax").addEventListener("change", bpm);
+  $("#sync").addEventListener("input", e => { $("#syncVal").textContent = `${e.target.value} ms`; });
+  $("#sync").addEventListener("change", e => api("audio", { sync_ms: +e.target.value }));
+  $("#phrase").addEventListener("change", e => api("audio", { phrase_bars: +e.target.value }));
+  $("#songDetect").addEventListener("change", e => api("audio", { song_detect: e.target.checked }));
+  $("#follow").addEventListener("change", e => api("follow", { on: e.target.checked }));
+  $("#ambSil").addEventListener("change", e => api("show", { ambient_on_silence: e.target.checked }));
+  $("#smooth").addEventListener("change", e => api("show", { smooth: e.target.checked }));
+  $("#sweep").addEventListener("change", e => api("show", { sweep_width: +e.target.value }));
+  for (const b of $$("[data-rot]")) b.addEventListener("click", () =>
+    api("rotation", { scene: b.dataset.rot, on: b.getAttribute("aria-pressed") !== "true" }));
+  for (const b of $$("[data-tfx]")) b.addEventListener("click", () => {
+    S.testFx = +b.dataset.tfx;
+    if (S.testing) api("test", { action: "start", fixture: S.testFx });
+    renderSetup();
+  });
+  $("#testToggle").addEventListener("click", async () => {
+    S.testing = !S.testing;
+    await api("test", S.testing ? { action: "start", fixture: S.testFx } : { action: "stop" });
+    renderSetup();
+  });
+  for (const b of $$("[data-pat]")) b.addEventListener("click", () => {
+    const [kind, index] = b.dataset.pat.split(":");
+    api("test", { action: "pattern", kind, index: +index });
+  });
+  const tCh = $("#tCh"), tVal = $("#tVal");
+  const sendRaw = () => {
+    const ch = clamp(+tCh.value || 2, 2, 83);
+    $("#tDesc").textContent = S.meta.channels[ch - 1];
+    $("#tValOut").textContent = tVal.value;
+    api("test", { action: "set", channel: ch, value: +tVal.value });
+  };
+  tCh.addEventListener("change", sendRaw); tVal.addEventListener("input", sendRaw);
+  $("#tPos").addEventListener("input", e => api("test", { action: "set", channel: 1, value: +e.target.value }));
+  $("#tClear").addEventListener("click", () => api("test", { action: "clear" }));
+  $("#outToggle").addEventListener("click", () => api("output", { on: !S.cfg.output.enabled }));
+}
+function snapToWall(f, facing) {   // choosing a wall in the form moves the bar onto it
+  const room = S.cfg.room;
+  if (facing === 90) return { x: clamp(f.x, 0.5, room.w - 0.5), y: 0 };
+  if (facing === 270) return { x: clamp(f.x, 0.5, room.w - 0.5), y: room.d };
+  if (facing === 0) return { x: 0, y: clamp(f.y, 0.5, room.d - 0.5) };
+  if (facing === 180) return { x: room.w, y: clamp(f.y, 0.5, room.d - 0.5) };
+  return {};
+}
+
+// ---------- drawing: the magic sheet (green radar of the room, seen from above) ----------
+function sheetXf(cv, dpr) {
+  const room = S.cfg.room, pad = 30 * dpr;
+  const W = cv.width - 2 * pad, H = cv.height - 2 * pad;
+  const s = Math.max(1, Math.min(W / room.w, H / room.d));
+  const ox = pad + (W - room.w * s) / 2, oy = pad + (H - room.d * s) / 2;
+  return { s, ox, oy, X: x => ox + x * s, Y: y => oy + y * s, inv: (px, py) => [(px - ox) / s, (py - oy) / s] };
+}
+function avgColour(list) {
+  let r = 0, g = 0, b = 0, peak = 0;
+  for (const h of list) { const c = rgb(h); r += c[0]; g += c[1]; b += c[2]; peak = Math.max(peak, ...c); }
+  const n = list.length || 1, m = Math.max(1, r / n, g / n, b / n);
+  return { col: [r / n / m * 255, g / n / m * 255, b / n / m * 255].map(Math.round), level: peak / 255 };
+}
+function clusterBalls(p) {   // where the balls sit inside the cluster (fractions, so they follow a resize)
+  const n = clamp(Math.round(p.w * p.h * 4) + 3, 3, 9), out = [];
+  for (let k = 0; k < n; k++) out.push({ x: p.x + (hash(k * 3 + 1) - 0.5) * 0.75 * p.w, y: p.y + (hash(k * 7 + 5) - 0.5) * 0.75 * p.h, r: 0.07 + 0.05 * hash(k * 11 + 2), k });
+  return out;
+}
+function barEnds(fx) {   // the bar's two ends on the plan, and its inward normal
+  const a = fx.facing * D2R, nx = Math.cos(a), ny = Math.sin(a), tx = -ny, ty = nx, h = fx.length / 2;
+  return { x0: fx.x - tx * h, y0: fx.y - ty * h, x1: fx.x + tx * h, y1: fx.y + ty * h, nx, ny, tx, ty };
+}
+function curtainReach(fx, elev) {   // how far from the wall the curtain lands (on the ceiling, or the far wall)
+  const room = S.cfg.room, depth = rayLen(fx.x, fx.y, fx.facing, room.w, room.d), rise = Math.max(0.05, room.h - fx.z);
+  if (elev <= 0.5) return depth;
+  if (elev >= 90) return 0;
+  return Math.min(depth, rise / Math.tan(elev * D2R));
+}
+function drawSheet(cv, t) {
+  const ctx = cv.getContext("2d"), dpr = fit(cv), W = cv.width, H = cv.height;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = "#020a05"; ctx.fillRect(0, 0, W, H);
+  if (!S.cfg || W < 80 * dpr || H < 80 * dpr) return;
+  (S.view === "plan" ? drawPlan : drawRoom)(cv, ctx, dpr, W, H, t);
+  const room = S.cfg.room;
+  ctx.globalCompositeOperation = "source-over"; ctx.shadowBlur = 0;
+  ctx.textAlign = "left"; ctx.fillStyle = CRT_DIM; ctx.font = `${10 * dpr}px ${MONO}`; ctx.textBaseline = "top";
+  ctx.fillText(`MAGIC SHEET  ${room.w}x${room.d}M  CEILING ${room.h}M`, 12 * dpr, 9 * dpr);
+  ctx.textAlign = "right";
+  ctx.fillText(S.cfg.safety.on ? `BEAMS ${S.cfg.safety.low}..${S.cfg.safety.high} DEG` : "BEAM SAFETY OFF", W - 12 * dpr, 9 * dpr);
+}
+function drawPlan(cv, ctx, dpr, W, H, t) {
+  const xf = sheetXf(cv, dpr), room = S.cfg.room, R = { x: xf.X(0), y: xf.Y(0), w: room.w * xf.s, h: room.d * xf.s };
+  const cx = xf.X(room.w / 2), cy = xf.Y(room.d / 2), rmax = Math.hypot(R.w, R.h) / 2;
+  // radar furniture: rings, spokes and the sweep with its afterglow
+  ctx.strokeStyle = CRT_FAINT; ctx.lineWidth = dpr;
+  for (let r = rmax / 4; r <= rmax + 1; r += rmax / 4) { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
+  for (let k = 0; k < 12; k++) { const a = k * Math.PI / 6; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * rmax, cy + Math.sin(a) * rmax); ctx.stroke(); }
+  const sweep = (t * 0.0011) % (Math.PI * 2);
+  for (let k = 0; k < 24; k++) {
+    const a0 = sweep - k * 0.035, a1 = sweep - (k + 1) * 0.035;
+    ctx.fillStyle = `rgba(61,255,134,${0.10 * (1 - k / 24)})`;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, rmax, a1, a0); ctx.closePath(); ctx.fill();
+  }
+  // the room
+  ctx.strokeStyle = "rgba(61,255,134,0.12)";
+  ctx.beginPath();
+  for (let x = 1; x < room.w; x++) { ctx.moveTo(xf.X(x), R.y); ctx.lineTo(xf.X(x), R.y + R.h); }
+  for (let y = 1; y < room.d; y++) { ctx.moveTo(R.x, xf.Y(y)); ctx.lineTo(R.x + R.w, xf.Y(y)); }
+  ctx.stroke();
+  ctx.shadowColor = CRT; ctx.shadowBlur = 8 * dpr; ctx.strokeStyle = CRT; ctx.lineWidth = 1.6 * dpr;
+  ctx.strokeRect(R.x, R.y, R.w, R.h); ctx.shadowBlur = 0;
+
+  const vis = S.vis, fxs = S.cfg.fixtures, cl = S.cfg.points.find(p => p.kind === "cluster");
+  const balls = cl ? clusterBalls(cl) : [];
+  // curtains: where each bar's beams land (on the ceiling, or the far wall when level), and the LED glow on the floor
+  if (vis && vis.fixtures) {
+    ctx.save(); ctx.beginPath(); ctx.rect(R.x, R.y, R.w, R.h); ctx.clip();
+    ctx.globalCompositeOperation = "lighter";
+    vis.fixtures.forEach((v, i) => {
+      const fx = fxs[i]; if (!fx) return;
+      const e = barEnds(fx), elev = v.spin ? null : v.shown;
+      const st = avgColour(v.strip), white = Math.max(0, ...v.white);
+      const led = elev === null ? null : wrap180(elev + 180);
+      if (led !== null && led < -5 && led > -175) {   // the LED side faces down: a pool of light below
+        const out = led > -90, slope = Math.abs(Math.tan(led * D2R)) || 1e-3;
+        const reach = out ? Math.min(rayLen(fx.x, fx.y, fx.facing, room.w, room.d), fx.z / slope) : 0.2;
+        const mx = fx.x + e.nx * reach * 0.6, my = fx.y + e.ny * reach * 0.6, rad = Math.max(0.6, reach * 0.7) * xf.s;
+        for (const [col, lvl] of [[st.col, st.level * 0.6], [[255, 255, 255], white * 0.6]]) {
+          if (lvl < 0.03) continue;
+          const g = ctx.createRadialGradient(xf.X(mx), xf.Y(my), 0, xf.X(mx), xf.Y(my), rad);
+          g.addColorStop(0, rgba(col, lvl * 0.7)); g.addColorStop(1, rgba(col, 0));
+          ctx.fillStyle = g; ctx.fillRect(xf.X(mx) - rad, xf.Y(my) - rad, 2 * rad, 2 * rad);
+        }
+      }
+      const bi = avgColour(v.beams);
+      if (bi.level > 0.02 && elev !== null && elev >= 0 && elev < 180) {
+        const d = elev > 90 ? -0.12 : curtainReach(fx, elev);   // leaning back: a glow on the wall above
+        const p0x = xf.X(e.x0), p0y = xf.Y(e.y0), p1x = xf.X(e.x1), p1y = xf.Y(e.y1);
+        const q0x = xf.X(e.x0 + e.nx * d), q0y = xf.Y(e.y0 + e.ny * d), q1x = xf.X(e.x1 + e.nx * d), q1y = xf.Y(e.y1 + e.ny * d);
+        const g = ctx.createLinearGradient((p0x + p1x) / 2, (p0y + p1y) / 2, (q0x + q1x) / 2, (q0y + q1y) / 2);
+        g.addColorStop(0, rgba(bi.col, 0.45 * bi.level)); g.addColorStop(1, rgba(bi.col, 0.12 * bi.level));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(p0x, p0y); ctx.lineTo(p1x, p1y); ctx.lineTo(q1x, q1y); ctx.lineTo(q0x, q0y); ctx.closePath(); ctx.fill();
+        ctx.shadowColor = rgba(bi.col, bi.level); ctx.shadowBlur = 10 * dpr;
+        v.beams.forEach((hex, gi) => {   // the 12 beams, each landing as a spot
+          const c = rgb(hex), lvl = Math.max(...c) / 255; if (lvl < 0.03) return;
+          for (const k of [0, 1]) {
+            const u = (gi * 2 + k + 0.5) / 12, bx = e.x0 + (e.x1 - e.x0) * u, by = e.y0 + (e.y1 - e.y0) * u;
+            ctx.strokeStyle = rgba(c, 0.5 * lvl); ctx.lineWidth = 1.2 * dpr;
+            ctx.beginPath(); ctx.moveTo(xf.X(bx), xf.Y(by)); ctx.lineTo(xf.X(bx + e.nx * d), xf.Y(by + e.ny * d)); ctx.stroke();
+            ctx.fillStyle = rgba(c, lvl); ctx.beginPath(); ctx.arc(xf.X(bx + e.nx * d), xf.Y(by + e.ny * d), 2.6 * dpr, 0, Math.PI * 2); ctx.fill();
+          }
+        });
+        ctx.shadowBlur = 0;
+        for (const p of balls) {   // balls the curtain passes through sparkle
+          const rx = p.x - fx.x, ry = p.y - fx.y, out = rx * e.nx + ry * e.ny, side = Math.abs(rx * e.tx + ry * e.ty);
+          if (out <= 0 || side > fx.length / 2 + 0.1) continue;
+          const hit = bi.level * clamp(1 - Math.abs(Math.atan2(cl.z - fx.z, out) / D2R - elev) / 6, 0, 1);
+          if (hit < 0.05) continue;
+          const col = bi.col.map(c => Math.round(c * 0.45 + 255 * 0.55));
+          for (let n = 0; n < 36; n++) {
+            const ang = hash(n * 3 + p.k * 101 + i * 7) * Math.PI * 2 + t * 0.00035;
+            const dist = (0.3 + hash(n * 7 + p.k) * 2.4) * xf.s, tw = 0.5 + 0.5 * Math.sin(t * 0.012 + n * 1.7);
+            ctx.fillStyle = rgba(col, hit * tw);
+            const sz = (0.7 + hash(n * 13 + p.k) * 1.6) * dpr;
+            ctx.fillRect(xf.X(p.x) + Math.cos(ang) * dist, xf.Y(p.y) + Math.sin(ang) * dist, sz, sz);
+          }
+        }
+      }
+    });
+    ctx.restore();
+  }
+
+  // targets
+  const editing = S.editing && S.tab === "setup";
+  ctx.font = `${10 * dpr}px ${MONO}`; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (const p of S.cfg.points) {
+    const x = xf.X(p.x), y = xf.Y(p.y);
+    ctx.strokeStyle = CRT; ctx.fillStyle = CRT; ctx.lineWidth = 1.2 * dpr;
+    ctx.shadowColor = CRT; ctx.shadowBlur = 6 * dpr;
+    if (p.kind === "cluster") {
+      const x0 = xf.X(p.x - p.w / 2), y0 = xf.Y(p.y - p.h / 2), w = p.w * xf.s, h = p.h * xf.s;
+      ctx.setLineDash([5 * dpr, 4 * dpr]); ctx.strokeStyle = editing ? CRT : CRT_DIM; ctx.strokeRect(x0, y0, w, h); ctx.setLineDash([]);
+      ctx.strokeStyle = CRT;
+      for (const b of balls) { ctx.beginPath(); ctx.arc(xf.X(b.x), xf.Y(b.y), Math.max(3 * dpr, b.r * xf.s), 0, Math.PI * 2); ctx.stroke(); }
+      if (editing) for (const [hx, hy] of [[x0, y0], [x0 + w, y0], [x0, y0 + h], [x0 + w, y0 + h]]) ctx.fillRect(hx - 5 * dpr, hy - 5 * dpr, 10 * dpr, 10 * dpr);
+      ctx.shadowBlur = 0;
+      ctx.fillText(`${p.label.toUpperCase()} ${p.z}M${editing ? ` ${p.w}x${p.h}` : ""}`, x, y0 + h + 4 * dpr);
+      continue;
+    }
+    { const r = 6 * dpr; ctx.beginPath(); ctx.moveTo(x - r, y - r); ctx.lineTo(x + r, y + r); ctx.moveTo(x + r, y - r); ctx.lineTo(x - r, y + r); ctx.stroke(); }
+    if (editing) { ctx.beginPath(); ctx.arc(x, y, 14 * dpr, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.shadowBlur = 0;
+    ctx.fillText(`${p.label.toUpperCase()} ${p.z}M`, x, y + 12 * dpr);
+  }
+  // the bars, along their walls
+  fxs.forEach((fx, i) => {
+    const e = barEnds(fx), v = vis && vis.fixtures && vis.fixtures[i];
+    ctx.shadowColor = CRT; ctx.shadowBlur = 8 * dpr; ctx.strokeStyle = CRT; ctx.lineWidth = 5 * dpr; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(xf.X(e.x0), xf.Y(e.y0)); ctx.lineTo(xf.X(e.x1), xf.Y(e.y1)); ctx.stroke();
+    ctx.lineCap = "butt"; ctx.shadowBlur = 0;
+    const lx = xf.X(fx.x + e.nx * 0.35), ly = xf.Y(fx.y + e.ny * 0.35);
+    ctx.fillStyle = CRT; ctx.font = `bold ${14 * dpr}px ${MONO}`; ctx.textBaseline = "middle";
+    ctx.fillText(fx.id, clamp(lx, R.x + 10 * dpr, R.x + R.w - 10 * dpr), clamp(ly, R.y + 10 * dpr, R.y + R.h - 10 * dpr));
+    if (v && !v.safe && v.why && v.why !== "safety off") {
+      ctx.font = `${9 * dpr}px ${MONO}`; ctx.fillStyle = "rgba(255,120,100,0.9)";
+      ctx.fillText(v.why.toUpperCase(), clamp(xf.X(fx.x + e.nx * 0.7), R.x + 50 * dpr, R.x + R.w - 50 * dpr), clamp(xf.Y(fx.y + e.ny * 0.7), R.y + 10 * dpr, R.y + R.h - 10 * dpr));
+    }
+    ctx.textBaseline = "top"; ctx.font = `${10 * dpr}px ${MONO}`;
+  });
+}
+
+// ---------- drawing: the magic sheet from inside the room (the default view) ----------
+// A camera in the corner across from the disco balls, at head height, looking over at them (like
+// the user's photo), fitted to the canvas. World axes: x across the plan, y down it, z up. The plan
+// is a true top view, so someone looking along (fx, fy) has (-fy, fx) on their right.
+const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const norm3 = a => { const n = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / n, a[1] / n, a[2] / n]; };
+const along3 = (p, d, t) => [p[0] + d[0] * t, p[1] + d[1] * t, p[2] + d[2] * t];
+const NEAR = 0.05;
+const cutNear = (p, q) => { const k = (NEAR - p[2]) / (q[2] - p[2]); return [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k, NEAR]; };
+function boxExit(p, d) {   // where a ray from inside the room meets a wall, the floor or the ceiling
+  const room = S.cfg.room, lim = [room.w, room.d, room.h];
+  let t = 1e9;
+  for (let k = 0; k < 3; k++) {
+    if (Math.abs(d[k]) > 1e-9) t = Math.min(t, d[k] > 0 ? (lim[k] - p[k]) / d[k] : -p[k] / d[k]);
+  }
+  t = Math.max(0, t);
+  return { t, at: along3(p, d, t) };
+}
+function roomCam(cv, dpr) {
+  if (S.dragging && cv._cam && cv._cam.W === cv.width && cv._cam.H === cv.height) return cv._cam;   // hold still mid-drag
+  const room = S.cfg.room, cl = S.cfg.points.find(p => p.kind === "cluster");
+  const far = [(cl ? cl.x : 0) < room.w / 2 ? 0 : room.w, (cl ? cl.y : room.d) < room.d / 2 ? 0 : room.d];
+  const eye = [far[0] ? 0.3 : room.w - 0.3, far[1] ? 0.3 : room.d - 0.3, Math.min(1.75, room.h - 0.3)];
+  const F = norm3(sub3([far[0], far[1], Math.min(room.h, eye[2] + 0.4)], eye));
+  const R = norm3([-F[1], F[0], 0]), U = norm3([-F[2] * F[0], -F[2] * F[1], 1 - F[2] * F[2]]);
+  const cam = p => { const d = sub3(p, eye); return [dot3(d, R), dot3(d, U), dot3(d, F)]; };
+  // Frame it like the photo: both side corners and the far corner floor to ceiling, so everything
+  // at bar height and above is in view; the floor near the side walls runs off the bottom.
+  const side = [[far[0], room.d - far[1]], [room.w - far[0], far[1]]];
+  const fitPts = [[far[0], far[1], 0], [far[0], far[1], room.h], ...side.map(([x, y]) => [x, y, room.h]),
+    ...side.map(([x, y]) => [x, y, Math.min(...S.cfg.fixtures.map(f => f.z)) - 0.5])];
+  for (const fx of S.cfg.fixtures) { const e = barEnds(fx); fitPts.push([e.x0, e.y0, fx.z], [e.x1, e.y1, fx.z]); }
+  let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+  for (const p of fitPts) {
+    const c = cam(p); if (c[2] < 0.6 || Math.abs(c[0] / c[2]) > 2) continue;   // not things right beside the camera
+    u0 = Math.min(u0, c[0] / c[2]); u1 = Math.max(u1, c[0] / c[2]); v0 = Math.min(v0, c[1] / c[2]); v1 = Math.max(v1, c[1] / c[2]);
+  }
+  if (!isFinite(u0)) { u0 = v0 = -1; u1 = v1 = 1; }
+  const W = cv.width, H = cv.height, pad = 16 * dpr, top = 24 * dpr;
+  const f = Math.min((W - 2 * pad) / Math.max(0.2, u1 - u0), (H - 2 * pad - top) / Math.max(0.2, v1 - v0));
+  const cx = W / 2 - f * (u0 + u1) / 2, cy = (H + top) / 2 + f * (v0 + v1) / 2;
+  const scr = c => [cx + f * c[0] / c[2], cy - f * c[1] / c[2]];
+  return cv._cam = {
+    W, H, eye, f,
+    depth: p => cam(p)[2],
+    proj: p => { const c = cam(p); return c[2] > NEAR ? scr(c) : null; },
+    seg(ctx, a, b) {   // a 3D line, cut where it passes behind the camera
+      let p = cam(a), q = cam(b);
+      if (p[2] < NEAR && q[2] < NEAR) return;
+      if (p[2] < NEAR) p = cutNear(q, p); else if (q[2] < NEAR) q = cutNear(p, q);
+      const s = scr(p), e = scr(q); ctx.moveTo(s[0], s[1]); ctx.lineTo(e[0], e[1]);
+    },
+    poly(ctx, pts) {   // a 3D polygon as a closed subpath, cut likewise; false if it's all behind
+      const c = pts.map(cam), out = [];
+      c.forEach((p, k) => {
+        const q = c[(k + 1) % c.length];
+        if (p[2] >= NEAR) out.push(p);
+        if ((p[2] >= NEAR) !== (q[2] >= NEAR)) out.push(cutNear(p, q));
+      });
+      if (out.length < 3) return false;
+      out.forEach((p, k) => { const s = scr(p); if (k) ctx.lineTo(s[0], s[1]); else ctx.moveTo(s[0], s[1]); });
+      ctx.closePath();
+      return true;
+    },
+    ray(px, py) {   // the line of sight through a canvas pixel
+      const u = (px - cx) / f, v = (cy - py) / f;
+      return norm3([F[0] + u * R[0] + v * U[0], F[1] + u * R[1] + v * U[1], F[2] + u * R[2] + v * U[2]]);
+    },
+  };
+}
+function drawRoom(cv, ctx, dpr, W, H, t) {
+  const room = S.cfg.room, cam = roomCam(cv, dpr), w = room.w, d = room.d, h = room.h;
+  const vis = S.vis, fxs = S.cfg.fixtures, cl = S.cfg.points.find(p => p.kind === "cluster");
+  const editing = S.editing && S.tab === "setup";
+  const floor = [[0, 0, 0], [w, 0, 0], [w, d, 0], [0, d, 0]], ceil = floor.map(p => [p[0], p[1], h]);
+  // surfaces, each shaded a little differently so the box reads as a room
+  for (const [pts, a] of [[floor, 0.045], [ceil, 0.06],
+    [[[0, 0, 0], [0, d, 0], [0, d, h], [0, 0, h]], 0.022], [[[w, 0, 0], [w, d, 0], [w, d, h], [w, 0, h]], 0.022],
+    [[[0, 0, 0], [w, 0, 0], [w, 0, h], [0, 0, h]], 0.034], [[[0, d, 0], [w, d, 0], [w, d, h], [0, d, h]], 0.034]]) {
+    ctx.beginPath(); if (cam.poly(ctx, pts)) { ctx.fillStyle = `rgba(61,255,134,${a})`; ctx.fill(); }
+  }
+  // the floor is the radar: rings, the sweep and its afterglow, and a metre grid
+  ctx.save(); ctx.beginPath(); cam.poly(ctx, floor); ctx.clip();
+  const c0 = [w / 2, d / 2, 0], rmax = Math.hypot(w, d) / 2, sweep = (t * 0.0011) % (Math.PI * 2);
+  const onFloor = (a, r) => [c0[0] + Math.cos(a) * r, c0[1] + Math.sin(a) * r, 0];
+  for (let k = 0; k < 24; k++) {
+    const a0 = sweep - k * 0.035, a1 = sweep - (k + 1) * 0.035;
+    ctx.fillStyle = `rgba(61,255,134,${0.09 * (1 - k / 24)})`;
+    ctx.beginPath(); if (cam.poly(ctx, [c0, onFloor(a1, rmax), onFloor((a0 + a1) / 2, rmax), onFloor(a0, rmax)])) ctx.fill();
+  }
+  ctx.strokeStyle = CRT_FAINT; ctx.lineWidth = dpr; ctx.beginPath();
+  for (let r = rmax / 4; r <= rmax + 0.01; r += rmax / 4) for (let k = 0; k < 48; k++) cam.seg(ctx, onFloor(k * Math.PI / 24, r), onFloor((k + 1) * Math.PI / 24, r));
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(61,255,134,0.12)"; ctx.beginPath();
+  for (let x = 1; x < w; x++) cam.seg(ctx, [x, 0, 0], [x, d, 0]);
+  for (let y = 1; y < d; y++) cam.seg(ctx, [0, y, 0], [w, y, 0]);
+  ctx.stroke(); ctx.restore();
+  ctx.strokeStyle = "rgba(61,255,134,0.06)"; ctx.lineWidth = dpr; ctx.beginPath();   // and a fainter one on the ceiling
+  for (let x = 1; x < w; x++) cam.seg(ctx, [x, 0, h], [x, d, h]);
+  for (let y = 1; y < d; y++) cam.seg(ctx, [0, y, h], [w, y, h]);
+  ctx.stroke();
+  // the room's edges
+  ctx.shadowColor = CRT; ctx.shadowBlur = 8 * dpr; ctx.strokeStyle = CRT; ctx.lineWidth = 1.6 * dpr; ctx.beginPath();
+  for (let k = 0; k < 4; k++) { cam.seg(ctx, floor[k], floor[(k + 1) % 4]); cam.seg(ctx, ceil[k], ceil[(k + 1) % 4]); cam.seg(ctx, floor[k], ceil[k]); }
+  ctx.stroke(); ctx.shadowBlur = 0;
+  // how high things are: a dashed drop line to the floor
+  ctx.setLineDash([3 * dpr, 4 * dpr]); ctx.strokeStyle = CRT_DIM; ctx.lineWidth = dpr; ctx.beginPath();
+  for (const fx of fxs) cam.seg(ctx, [fx.x, fx.y, 0], [fx.x, fx.y, fx.z]);
+  if (cl) cam.seg(ctx, [cl.x, cl.y, 0], [cl.x, cl.y, cl.z]);
+  ctx.stroke(); ctx.setLineDash([]);
+
+  const balls = cl ? clusterBalls(cl).map(b => ({ ...b, z: clamp(cl.z + (hash(b.k * 5 + 3) - 0.5) * 0.35, b.r, h - b.r) })) : [];
+  const lit = [];   // bars whose curtain is on the balls: how squarely, and in what colour
+  if (vis && vis.fixtures) {
+    ctx.save(); ctx.globalCompositeOperation = "lighter";
+    vis.fixtures.forEach((v, i) => {
+      const fx = fxs[i]; if (!fx || v.spin) return;
+      const e = barEnds(fx), el = v.shown * D2R, dir = [e.nx * Math.cos(el), e.ny * Math.cos(el), Math.sin(el)];
+      const from = u => [e.x0 + (e.x1 - e.x0) * u + e.nx * 0.12, e.y0 + (e.y1 - e.y0) * u + e.ny * 0.12, fx.z];   // the head sits ~12 cm off the wall
+      // the LED side: a soft wash wherever it points
+      const st = avgColour(v.strip), white = Math.max(0, ...v.white), wash = boxExit(from(0.5), [-dir[0], -dir[1], -dir[2]]);
+      const wp = cam.proj(wash.at);
+      if (wp) for (const [col, lvl] of [[st.col, st.level * 0.55], [[255, 255, 255], white * 0.55]]) {
+        if (lvl < 0.03) continue;
+        const rad = clamp(cam.f * Math.max(0.6, wash.t * 0.8) / Math.max(0.4, cam.depth(wash.at)), 10 * dpr, 1.5 * Math.max(W, H));
+        const g = ctx.createRadialGradient(wp[0], wp[1], 0, wp[0], wp[1], rad);
+        g.addColorStop(0, rgba(col, lvl)); g.addColorStop(1, rgba(col, 0));
+        ctx.fillStyle = g; ctx.fillRect(wp[0] - rad, wp[1] - rad, 2 * rad, 2 * rad);
+      }
+      // the beam side: 12 shafts through the haze, a spot where each lands
+      const bi = avgColour(v.beams); if (bi.level < 0.02) return;
+      const starts = [], ends = [];
+      for (let k = 0; k < 12; k++) { const o = from((k + 0.5) / 12); starts.push(o); ends.push(boxExit(o, dir).at); }
+      ctx.beginPath();
+      if (cam.poly(ctx, [...starts, ...ends.slice().reverse()])) {
+        const a = cam.proj(from(0.5)), b = cam.proj(ends[5].map((c, k) => (c + ends[6][k]) / 2));
+        let fill = rgba(bi.col, 0.16 * bi.level);
+        if (a && b) { fill = ctx.createLinearGradient(a[0], a[1], b[0], b[1]); fill.addColorStop(0, rgba(bi.col, 0.32 * bi.level)); fill.addColorStop(1, rgba(bi.col, 0.06 * bi.level)); }
+        ctx.fillStyle = fill; ctx.fill();
+      }
+      ctx.shadowColor = rgba(bi.col, bi.level); ctx.shadowBlur = 8 * dpr;
+      starts.forEach((s, k) => {
+        const c = rgb(v.beams[k >> 1] || "#000000"), lvl = Math.max(...c) / 255; if (lvl < 0.03) return;
+        ctx.strokeStyle = rgba(c, 0.55 * lvl); ctx.lineWidth = 1.3 * dpr;
+        ctx.beginPath(); cam.seg(ctx, s, ends[k]); ctx.stroke();
+        const p = cam.proj(ends[k]); if (!p) return;
+        ctx.fillStyle = rgba(c, lvl);
+        ctx.beginPath(); ctx.arc(p[0], p[1], clamp(cam.f * 0.06 / cam.depth(ends[k]), 1.5 * dpr, 9 * dpr), 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.shadowBlur = 0;
+      let hit = 0;
+      for (const p of balls) {
+        const rx = p.x - fx.x, ry = p.y - fx.y, out = rx * e.nx + ry * e.ny, side = Math.abs(rx * e.tx + ry * e.ty);
+        if (out <= 0 || side > fx.length / 2 + 0.1) continue;
+        hit = Math.max(hit, bi.level * clamp(1 - Math.abs(wrap180(Math.atan2(p.z - fx.z, out) / D2R - v.shown)) / 6, 0, 1));
+      }
+      if (hit > 0.05) lit.push({ i, hit, col: bi.col });
+    });
+    // a curtain on the balls throws turning specks over the whole room
+    if (cl) {   // (mostly back out into the room and up: the light comes in from across the room)
+      const src = [cl.x, cl.y, Math.min(cl.z, h - 0.05)], sx = cl.x < w / 2 ? 1 : -1, sy = cl.y < d / 2 ? 1 : -1;
+      for (const L of lit) {
+        const col = L.col.map(c => Math.round(c * 0.7 + 255 * 0.3));
+        for (let n = 0; n < 160; n++) {
+          const s = n * 3 + L.i * 1009, z = hash(s + 1) * 1.5 - 0.5, a = hash(s + 2) * Math.PI * 2 + t * 0.00035, rr = Math.sqrt(1 - z * z);
+          const q = boxExit(src, [sx * Math.abs(rr * Math.cos(a)), sy * Math.abs(rr * Math.sin(a)), z]).at, p = cam.proj(q); if (!p) continue;
+          const sz = clamp(cam.f * 0.045 / cam.depth(q), 1.5 * dpr, 5 * dpr);
+          ctx.fillStyle = rgba(col, Math.min(1, 0.25 + 2 * L.hit) * (0.5 + 0.5 * Math.sin(t * 0.012 + n * 1.7)));
+          ctx.fillRect(p[0] - sz / 2, p[1] - sz / 2, sz, sz);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  // the ball cluster: its box (handles while editing), its shadow on the floor, the balls on their strings
+  if (cl) {
+    const box = z => [[cl.x - cl.w / 2, cl.y - cl.h / 2, z], [cl.x + cl.w / 2, cl.y - cl.h / 2, z], [cl.x + cl.w / 2, cl.y + cl.h / 2, z], [cl.x - cl.w / 2, cl.y + cl.h / 2, z]];
+    ctx.setLineDash([5 * dpr, 4 * dpr]); ctx.lineWidth = 1.2 * dpr;
+    ctx.strokeStyle = CRT_DIM; ctx.beginPath(); cam.poly(ctx, box(0)); ctx.stroke();
+    ctx.strokeStyle = editing ? CRT : CRT_DIM; ctx.beginPath(); cam.poly(ctx, box(cl.z)); ctx.stroke(); ctx.setLineDash([]);
+    if (editing) { ctx.fillStyle = CRT; for (const c of box(cl.z)) { const p = cam.proj(c); if (p) ctx.fillRect(p[0] - 5 * dpr, p[1] - 5 * dpr, 10 * dpr, 10 * dpr); } }
+    const shine = Math.min(1, lit.reduce((s, L) => s + L.hit, 0));
+    const glow = lit.reduce((acc, L) => acc.map((c, k) => c + L.col[k] * L.hit), [0, 0, 0]).map(c => Math.round(Math.min(255, c) * 0.5 + 127));
+    for (const b of balls.slice().sort((p, q) => cam.depth([q.x, q.y, q.z]) - cam.depth([p.x, p.y, p.z]))) {
+      const c = [b.x, b.y, b.z], p = cam.proj(c); if (!p) continue;
+      const r = Math.max(3.5 * dpr, cam.f * b.r / cam.depth(c));
+      ctx.strokeStyle = CRT_DIM; ctx.lineWidth = dpr; ctx.beginPath(); cam.seg(ctx, [b.x, b.y, h], [b.x, b.y, b.z + b.r]); ctx.stroke();
+      const g = ctx.createRadialGradient(p[0] - r * 0.35, p[1] - r * 0.35, r * 0.1, p[0], p[1], r);
+      g.addColorStop(0, shine > 0.05 ? rgba(glow, 0.95) : "rgba(160,200,175,0.75)"); g.addColorStop(1, "rgba(10,30,18,0.9)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = CRT; ctx.lineWidth = 1.1 * dpr; ctx.stroke();
+      if (r > 5 * dpr) {   // mirror facets, glinting while a curtain is on them
+        ctx.fillStyle = shine > 0.05 ? rgba([255, 255, 255], 0.85 * shine) : "rgba(61,255,134,0.35)";
+        for (let n = 0; n < 7; n++) {
+          const fa = hash(n * 5 + b.k * 31) * Math.PI * 2 + t * 0.0006, fr = r * 0.75 * Math.sqrt(hash(n * 11 + b.k * 17));
+          const fs = Math.max(dpr, r * 0.12) * (shine > 0.05 ? 0.5 + 0.5 * Math.sin(t * 0.015 + n * 2.1 + b.k) : 1);
+          ctx.fillRect(p[0] + Math.cos(fa) * fr - fs / 2, p[1] + Math.sin(fa) * fr - fs / 2, fs, fs);
+        }
+      }
+    }
+    const lp = cam.proj([cl.x, cl.y, Math.min(...balls.map(b => b.z - b.r)) - 0.1]);
+    if (lp) {
+      ctx.fillStyle = CRT; ctx.font = `${10 * dpr}px ${MONO}`; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText(`${cl.label.toUpperCase()} ${cl.z}M${editing ? ` ${cl.w}x${cl.h}` : ""}`, lp[0], lp[1]);
+    }
+  }
+  for (const p of S.cfg.points) {   // any other target: a cross
+    if (p.kind === "cluster") continue;
+    const s = cam.proj([p.x, p.y, p.z || 0]); if (!s) continue;
+    const r = 6 * dpr; ctx.strokeStyle = CRT; ctx.lineWidth = 1.2 * dpr;
+    ctx.beginPath(); ctx.moveTo(s[0] - r, s[1] - r); ctx.lineTo(s[0] + r, s[1] + r); ctx.moveTo(s[0] + r, s[1] - r); ctx.lineTo(s[0] - r, s[1] + r); ctx.stroke();
+  }
+  // the bars on their walls (the LED strip's colour along the middle), labelled
+  fxs.forEach((fx, i) => {
+    const e = barEnds(fx), v = vis && vis.fixtures && vis.fixtures[i], dep = cam.depth([fx.x, fx.y, fx.z]);
+    if (dep < NEAR) return;
+    const a = [e.x0, e.y0, fx.z], b = [e.x1, e.y1, fx.z], st = v ? avgColour(v.strip) : null;
+    ctx.shadowColor = CRT; ctx.shadowBlur = 8 * dpr; ctx.strokeStyle = CRT; ctx.lineCap = "round";
+    ctx.lineWidth = clamp(cam.f * 0.07 / dep, 3 * dpr, 12 * dpr);
+    ctx.beginPath(); cam.seg(ctx, a, b); ctx.stroke();
+    if (st && st.level > 0.03) {
+      ctx.shadowColor = rgba(st.col, 1); ctx.strokeStyle = rgba(st.col, 0.5 + 0.5 * st.level); ctx.lineWidth *= 0.45;
+      ctx.beginPath(); cam.seg(ctx, a, b); ctx.stroke();
+    }
+    ctx.lineCap = "butt"; ctx.shadowBlur = 0;
+    const lp = cam.proj([fx.x + e.nx * 0.15, fx.y + e.ny * 0.15, fx.z + 0.3]); if (!lp) return;
+    const lx = clamp(lp[0], 12 * dpr, W - 12 * dpr), ly = clamp(lp[1], 30 * dpr, H - 26 * dpr);
+    ctx.fillStyle = CRT; ctx.font = `bold ${14 * dpr}px ${MONO}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(fx.id, lx, ly);
+    if (v && !v.safe && v.why && v.why !== "safety off") {
+      ctx.font = `${9 * dpr}px ${MONO}`; ctx.fillStyle = "rgba(255,120,100,0.9)";
+      ctx.fillText(v.why.toUpperCase(), clamp(lx, 50 * dpr, W - 50 * dpr), ly + 16 * dpr);
+    }
+  });
+}
+
+// ---------- drawing: tilt dials (each bar seen from its end, wall on the left) ----------
+function drawTilt(cv, v, fx) {
+  const ctx = cv.getContext("2d"), dpr = fit(cv), W = cv.width, H = cv.height;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = "#020a05"; ctx.fillRect(0, 0, W, H);
+  if (!v || !fx || W < 30 * dpr || H < 30 * dpr) return;   // not laid out yet
+  const [low, high] = safeRange(fx), sf = { low, high }, cx = W * 0.42, cy = H * 0.56, r = Math.min(W * 0.4, H * 0.38);
+  const dir = e => [Math.cos(e * D2R), -Math.sin(e * D2R)];
+  ctx.fillStyle = "rgba(61,255,134,0.10)"; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, -sf.high * D2R, -sf.low * D2R); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "rgba(255,60,50,0.14)"; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, -sf.low * D2R, (360 - sf.high) * D2R); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = CRT_FAINT; ctx.lineWidth = dpr;
+  ctx.beginPath(); ctx.moveTo(cx - r * 1.05, cy); ctx.lineTo(cx + r * 1.15, cy); ctx.stroke();       // level
+  ctx.strokeStyle = CRT_DIM; ctx.beginPath(); ctx.moveTo(cx - r * 1.0, cy - r); ctx.lineTo(cx - r * 1.0, cy + r); ctx.stroke();   // wall
+  const shown = v.shown, bi = avgColour(v.beams), lit = bi.level > 0.02;
+  const [bx, by] = dir(shown);
+  ctx.lineWidth = 2.5 * dpr; ctx.setLineDash(lit ? [] : [4 * dpr, 3 * dpr]);
+  ctx.strokeStyle = lit ? rgba(bi.col.map(c => Math.max(c, 60)), 1) : "rgba(255,110,90,0.8)";
+  ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = lit ? 8 * dpr : 0;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + bx * r, cy + by * r); ctx.stroke();
+  ctx.setLineDash([]); ctx.shadowBlur = 0;
+  const st = avgColour(v.strip);   // the LED side points the other way
+  ctx.strokeStyle = st.level > 0.03 ? rgba(st.col, 0.9) : CRT_DIM; ctx.lineWidth = 4 * dpr;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - bx * r * 0.5, cy - by * r * 0.5); ctx.stroke();
+  if (!v.spin && Math.abs(wrap180(v.elev - shown)) > 2) {   // where it's heading
+    const [tx, ty] = dir(v.elev);
+    ctx.fillStyle = CRT; ctx.beginPath(); ctx.arc(cx + tx * r, cy + ty * r, 2.5 * dpr, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = "#16171a"; ctx.strokeStyle = CRT; ctx.lineWidth = 1.2 * dpr;
+  ctx.beginPath(); ctx.arc(cx, cy, 4.5 * dpr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.font = `bold ${11 * dpr}px ${MONO}`; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillStyle = CRT;
+  ctx.fillText(fx.id, 6 * dpr, 5 * dpr);
+  ctx.textAlign = "right"; ctx.font = `${10 * dpr}px ${MONO}`;
+  ctx.fillText(v.spin ? "SPIN" : fx.calibrated ? `${Math.round(shown)}°` : "?°", W - 6 * dpr, 5 * dpr);
+  ctx.textBaseline = "bottom"; ctx.fillStyle = v.safe ? CRT_DIM : "rgba(255,120,100,0.95)";
+  ctx.fillText(v.safe ? (v.why === "safety off" ? "NO SAFETY" : "BEAMS OK") : (v.why || "").toUpperCase(), W - 6 * dpr, H - 4 * dpr);
+}
+
+// ---------- drawing: both faces of a bar ----------
+// The beam side (12 lenses in 6 pairs) and the LED side (8 positions, each RGB / white / RGB).
+// Index 0 is the bar's first end. The side facing the room is bright, the other dimmed.
+function drawBar(cv, v, fx) {
+  const ctx = cv.getContext("2d"), dpr = fit(cv), W = cv.width, H = cv.height;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (!v || !fx || W < 60 * dpr || H < 20 * dpr) return;   // not laid out yet
+  const lab = 18 * dpr, gap = 5 * dpr, rowH = (H - gap) / 2, L = W - lab;
+  ctx.font = `bold ${12 * dpr}px ${MONO}`; ctx.fillStyle = "#cfc8b4"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(fx.id, lab / 2, H / 2);
+  const beamsOut = !v.spin && Math.abs(wrap180(v.shown)) < 90;
+  const panel = (y, h, bright) => {
+    ctx.globalAlpha = 1; ctx.fillStyle = "#050506"; ctx.beginPath(); ctx.roundRect(lab, y, L, h, 4 * dpr); ctx.fill();
+    ctx.strokeStyle = bright ? "rgba(255,181,46,.55)" : "#2a2b30"; ctx.lineWidth = dpr; ctx.stroke();
+    ctx.globalAlpha = v.spin || bright ? 1 : 0.45;
+  };
+  panel(0, rowH, beamsOut);
+  const n = v.beams.length * 2, step = (L - 6 * dpr) / n, r = Math.min(step, rowH) * 0.36;
+  for (let k = 0; k < n; k++) {
+    const hex = v.beams[k >> 1], lvl = Math.max(...rgb(hex)) / 255, x = lab + 3 * dpr + step * (k + 0.5), y = rowH / 2;
+    ctx.fillStyle = lvl > 0.02 ? hex : "#1c1d22";
+    if (lvl > 0.02) { ctx.shadowColor = hex; ctx.shadowBlur = 8 * dpr * lvl; }
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+    ctx.strokeStyle = "#3a3b41"; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+  }
+  const y0 = rowH + gap;
+  panel(y0, rowH, !beamsOut);
+  const m = v.strip.length, cw = (L - 6 * dpr) / m, rh = (rowH - 6 * dpr) / 3, g = Math.max(1, dpr);
+  for (let s = 0; s < m; s++) {
+    const hex = v.strip[s], on = Math.max(...rgb(hex)) > 5, w = v.white[s] || 0, x = lab + 3 * dpr + s * cw;
+    ctx.fillStyle = on ? hex : "#1c1d22";
+    ctx.fillRect(x + g, y0 + 3 * dpr, cw - 2 * g, rh - g);
+    ctx.fillRect(x + g, y0 + 3 * dpr + 2 * rh + g, cw - 2 * g, rh - g);
+    ctx.fillStyle = w > 0.02 ? `rgba(255,250,235,${0.25 + 0.75 * w})` : "#1c1d22";
+    ctx.fillRect(x + g, y0 + 3 * dpr + rh + g / 2, cw - 2 * g, rh - g);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- drawing: spectrum on the VFD ----------
+const peaks = new Array(8).fill(0);
+function drawSpectrum() {
+  const cv = $("#spec"); if (!visible(cv)) return;
+  const ctx = cv.getContext("2d"), dpr = fit(cv), W = cv.width, H = cv.height;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
+  const bands = (S.vis && S.vis.audio && S.vis.audio.bands) || [];
+  const n = 8, gap = 3 * dpr, bw = (W - gap * (n - 1)) / n, cell = 4 * dpr;
+  for (let i = 0; i < n; i++) {
+    const v = clamp(bands[i] || 0, 0, 1), x = i * (bw + gap);
+    peaks[i] = Math.max(v, peaks[i] - 0.012);
+    for (let y = H - cell; y >= 0; y -= cell + dpr) {
+      const frac = 1 - y / H;
+      ctx.fillStyle = frac <= v ? "#6bfbe6" : Math.abs(frac - peaks[i]) < 0.06 ? "#2fbfae" : "#0f2b28";
+      ctx.fillRect(x, y, bw, cell);
+    }
+  }
+}
+
+// ---------- displays and status (10 times a second) ----------
+const STATE_TEXT = { groove: "GROOVE", breakdown: "BREAKDOWN", drop: "DROP", ambient: "AMBIENT" };
+let marqText = "";
+function lockText(v) {
+  const k = v.clock;
+  if (!v.follow) return "tap tempo";
+  if (v.audio.state === "off") return "no audio: tap";
+  if (v.audio.state === "silent") return "silence";
+  if (v.audio.locked && k.source === "audio") return "locked";
+  if (k.source === "audio") return "holding tempo";
+  if (k.source === "tap") return "tapped, listening";
+  return "listening";
+}
+function updateDom() {
+  const v = S.vis;
+  $("#conn").textContent = !v || performance.now() - S.lastVis > 1500 ? "RECONNECTING…" : "";
+  if (!v) return;
+  const lvl = clamp((v.audio.level_db + 60) / 60, 0, 1);
+  if (!$("#level").children.length) $("#level").innerHTML = Array.from({ length: 10 }, () => "<i></i>").join("");
+  $$("#level i").forEach((el, k) => { el.className = (k + 0.5) / 10 < lvl ? `on${k >= 8 ? " clip" : k >= 6 ? " hot" : ""}` : ""; });
+  $("#src").textContent = v.audio.error ? "NO AUDIO" : (v.audio.name || "NO AUDIO").toUpperCase();
+  $("#out").innerHTML = S.cfg ? S.cfg.fixtures.map(f => {
+    const bad = v.out.errors[`${f.ip}/${f.universe}`];
+    const tip = bad || `${targetText(f.ip)}, universe ${f.universe}`;
+    return `<span class="${!v.out.enabled ? "" : bad ? "bad" : "ok"}" title="${esc(tip)}">${esc(f.id)}</span>`;
+  }).join("") : "";
+  $("#previewFlag").textContent = v.preview ? "PREVIEW: SCENE BEING EDITED" : "";
+  updateMountReadout();
+  if (S.tab === "perform") { updatePerform(v); drawWheel(); return; }
+  if (S.tab !== "show") return;
+
+  const k = v.clock;
+  setSeven($("#bpm"), k.bpm.toFixed(1).padStart(5, " "));
+  $("#where").textContent = `BAR ${k.bar_in_phrase + 1} OF ${k.phrase_bars}`;
+  const lock = lockText(v).toUpperCase();
+  $("#lock").textContent = lock;
+  const scene = sceneBy(v.scene);
+  const state = v.blackout ? "BLACKOUT" : v.strobe ? "STROBE" : (STATE_TEXT[v.state] || v.state);
+  const last = v.log[0] ? `${v.log[0].text}${v.log[0].by === "you" ? " (YOU)" : ""}` : "";
+  const text = [state, scene ? scene.label : v.scene, lock, last, safetyNote()].filter(Boolean).join("  ***  ").toUpperCase() + "  ***  ";
+  if (text !== marqText) { marqText = text; $("#marq").textContent = text; }
+  const pos = k.bar_in_phrase + (k.beat_in_bar + k.phase) / 4, cells = $$("#phrase i"), per = k.phrase_bars / cells.length;
+  cells.forEach((el, i) => { el.className = pos >= (i + 1) * per ? "on" : pos >= i * per ? "now" : ""; });
+  for (const b of $$("#scenes .track")) b.setAttribute("aria-pressed", String(b.dataset.name === v.scene));
+  $("#auto").setAttribute("aria-pressed", String(v.auto));
+  for (const b of $$("#speed .btn")) b.setAttribute("aria-pressed", String(+b.dataset.v === v.speed));
+  if (!S.sliding) $("#intensity").value = Math.round(v.intensity * 100);
+  paintLivePal();
+  $("#liveToggle").setAttribute("aria-pressed", String(livePalette().on));
+  const amb = $(".pads [data-showgroup]"); if (amb) amb.classList.toggle("on", v.state === "ambient");
+}
+
+// Every frame: beat LEDs, and pads that follow the show.
+function updateFast() {
+  const v = S.vis; if (!v || (S.tab !== "show" && S.tab !== "perform")) return;
+  const k = v.clock;
+  $$(S.tab === "show" ? "#beats i" : "#pfBeats i").forEach((el, i) => el.classList.toggle("on", i === k.beat_in_bar && k.phase < 0.5));
+  const on16 = (k.beat * 4) % 1 < 0.35;
+  for (const sb of $$('.pad[data-hold="strobe"]')) { sb.classList.toggle("flash", v.strobe && on16); sb.classList.toggle("on", v.strobe); }
+  for (const bb of $$('.pad[data-hold="blackout"]')) { bb.classList.toggle("dark", v.blackout); bb.classList.toggle("on", v.blackout); }
+  $('.pads .pad[data-pad="break"]').classList.toggle("on", v.state === "breakdown");
+}
+
+// ---------- editing the magic sheet in Setup ----------
+function sheetGeom(cv, dpr) {   // canvas <-> room, for whichever view the sheet shows
+  if (S.view === "plan") {
+    const xf = sheetXf(cv, dpr);
+    return { proj: (x, y) => [xf.X(x), xf.Y(y)], onPlane: (px, py) => xf.inv(px, py), onWall: (px, py) => xf.inv(px, py) };
+  }
+  const cam = roomCam(cv, dpr);
+  return {
+    proj: (x, y, z) => cam.proj([x, y, z]),
+    onPlane(px, py, z) {   // where the line of sight through the pointer crosses height z
+      const r = cam.ray(px, py), k = Math.abs(r[2]) > 1e-6 ? (z - cam.eye[2]) / r[2] : -1;
+      return k > 0 ? [cam.eye[0] + r[0] * k, cam.eye[1] + r[1] * k] : null;
+    },
+    onWall(px, py) { const q = boxExit(cam.eye, cam.ray(px, py)).at; return [q[0], q[1]]; },   // the surface it points at
+  };
+}
+function setupDrag() {
+  const cv = $("#sheet");
+  const at = e => {
+    const dpr = Math.min(2, window.devicePixelRatio || 1), r = cv.getBoundingClientRect();
+    return { dpr, px: (e.clientX - r.left) * dpr, py: (e.clientY - r.top) * dpr, g: sheetGeom(cv, dpr) };
+  };
+  const pick = e => {
+    const { dpr, px, py, g } = at(e);
+    const dist = s => s ? Math.hypot(s[0] - px, s[1] - py) : Infinity;
+    const cl = S.cfg.points.find(p => p.kind === "cluster");
+    if (cl) {   // a corner resizes (around the opposite corner)
+      for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+        const cx = cl.x + sx * cl.w / 2, cy = cl.y + sy * cl.h / 2;
+        if (dist(g.proj(cx, cy, cl.z)) < 16 * dpr) return { kind: "resize", p: cl, ax: cl.x - sx * cl.w / 2, ay: cl.y - sy * cl.h / 2 };
+      }
+    }
+    let best = null, bd = 26 * dpr;
+    S.cfg.points.forEach(p => { if (p.kind === "cluster") return; const d = dist(g.proj(p.x, p.y, p.z || 0)); if (d < bd) { bd = d; best = { kind: "point", p }; } });
+    S.cfg.fixtures.forEach((f, i) => { const d = dist(g.proj(f.x, f.y, f.z)); if (d < bd) { bd = d; best = { kind: "fixture", i, f }; } });
+    if (!best && cl) {
+      const q = g.onPlane(px, py, cl.z);
+      const inside = q && Math.abs(q[0] - cl.x) <= cl.w / 2 && Math.abs(q[1] - cl.y) <= cl.h / 2;
+      if (inside || dist(g.proj(cl.x, cl.y, cl.z)) < 30 * dpr) return { kind: "cluster", p: cl, dx: q ? q[0] - cl.x : 0, dy: q ? q[1] - cl.y : 0 };
+    }
+    return best;
+  };
+  cv.addEventListener("pointerdown", e => {
+    if (!S.editing || S.tab !== "setup") return;
+    const best = pick(e); if (!best) return;
+    S.dragging = best; cv.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!S.dragging) return;
+    const { px, py, g } = at(e), room = S.cfg.room, d = S.dragging;
+    const q = d.kind === "fixture" ? g.onWall(px, py) : g.onPlane(px, py, d.p.z || 0);
+    if (!q) return;
+    const x = clamp(+q[0].toFixed(2), 0, room.w), y = clamp(+q[1].toFixed(2), 0, room.d);
+    if (d.kind === "resize") {
+      d.p.w = +Math.max(0.2, Math.abs(x - d.ax)).toFixed(2); d.p.h = +Math.max(0.2, Math.abs(y - d.ay)).toFixed(2);
+      d.p.x = +((x + d.ax) / 2).toFixed(2); d.p.y = +((y + d.ay) / 2).toFixed(2);
+      return;
+    }
+    if (d.kind === "cluster") { d.p.x = clamp(+(x - d.dx).toFixed(2), 0, room.w); d.p.y = clamp(+(y - d.dy).toFixed(2), 0, room.d); return; }
+    if (d.kind === "point") { d.p.x = x; d.p.y = y; return; }
+    // bars live on a wall: snap to the nearest one and face into the room
+    const dist = [x, room.w - x, y, room.d - y], wi = dist.indexOf(Math.min(...dist));
+    d.f.facing = [0, 180, 90, 270][wi];
+    d.f.x = wi === 0 ? 0 : wi === 1 ? room.w : x;
+    d.f.y = wi === 2 ? 0 : wi === 3 ? room.d : y;
+  });
+  const end = () => {
+    const d = S.dragging; if (!d) return; S.dragging = null;
+    if (d.kind === "fixture") api("fixture", { index: d.i, fields: { x: d.f.x, y: d.f.y, facing: d.f.facing } });
+    else api("point", { action: "move", id: d.p.id, x: d.p.x, y: d.p.y, ...(d.p.kind === "cluster" ? { w: d.p.w, h: d.p.h } : {}) });
+  };
+  cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+}
+
+// ---------- main loop ----------
+let lastDom = 0;
+function safely(fn) { try { fn(); } catch (e) { console.error(e); } }   // one broken drawing mustn't stop the rest
+function frame(t) {
+  for (const id of ["#sheet", "#pfSheet"]) if (visible($(id))) safely(() => drawSheet($(id), t));
+  if (S.cfg) {
+    const v = S.vis && S.vis.fixtures, fxs = S.cfg.fixtures;
+    const ids = S.tab === "perform" ? [["#pfBarA", "#pfTiltA"], ["#pfBarB", "#pfTiltB"]] : [["#barA", "#tiltA"], ["#barB", "#tiltB"]];
+    ids.forEach(([bar, tilt], i) => safely(() => { drawBar($(bar), v && v[i], fxs[i]); drawTilt($(tilt), v && v[i], fxs[i]); }));
+  }
+  safely(drawSpectrum);
+  safely(updateFast);
+  if (t - lastDom > 100) { lastDom = t; safely(updateDom); }
+  requestAnimationFrame(frame);
+}
+
+for (const b of $$(".tabs .key")) b.addEventListener("click", () => setTab(b.dataset.tab));
+addEventListener("pagehide", () => {   // closing the page while editing a scene ends its preview
+  if (S.tab === "make") navigator.sendBeacon("/api/cmd", JSON.stringify({ cmd: "preview", spec: null }));
+});
+setupShowControls();
+setupPerform();
+setupDrag();
+function setView(view) {   // the magic sheet: "room" (from the corner across from the balls) or "plan" (from above)
+  S.view = view;
+  try { localStorage.setItem("lightlaland.sheetView", view); } catch (e) { /* private mode */ }
+  for (const b of $$(".viewkeys button")) b.setAttribute("aria-pressed", String(b.dataset.view === view));
+}
+for (const b of $$(".viewkeys button")) b.addEventListener("click", () => setView(b.dataset.view));
+try { setView(localStorage.getItem("lightlaland.sheetView") === "plan" ? "plan" : "room"); } catch (e) { setView("room"); }
+loadMeta().then(() => {
+  let first = matchMedia("(pointer: coarse)").matches || innerWidth < 900 ? "perform" : "show";
+  try { first = localStorage.getItem("lightlaland.tab") || first; } catch (e) { /* private mode */ }
+  setTab(first);
+  connect(); requestAnimationFrame(frame);
+}).catch(e => { console.error(e); toast("Couldn't load settings from the Mac."); });
+</script>
+</body>
+</html>
