@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from . import __version__, geometry
 from .audio import list_inputs
 from .fixture import N_BEAMS, N_CH, N_STRIP, N_WHITE, describe
-from .scenes import GROUPS, SCHEMA, TARGETS
+from .scenes import GROUPS, SCHEMA, SETS
 
 WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 STREAM_HZ = 30
@@ -21,9 +21,8 @@ def meta(app):
         "scenes": app.scene_list(),
         "schema": SCHEMA,
         "groups": list(GROUPS),
-        "targets": TARGETS,
+        "sets": SETS,
         "devices": list_inputs(),
-        "source": getattr(app.source, "kind", None),
         "search": app.last_search,
         "channels": [describe(c) for c in range(1, N_CH + 1)],
         "layout": {"beams": N_BEAMS, "strip": N_STRIP, "white": N_WHITE},
@@ -55,7 +54,7 @@ def make_handler(app):
             elif path == "/api/meta":
                 self._send(200, meta(app))
             elif path == "/api/state":
-                self._send(200, app.engine.vis)
+                self._send(200, app.engine.vis_json())
             elif path == "/api/stream":
                 self._stream()
             else:
@@ -83,8 +82,7 @@ def make_handler(app):
             self.end_headers()
             try:
                 while True:
-                    payload = json.dumps(app.engine.vis, separators=(",", ":"))
-                    self.wfile.write(b"data: " + payload.encode() + b"\n\n")
+                    self.wfile.write(b"data: " + app.engine.vis_json() + b"\n\n")
                     self.wfile.flush()
                     time.sleep(1.0 / STREAM_HZ)
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):

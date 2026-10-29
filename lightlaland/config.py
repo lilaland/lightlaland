@@ -61,6 +61,8 @@ DEFAULT = {
         "palette": {"on": False, "colors": ["#ff1f5a", "#ff6a3d", "#ffb000", "#00e1ff", "#7b2cff"]},
         "ambient_on_silence": True,   # when the music stops, auto mode plays an ambient scene
         "smooth": True,          # motor speed follows the move, so slow tilts glide
+        "set": "",               # which set of scenes auto mode and the pads pick from ("" = everyday)
+        "strobe_freq": 1.0,      # scales scenes' random strobe bursts and lightning (0 = none)
     },
     "rotation": {},   # scene name -> bool, whether auto mode may pick it
     "scenes": [],     # scene specs saved from the scene maker (override presets by name)

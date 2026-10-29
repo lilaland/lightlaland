@@ -12,7 +12,7 @@ from .clock import BeatClock
 from .config import Config
 from .engine import GROUP_FOR_STATE, Engine
 from .fixture import BEAMS, STRIP, WHITE
-from .scenes import GROUPS, HEX_RE, Scene, normalize, preset, slug, target_elevation
+from .scenes import GROUPS, HEX_RE, SET_NAMES, Scene, normalize, preset, slug, target_elevation
 
 IP_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
 
@@ -182,6 +182,8 @@ class App:
         return {"saved": True}
 
     def cmd_show(self, b):
+        if "set" in b and b["set"] not in SET_NAMES:
+            raise ValueError("no such set")
         with self.config.lock:
             s = self.config.data["show"]
             if "auto" in b:
@@ -196,6 +198,15 @@ class App:
                 s["ambient_on_silence"] = bool(b["ambient_on_silence"])
             if "smooth" in b:
                 s["smooth"] = bool(b["smooth"])
+            if "strobe_freq" in b:
+                s["strobe_freq"] = _clamp(float(b["strobe_freq"]), 0.0, 4.0)
+            if "set" in b:
+                s["set"] = b["set"]
+        if "set" in b:   # a scene from another set stops at once (the window set must never play a room scene)
+            eng = self.engine
+            playing = eng.library.get(eng.scene)
+            if playing is None or playing.set != b["set"]:
+                eng.set_scene(eng.director.pick(GROUP_FOR_STATE[eng.director.state]))
         return {"saved": True}
 
     def cmd_palette(self, b):
@@ -311,8 +322,8 @@ class App:
             s = self.config.data["safety"]
             if "low" in b:
                 s["low"] = int(_clamp(float(b["low"]), -20, 60))
-            if "high" in b:
-                s["high"] = int(_clamp(float(b["high"]), 100, 270))
+            if "high" in b:   # down to 90: on a windowsill, beams mustn't tilt back into the house
+                s["high"] = int(_clamp(float(b["high"]), 90, 270))
             if "on" in b:
                 s["on"] = bool(b["on"])
         return {"saved": True}

@@ -18,7 +18,7 @@
   --vfd: #6bfbe6; --vfd-mid: #2fbfae; --vfd-off: #0f2b28; --vfd-bg: #041311;
   --crt: #3dff86; --crt-dim: #1b8f4b; --crt-bg: #020a05;
   --red: #ff3b30; --green: #3dff86;
-  --ui: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --mono: Menlo, Monaco, "Lucida Console", "Courier New", monospace;
   --top: 52px;
   color-scheme: dark;
@@ -34,38 +34,42 @@ button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
 [hidden] { display: none !important; }
 
-/* ---------- panels: painted metal with a screw in each corner ---------- */
+/* ---------- panels: painted metal, a small screw in each corner ---------- */
 .panel {
   position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0;
   background:
-    radial-gradient(circle at 9px 9px, #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
-    radial-gradient(circle at calc(100% - 9px) 9px, #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
-    radial-gradient(circle at 9px calc(100% - 9px), #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
-    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #6d6e74 0 1.6px, #1a1a1d 2.2px, transparent 3.2px),
-    linear-gradient(#2b2c31, #222327);
-  border: 1px solid #08080a; border-radius: 6px;
-  box-shadow: inset 0 1px 0 var(--panel-hi), inset 0 -1px 0 #000, 0 2px 6px rgba(0, 0, 0, .55);
-  padding: 22px 12px 12px;
+    radial-gradient(circle at 9px 9px, #4e4f55 0 1.3px, transparent 2px),
+    radial-gradient(circle at calc(100% - 9px) 9px, #4e4f55 0 1.3px, transparent 2px),
+    radial-gradient(circle at 9px calc(100% - 9px), #4e4f55 0 1.3px, transparent 2px),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #4e4f55 0 1.3px, transparent 2px),
+    linear-gradient(#2a2b30, #232428);
+  border: 1px solid rgba(0, 0, 0, .7); border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 2px 10px rgba(0, 0, 0, .35);
+  padding: 24px 12px 12px;
 }
 .panel > .label {
-  position: absolute; top: 5px; left: 20px; right: 20px; display: flex; align-items: center; gap: 8px;
-  font: 600 10px/1 var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--silk);
+  position: absolute; top: 7px; left: 20px; right: 20px; display: flex; align-items: center; gap: 8px;
+  font: 600 10px/1 var(--ui); letter-spacing: .16em; text-transform: uppercase; color: var(--silk);
 }
-.panel > .label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, #5a574e, transparent); }
-.silk { font: 600 10px/1.2 var(--ui); letter-spacing: .16em; text-transform: uppercase; color: var(--silk-dim); }
+.panel > .label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, #4a4840, transparent); }
+.silk { font: 600 10px/1.2 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--silk-dim); }
 
-/* ---------- rubber keys ---------- */
+/* ---------- keys: soft rubber, a short press ---------- */
 .key, .btn {
-  position: relative; padding: 8px 12px; border: 1px solid #070708; border-radius: 6px;
-  background: linear-gradient(#3d3e44, #2c2d32 60%, #26272b);
-  box-shadow: inset 0 1px 0 #55565d, 0 3px 0 #0a0a0b, 0 4px 6px rgba(0, 0, 0, .45);
-  font: 700 12px/1.1 var(--ui); letter-spacing: .06em; color: #e6e1d2; white-space: nowrap; text-transform: uppercase;
-  transition: transform .04s, box-shadow .04s;
+  position: relative; padding: 8px 12px; border: 1px solid rgba(0, 0, 0, .75); border-radius: 9px;
+  background: linear-gradient(#3a3b41, #2e2f34);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 1px 2px rgba(0, 0, 0, .45);
+  font: 600 12px/1.1 var(--ui); letter-spacing: .04em; color: #ebe7dc; white-space: nowrap; text-transform: uppercase;
+  transition: transform .08s, background .15s, color .15s, box-shadow .15s;
 }
-.key:active, .btn:active, .key.hit, .btn.hit { transform: translateY(3px); box-shadow: inset 0 1px 0 #4a4b52, 0 0 0 #0a0a0b, 0 1px 2px rgba(0, 0, 0, .5); }
-.btn[aria-pressed="true"], .key[aria-pressed="true"] { color: var(--amber); }
+@media (hover: hover) { .key:hover, .btn:hover:not(:disabled) { background: linear-gradient(#41424a, #323338); } }
+.key:active, .btn:active, .key.hit, .btn.hit { transform: translateY(1px) scale(.985); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .45); }
+.btn[aria-pressed="true"], .key[aria-pressed="true"] {
+  color: var(--amber); background: linear-gradient(#3b3830, #2f2c27);
+  box-shadow: inset 0 0 0 1px rgba(255, 181, 46, .35), 0 1px 2px rgba(0, 0, 0, .45);
+}
 .btn:disabled { opacity: .4; cursor: default; }
-.btn.small { padding: 6px 9px; font-size: 11px; }
+.btn.small { padding: 6px 10px; font-size: 11px; border-radius: 8px; }
 .led {
   display: inline-block; width: 9px; height: 5px; border-radius: 2px; margin-right: 7px; vertical-align: 2px;
   background: #3a2a10; box-shadow: inset 0 0 0 1px #000;
@@ -75,22 +79,22 @@ button { cursor: pointer; }
 .pad.on .led.green, .btn[aria-pressed="true"] .led.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
 .pad {
   position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px;
-  border: 1px solid #070708; border-radius: 8px; padding: 8px;
-  background: linear-gradient(#3d3e44, #2c2d32 60%, #26272b);
-  box-shadow: inset 0 1px 0 #55565d, 0 4px 0 #0a0a0b, 0 5px 8px rgba(0, 0, 0, .5);
-  color: #ece7d8; font: 800 18px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase;
+  border: 1px solid rgba(0, 0, 0, .8); border-radius: 14px; padding: 8px;
+  background: linear-gradient(#3b3c42, #2c2d32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 2px 0 rgba(0, 0, 0, .55), 0 4px 10px rgba(0, 0, 0, .3);
+  color: #efeae0; font: 700 17px/1 var(--ui); letter-spacing: .06em; text-transform: uppercase;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
-  transition: transform .04s, box-shadow .04s;
+  transition: transform .08s, box-shadow .12s, background .15s;
 }
-.pad small { font: 600 10px/1.2 var(--ui); letter-spacing: .12em; color: #a9a392; text-align: center; }
-.pad .led { position: absolute; top: 9px; right: 9px; margin: 0; }
-.pad:active, .pad.hit { transform: translateY(4px); box-shadow: inset 0 1px 0 #4a4b52, 0 0 0 #0a0a0b, 0 1px 2px rgba(0, 0, 0, .5); }
-.pad.cap-red { background: linear-gradient(#c0443d, #9a2e29 60%, #852723); box-shadow: inset 0 1px 0 #e0706a, 0 4px 0 #2a0b09, 0 5px 8px rgba(0,0,0,.5); }
-.pad.cap-blue { background: linear-gradient(#3b63b4, #2a4c94 60%, #233f7d); box-shadow: inset 0 1px 0 #6f93d8, 0 4px 0 #0b1530, 0 5px 8px rgba(0,0,0,.5); }
-.pad.cap-green { background: linear-gradient(#3b9658, #2c7744 60%, #24653a); box-shadow: inset 0 1px 0 #6cc488, 0 4px 0 #0b2414, 0 5px 8px rgba(0,0,0,.5); }
-.pad.cap-purple { background: linear-gradient(#7d4cb3, #643a96 60%, #553182); box-shadow: inset 0 1px 0 #a780d6, 0 4px 0 #1f0f33, 0 5px 8px rgba(0,0,0,.5); }
-.pad[class*="cap-"] small { color: #f0e6e6; opacity: .85; }
-.pad[class*="cap-"]:active, .pad[class*="cap-"].hit { box-shadow: 0 0 0 #000, 0 1px 2px rgba(0,0,0,.5); }
+.pad small { font: 500 11px/1.25 var(--ui); letter-spacing: .02em; text-transform: none; color: #aaa596; text-align: center; }
+.pad .led { position: absolute; top: 10px; right: 10px; margin: 0; }
+.pad:active, .pad.hit { transform: translateY(2px) scale(.99); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 0 0 rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4); }
+.pad.cap-red { background: linear-gradient(#c24a42, #9f332d); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 0 #3a100d, 0 4px 10px rgba(0,0,0,.3); }
+.pad.cap-blue { background: linear-gradient(#4067b5, #2d4f97); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 0 #0e1a38, 0 4px 10px rgba(0,0,0,.3); }
+.pad.cap-green { background: linear-gradient(#3f9a5c, #2d7a46); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 0 #0d2a17, 0 4px 10px rgba(0,0,0,.3); }
+.pad.cap-purple { background: linear-gradient(#8150b6, #67409a); box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 2px 0 #22113a, 0 4px 10px rgba(0,0,0,.3); }
+.pad[class*="cap-"] small { color: #f6eeee; opacity: .85; }
+.pad[class*="cap-"]:active, .pad[class*="cap-"].hit { box-shadow: 0 0 0 #000, 0 1px 3px rgba(0,0,0,.4); }
 .pad.flash { background: #fff8e6 !important; color: #000; }
 .pad.flash small { color: #333; }
 .pad.dark { background: #050506 !important; color: #444; }
@@ -99,16 +103,16 @@ button { cursor: pointer; }
 .top {
   height: var(--top); display: flex; align-items: center; gap: 14px;
   padding: 0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
-  background: linear-gradient(#2a2b30, #1b1c1f); border-bottom: 1px solid #000; box-shadow: inset 0 1px 0 #44454b, 0 2px 8px rgba(0,0,0,.6);
+  background: linear-gradient(#26272c, #1c1d20); border-bottom: 1px solid rgba(0, 0, 0, .8); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 8px rgba(0,0,0,.4);
 }
 .plate {
-  display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: 4px;
+  display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: 8px;
   background: linear-gradient(#bdb9ad, #8f8b80); box-shadow: inset 0 1px 0 #e8e4d8, inset 0 -1px 0 #5d5a52, 0 1px 3px #000;
   color: #1f1e1b; white-space: nowrap;
 }
 .plate b { font: 900 16px/1 var(--ui); letter-spacing: .04em; font-style: italic; }
 .plate span { font: 700 9px/1 var(--ui); letter-spacing: .2em; }
-.tabs { display: flex; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 4px 2px 8px; margin-top: 4px; }
+.tabs { display: flex; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 6px 2px; }
 .tabs::-webkit-scrollbar { display: none; }
 .tabs .key { padding: 8px 12px; }
 .status { margin-left: auto; display: flex; align-items: center; gap: 10px; white-space: nowrap; min-width: 0; }
@@ -132,7 +136,7 @@ button { cursor: pointer; }
     repeating-linear-gradient(0deg, rgba(0, 0, 0, .25) 0 1px, transparent 1px 3px),
     repeating-linear-gradient(90deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px),
     radial-gradient(ellipse at 50% 40%, #07211d, var(--vfd-bg) 75%);
-  border: 1px solid #000; border-radius: 4px; box-shadow: inset 0 2px 8px #000, 0 1px 0 #3a3b41;
+  border: 1px solid #000; border-radius: 8px; box-shadow: inset 0 2px 8px #000, 0 1px 0 rgba(255, 255, 255, .05);
   color: var(--vfd); text-shadow: 0 0 6px rgba(107, 251, 230, .55); font-family: var(--mono);
 }
 .crt {
@@ -205,15 +209,17 @@ body.editing .sheet canvas { cursor: move; }
 .pads .pad.wide { grid-column: span 2; font-size: 24px; }
 
 /* scene list (Show) */
-.pl-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 6px; padding: 6px; max-height: 30vh; overflow-y: auto; }
+.pl-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 8px; }
+.pl-list { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 0 6px; padding: 6px; max-height: 30vh; overflow-y: auto; }
 .pl-list .track { padding: 4px 6px; }
 .pl-col { display: flex; flex-direction: column; min-width: 0; }
 .pl-col .silk { color: var(--vfd-mid); padding: 2px 6px 4px; }
 .track {
   display: flex; align-items: center; gap: 7px; width: 100%; padding: 6px 6px; min-width: 0;
-  border: 0; border-radius: 2px; background: none; color: var(--vfd); font: 12px/1.15 var(--mono); text-align: left;
-  text-shadow: 0 0 5px rgba(107, 251, 230, .45);
+  border: 0; border-radius: 5px; background: none; color: var(--vfd); font: 12px/1.15 var(--mono); text-align: left;
+  text-shadow: 0 0 5px rgba(107, 251, 230, .45); transition: background .12s, color .12s;
 }
+@media (hover: hover) { .track:hover:not([aria-pressed="true"]) { background: rgba(107, 251, 230, .08); } }
 .track span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .track .sw { display: inline-flex; gap: 1px; flex: 0 0 auto; }
 .track .sw i { width: 5px; height: 9px; }
@@ -222,12 +228,14 @@ body.editing .sheet canvas { cursor: move; }
 .pl-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 10px; }
 .swatches { display: inline-flex; align-items: center; gap: 5px; }
 .swatch {
-  position: relative; display: block; width: 28px; height: 28px; border-radius: 4px; flex: 0 0 auto; padding: 0;
-  border: 1px solid #000; box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.35), 0 1px 2px #000;
+  position: relative; display: block; width: 28px; height: 28px; border-radius: 7px; flex: 0 0 auto; padding: 0;
+  border: 1px solid rgba(0, 0, 0, .8); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(0,0,0,.25), 0 1px 2px rgba(0,0,0,.6);
 }
 .swatch input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; border: 0; padding: 0; cursor: pointer; }
-.swatch.sel { outline: 2px solid var(--amber); outline-offset: 2px; }
-.seg { display: inline-flex; gap: 4px; }
+.swatch.locked::after { content: ""; position: absolute; right: -4px; top: -4px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--amber); box-shadow: 0 0 0 2px var(--panel-2); }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+#shuffleShow svg { width: 15px; height: 15px; margin-right: 6px; vertical-align: -3px; }
 .fader { display: inline-flex; align-items: center; gap: 8px; }
 input[type=range] { accent-color: var(--amber); width: 150px; }
 
@@ -235,17 +243,17 @@ input[type=range] { accent-color: var(--amber); width: 150px; }
 .dlg { flex: 1; min-height: 0; overflow-y: auto; padding: 2px 4px 14px; -webkit-overflow-scrolling: touch; }
 .dlg p { margin: 6px 0 10px; color: var(--silk-dim); max-width: 64ch; }
 fieldset {
-  margin: 12px 0 0; padding: 10px 12px 12px; border: 1px solid #0a0a0c; border-radius: 6px;
-  background: rgba(0, 0, 0, .14); box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 1px 0 #3a3b41;
+  margin: 12px 0 0; padding: 10px 12px 12px; border: 1px solid rgba(0, 0, 0, .55); border-radius: 10px;
+  background: rgba(0, 0, 0, .12); box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 1px 0 rgba(255,255,255,.04);
 }
-legend { padding: 0 6px; font: 700 10px var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+legend { padding: 0 6px; font: 700 10px var(--ui); letter-spacing: .16em; text-transform: uppercase; color: var(--amber); }
 .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
-.form label { display: flex; flex-direction: column; gap: 5px; font: 600 10px var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--silk-dim); min-width: 0; }
+.form label { display: flex; flex-direction: column; gap: 5px; font: 600 10px var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--silk-dim); min-width: 0; }
 .form .full { grid-column: span 2; }
-.form .check { flex-direction: row; align-items: center; gap: 8px; color: var(--silk); letter-spacing: .06em; }
+.form .check { flex-direction: row; align-items: center; gap: 8px; color: var(--silk); letter-spacing: .04em; }
 .form input:not([type=checkbox]):not([type=range]), .form select, .dlg select {
-  width: 100%; padding: 7px 8px; border-radius: 3px; border: 1px solid #000;
-  background: var(--vfd-bg); color: var(--vfd); font: 13px var(--mono); box-shadow: inset 0 2px 5px #000;
+  width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, .9);
+  background: var(--vfd-bg); color: var(--vfd); font: 13px var(--mono); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .8);
 }
 .form input[type=range] { width: 100%; }
 .form .val { color: var(--vfd); font-family: var(--mono); letter-spacing: 0; text-transform: none; }
@@ -270,6 +278,8 @@ legend { padding: 0 6px; font: 700 10px var(--ui); letter-spacing: .2em; text-tr
 .chips .btn { min-width: 38px; }
 .mk-bar { position: sticky; top: 0; z-index: 2; padding: 6px 0 10px; background: linear-gradient(#26272b 85%, transparent); }
 .mk-pal { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.mk-ranges summary { cursor: pointer; padding: 6px 0; color: var(--silk); font: 600 12px var(--ui); letter-spacing: .02em; text-transform: none; }
+.mk-ranges .picker { max-width: 300px; margin: 4px auto 0; }
 .status-vfd { padding: 8px 10px; font-size: 13px; letter-spacing: .06em; line-height: 1.45; }
 .status-vfd .bad { color: #ff8a80; text-shadow: 0 0 6px rgba(255, 90, 80, .6); }
 
@@ -287,12 +297,14 @@ body.tab-perform .perform { display: grid; }
 .pf-rig .tilt { position: relative; height: clamp(58px, 11vw, 74px); border-radius: 8px; }
 .pf-rig canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .pf-group { padding: 6px 10px 10px; }
+.pf-group[data-group="scenes"] { padding-top: 22px; }
 .pf-head {
   width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 4px; min-height: 52px;
-  background: none; border: 0; color: var(--silk); text-align: left; font: 700 12px/1.2 var(--ui); letter-spacing: .16em; text-transform: uppercase;
+  background: none; border: 0; color: var(--silk); text-align: left; font: 700 12px/1.2 var(--ui); letter-spacing: .14em; text-transform: uppercase;
 }
-.pf-head .chev { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto;
-  background: linear-gradient(#3d3e44, #26272b); box-shadow: inset 0 1px 0 #55565d, 0 2px 0 #0a0a0b; color: var(--amber); transition: transform .15s; }
+.pf-head .hint { font-weight: 500; letter-spacing: .01em; text-transform: none; }
+.pf-head .chev { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto;
+  background: linear-gradient(#3a3b41, #2a2b30); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.5); color: var(--amber); transition: transform .2s; }
 .pf-head .chev::before { content: "\25BE"; font-size: 14px; }
 .pf-group.open > .pf-head .chev { transform: rotate(180deg); }
 .pf-body { display: none; padding: 2px 0 6px; }
@@ -306,18 +318,51 @@ body.tab-perform .perform { display: grid; }
 .pf-grid .wide { grid-column: span 2; }
 .pf-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
 .pf-row .btn { min-height: 44px; padding: 8px 14px; }
-.pal-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.pal-strip .swatch { width: 100%; height: 48px; }
-.wheel-wrap { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: 6px auto; }
-#wheel { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
-.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; }
-.preset { border: 1px solid #000; border-radius: 4px; padding: 0; overflow: hidden; background: #0c0c0e; text-align: left; box-shadow: 0 2px 0 #050506; }
-.preset .bar { display: flex; height: 26px; }
+.pf-row .seg .btn { min-width: 44px; }
+
+/* colour ranges: a hue ring you drag across; the palette is drawn at random from what you picked */
+.picker { display: flex; flex-direction: column; gap: 12px; }
+.pk-sw { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.pk-sw button {
+  position: relative; height: 52px; padding: 0; border: 0; border-radius: 12px; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 2px 6px rgba(0, 0, 0, .35); transition: transform .12s, box-shadow .15s;
+}
+.pk-sw button:active { transform: scale(.96); }
+.pk-sw button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9), 0 2px 6px rgba(0, 0, 0, .35); }
+.pk-sw svg { position: absolute; right: 5px; top: 5px; width: 20px; height: 20px; padding: 4px; border-radius: 50%;
+  background: rgba(0, 0, 0, .6); color: #fff; opacity: 0; transform: scale(.5); transition: opacity .15s, transform .15s; }
+.pk-sw button[aria-pressed="true"] svg { opacity: 1; transform: none; }
+.pk-ring { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: 0 auto; }
+.pk-ring canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.pk-roll {
+  position: absolute; left: 50%; top: 50%; width: 40%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: conic-gradient(var(--c0) 0 20%, var(--c1) 0 40%, var(--c2) 0 60%, var(--c3) 0 80%, var(--c4) 0);
+  box-shadow: 0 0 0 3px #1f2023, 0 0 0 4px rgba(255, 255, 255, .1), 0 8px 22px rgba(0, 0, 0, .5); transition: transform .12s;
+}
+.pk-roll:active { transform: translate(-50%, -50%) scale(.95); }
+.pk-roll svg { width: 50%; height: 50%; padding: 13%; border-radius: 50%; background: rgba(16, 17, 19, .9); color: #f4f0e6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .5); transition: transform .5s cubic-bezier(.3, 1.4, .5, 1); }
+.pk-ranges { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; min-height: 36px; text-align: center; }
+.pk-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, .3); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.pk-chip i { width: 72px; height: 12px; border-radius: 6px; }
+.pk-chip button { width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .08); color: var(--silk); font-size: 16px; line-height: 1; cursor: pointer; }
+.pk-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+.presets { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+.preset { flex: 0 0 104px; scroll-snap-align: start; border: 0; border-radius: 10px; padding: 0; overflow: hidden; background: #111214; text-align: left;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 2px 6px rgba(0, 0, 0, .35); cursor: pointer; transition: transform .12s; }
+.preset:active { transform: scale(.97); }
+.preset .bar { display: flex; height: 28px; }
 .preset .bar i { flex: 1; }
-.preset b { display: block; padding: 4px 6px; font: 600 10px var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--silk-dim); }
+.preset b { display: block; padding: 5px 8px 6px; font: 600 11px var(--ui); letter-spacing: .02em; color: var(--silk-dim); }
+@media (hover: hover) and (pointer: fine) {
+  .presets { flex-wrap: wrap; overflow: visible; }
+  .preset { flex: 1 1 96px; }
+}
 .pf-scene-pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 4px 0 2px; }
 .pf-scene-pads .pad { min-height: 78px; }
-.pf-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.pf-cols { display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 6px; }
 .pf-cols .col { display: flex; flex-direction: column; gap: 1px; padding: 4px; min-width: 0; }
 .pf-cols .track { padding: 10px 6px; white-space: normal; }
 .pf-cols .track span { white-space: normal; }
@@ -325,13 +370,13 @@ body.tab-perform .perform { display: grid; }
   position: sticky; bottom: 0; z-index: 3; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   padding: 8px 0 calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--desk) 22%);
 }
-.pf-foot .pad { min-height: 70px; }
+.pf-foot .pad { min-height: 62px; }
 .cur { color: var(--vfd); font-family: var(--mono); font-weight: normal; letter-spacing: .04em; text-transform: none; text-shadow: 0 0 5px rgba(107,251,230,.5); }
-.safety-banner { padding: 8px 12px; border-radius: 4px; background: #3a1512; border: 1px solid #000; color: #ffb0a8; font-size: 12px; }
+.safety-banner { padding: 8px 12px; border-radius: 8px; background: #3a1512; border: 1px solid rgba(0, 0, 0, .8); color: #ffb0a8; font-size: 12px; }
 
 #toast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); display: none; z-index: 10;
-  padding: 10px 14px; max-width: 90vw; border-radius: 4px;
+  padding: 10px 16px; max-width: 90vw; border-radius: 12px; box-shadow: inset 0 2px 8px #000, 0 8px 24px rgba(0, 0, 0, .5);
 }
 #toast.show { display: block; }
 
@@ -364,14 +409,15 @@ body.tab-perform .perform { display: grid; }
 @media (max-width: 640px) {
   :root { --top: 54px; }
   .top { gap: 8px; }
-  .plate { display: none; }
-  .tabs .key { padding: 7px 7px; font-size: 10px; letter-spacing: .02em; }
+  .tabs .key { padding: 7px 8px; font-size: 10px; letter-spacing: .02em; }
   .tabs { gap: 4px; }
   .meter, #conn { display: none; }
   .form { grid-template-columns: 1fr; }
   .form .full { grid-column: span 1; }
   .pf-scene-pads, .pf-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .presets { grid-template-columns: repeat(2, 1fr); }
+  .pad { font-size: 16px; }
+  .pf-foot .pad { min-height: 56px; font-size: 14px; letter-spacing: .04em; }
+  .pad .led { top: 7px; right: 7px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .marquee span { animation: none; padding-left: 0; }
@@ -439,12 +485,8 @@ body.tab-perform .perform { display: grid; }
       <button class="pf-head" aria-expanded="false"><span class="swatches" id="pfPalHead"></span>
         <span class="hint" id="pfColState"></span><span class="chev"></span></button>
       <div class="pf-body">
-        <div class="pal-strip" id="pfPal"></div>
-        <div class="pf-row"><span class="silk">Wheel</span><span class="seg" id="pfGen">
-          <button class="btn small" data-gen="edit">Edit one</button><button class="btn small" data-gen="one">1 colour</button><button class="btn small" data-gen="two">2 colours</button></span></div>
-        <div class="pf-row" id="pfGenOpts"></div>
-        <div class="wheel-wrap"><canvas id="wheel" aria-label="Colour wheel: drag to pick"></canvas></div>
-        <div class="row" style="margin:6px 0 12px"><button class="btn" id="pfLive"><span class="led"></span>Live palette</button>
+        <div class="picker" id="pfPicker"></div>
+        <div class="row" style="margin:14px 0 12px"><button class="btn" id="pfLive"><span class="led"></span>Live palette</button>
           <span class="hint">On: every scene uses these colours. Off: each scene's own.</span></div>
         <div class="presets" id="pfPresets"></div>
       </div>
@@ -452,12 +494,14 @@ body.tab-perform .perform { display: grid; }
 
     <section class="panel pf-group" data-group="scenes">
       <span class="label">Scenes</span>
+      <div class="pf-row" style="margin:2px 0 10px"><span class="silk">Set</span><span class="seg" id="pfSets"></span></div>
       <div class="pf-scene-pads">
         <button class="pad cap-green" data-gpad="groove"><span class="led green"></span>Groove<small>random</small></button>
         <button class="pad cap-blue" data-gpad="calm"><span class="led"></span>Break<small>random calm</small></button>
         <button class="pad cap-red" data-gpad="peak"><span class="led"></span>Drop<small>flash + random</small></button>
         <button class="pad cap-purple" data-gpad="ambient"><span class="led"></span>Ambient<small>no music needed</small></button>
       </div>
+      <div class="pf-row"><span class="silk">Strobe freq</span><span class="seg" id="pfFreq"></span><span class="hint" id="pfFreqHint"></span></div>
       <button class="pf-head" aria-expanded="false">Scene <span class="cur" id="pfScene"></span><span class="chev"></span></button>
       <div class="pf-body"><div class="pf-cols" id="pfCols"></div></div>
     </section>
@@ -529,9 +573,12 @@ body.tab-perform .perform { display: grid; }
 
   <section class="panel pl show-only">
     <span class="label">Scenes</span>
+    <div class="pl-head"><span class="silk">Set</span><span class="seg" id="sets"></span>
+      <span class="fader"><span class="silk">Strobe freq</span><span class="seg" id="freq"></span><span class="hint" id="freqHint"></span></span></div>
     <div class="vfd pl-list" id="scenes"></div>
     <div class="pl-foot">
       <span class="swatches" id="livePal"></span>
+      <button class="btn small" id="shuffleShow" title="New colours from your colour ranges (Perform > Palette)" aria-label="Shuffle the palette"></button>
       <button class="btn small" id="liveToggle"><span class="led"></span>Live palette</button>
       <button class="btn" id="auto" aria-pressed="true" title="Change scenes with the music"><span class="led green"></span>Auto</button>
       <span class="fader"><span class="silk">Speed</span><span class="seg" id="speed"><button class="btn small" data-v="0.5">½×</button><button class="btn small" data-v="1">1×</button><button class="btn small" data-v="2">2×</button></span></span>
@@ -554,8 +601,7 @@ const CRT = "#3dff86", CRT_DIM = "rgba(61,255,134,0.35)", CRT_FAINT = "rgba(61,2
 const GROUP_LABEL = { groove: "Groove", calm: "Break", peak: "Drop", ambient: "Ambient" };
 const S = { meta: null, cfg: null, vis: null, tab: "show", mountFx: 0, testFx: 0, editing: false, view: "room",
             lastVis: 0, dragging: null, sliding: false, testing: false, search: null, searching: false,
-            open: new Set(), palSel: 0, gen: "edit", genStyle: "similar", genBases: null, genSel: 0,
-            make: { name: null, draft: null, dirty: false, preview: true } };
+            open: new Set(), make: { name: null, draft: null, dirty: false, preview: true, ranges: false } };
 const narrow = () => matchMedia("(max-width: 999px)").matches;
 
 // ---------- helpers ----------
@@ -668,6 +714,11 @@ const PALETTES = [
   ["Candy", ["#ff5fa2", "#ffb86b", "#9b8cff", "#5ce1ff", "#fff3c4"]],
   ["Vapor", ["#ff71ce", "#01cdfe", "#05ffa1", "#b967ff", "#fffb96"]],
   ["Halloween", ["#ff6a00", "#8a2be2", "#ff9e3d", "#5a189a", "#ffd166"]],
+  ["Pumpkin", ["#ff6a00", "#8a2be2", "#ffa31a", "#b47dff", "#ffd166"]],
+  ["Witch", ["#7b2cff", "#00ff9c", "#b47dff", "#66ffc4", "#e0d0ff"]],
+  ["Slime", ["#39ff14", "#9d00ff", "#a6ff4d", "#d580ff", "#ffffff"]],
+  ["Blood moon", ["#ff0022", "#b3001b", "#ff4d5e", "#ff7a00", "#ffffff"]],
+  ["Ghost", ["#d8fff6", "#b8a6ff", "#7dffd8", "#eae4ff", "#ffffff"]],
   ["Forest", ["#2ecc71", "#9be15d", "#00a35c", "#c6ff6b", "#0b6e4f"]],
   ["Berry", ["#e91e63", "#7b1fa2", "#c2185b", "#9c27b0", "#f48fb1"]],
   ["Lava", ["#ff1e00", "#ff006e", "#ff8800", "#b5179e", "#ffd000"]],
@@ -676,19 +727,199 @@ const PALETTES = [
   ["Club red", ["#ff0000", "#ff3355", "#990000", "#ff6666", "#ffffff"]],
   ["Deep blue", ["#0033ff", "#0099ff", "#3300cc", "#66a3ff", "#ffffff"]],
 ];
-const GEN_STYLES = [["similar", "Similar"], ["accent", "With accent"], ["soft", "Soft"]];
-function genFromOne(hex, style) {   // a family around one colour; colour 2 differs enough to tell A from B
-  const [h, s] = rgbToHsv(rgb(hex)), S0 = Math.max(s, 0.15);
-  const H = d => h + d / 360;
-  if (style === "accent") return [hsvHex(h, S0, 1), hsvHex(H(180), S0, 1), hsvHex(H(18), S0 * 0.8, 1), hsvHex(H(-18), S0, 0.85), hsvHex(H(195), S0 * 0.55, 1)];
-  if (style === "soft") return [hsvHex(h, S0 * 0.55, 1), hsvHex(H(35), S0 * 0.45, 1), hsvHex(H(-25), S0 * 0.5, 1), hsvHex(h, S0, 1), hsvHex(H(60), S0 * 0.3, 1)];
-  return [hsvHex(h, S0, 1), hsvHex(H(32), S0, 1), hsvHex(H(14), S0 * 0.8, 1), hsvHex(H(-22), S0, 0.9), hsvHex(H(55), S0 * 0.6, 1)];
+
+// ---------- colour ranges ----------
+// Drag across the colour ring over the colours you want, and again for a second stretch; the
+// palette is drawn at random from them (colour 1 from the first range and colour 2 from the
+// second, so A and B differ). The dice draws again; a tapped swatch is kept. Per device.
+const MIXES = [["vivid", "Vivid"], ["soft", "Soft"], ["mixed", "Mixed"]];
+const RING_IN = 0.64;   // the ring's inner edge, as a share of its radius
+const DICE = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/>${
+  [[8.2, 8.2], [15.8, 8.2], [12, 12], [8.2, 15.8], [15.8, 15.8]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6" fill="currentColor"/>`).join("")}</svg>`;
+const LOCK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/></svg>`;
+const PK = { ranges: [], mix: "vivid", seed: 1, locks: [false, false, false, false, false] };
+try {
+  const saved = JSON.parse(localStorage.getItem("lightlaland.ranges") || "{}");
+  if (Array.isArray(saved.ranges)) PK.ranges = saved.ranges.filter(r => r && isFinite(r.from) && r.span > 0 && r.span <= 360).slice(0, 2);
+  if (MIXES.some(([k]) => k === saved.mix)) PK.mix = saved.mix;
+  if (Number.isInteger(saved.seed)) PK.seed = saved.seed;
+  if (Array.isArray(saved.locks) && saved.locks.length === 5) PK.locks.forEach((_, i) => { PK.locks[i] = !!saved.locks[i]; });
+} catch (e) { /* private mode, or nothing saved yet */ }
+function savePicks() { try { localStorage.setItem("lightlaland.ranges", JSON.stringify(PK)); } catch (e) { /* private mode */ } }
+const newSeed = () => (Math.random() * 2 ** 31) | 0;
+function seeded(seed) {   // mulberry32: one seed always gives the same palette, until the dice rolls
+  let a = seed | 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
-function genFromTwo(a, b) {   // the two picks, then the colours between them
-  const [h1, s1, v1] = rgbToHsv(rgb(a)), [h2, s2, v2] = rgbToHsv(rgb(b));
-  let dh = h2 - h1; if (dh > 0.5) dh -= 1; if (dh < -0.5) dh += 1;
-  const at = t => hsvHex(h1 + dh * t, clamp(s1 + (s2 - s1) * t + 0.08 * Math.sin(Math.PI * t), 0, 1), Math.max(0.6, v1 + (v2 - v1) * t));
-  return [a, b, at(0.5), at(0.25), at(0.75)];
+const SPREAD = { 1: [0], 2: [0, 1], 3: [0, 2, 1], 5: [0, 4, 2, 1, 3] };   // which slice of its range each colour takes
+function rangePalette(ranges, mix, seed, base, locks) {
+  const rnd = seeded(seed), out = [...base];
+  const rs = ranges.length ? ranges : [{ from: rnd() * 360, span: 360 }];   // nothing picked: anything goes
+  rs.forEach((r, k) => {
+    const slots = [0, 1, 2, 3, 4].filter(s => s % rs.length === k), n = slots.length;
+    const order = r.span >= 300 && n === 5 ? [0, 2, 4, 1, 3] : SPREAD[n];   // all the way round: evenly
+    slots.forEach((slot, j) => {
+      const hue = r.from + (order[j] + 0.15 + 0.7 * rnd()) / n * r.span;
+      const soft = mix === "soft" || (mix === "mixed" && (slot === 2 || slot === 4));
+      const sat = soft ? 0.3 + 0.25 * rnd() : 0.82 + 0.18 * rnd();   // drawn even when kept, so a lock doesn't reshuffle the rest
+      if (!locks[slot]) out[slot] = hsvHex(hue / 360, sat, 1);
+    });
+  });
+  return out;
+}
+const inArc = (h, r) => ((h - r.from) % 360 + 360) % 360 <= r.span;
+const hueGap = (a, b) => Math.abs(((a - b) % 360 + 540) % 360 - 180);
+function addRange(ranges, r) {   // a new range replaces one it overlaps, else joins; with two already, the nearer goes
+  const mid = q => q.from + q.span / 2;
+  let i = ranges.findIndex(q => inArc(r.from, q) || inArc(q.from, r));
+  if (i < 0 && ranges.length < 2) return [...ranges, r];
+  if (i < 0) i = hueGap(mid(ranges[0]), mid(r)) <= hueGap(mid(ranges[1]), mid(r)) ? 0 : 1;
+  return ranges.map((q, k) => k === i ? r : q);
+}
+const ringCache = new Map();   // canvas size -> the hue ring, drawn once
+function ringImage(W) {
+  if (ringCache.has(W)) return ringCache.get(W);
+  const c = document.createElement("canvas"); c.width = c.height = W;
+  const ctx = c.getContext("2d"), img = ctx.createImageData(W, W), d = img.data, R = W / 2, r0 = R * RING_IN;
+  for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    const dx = x + 0.5 - R, dy = y + 0.5 - R, dist = Math.hypot(dx, dy), a = clamp(Math.min(dist - r0, R - dist) + 0.5, 0, 1);
+    if (!a) continue;
+    const [r, g, b] = hsvToRgb((Math.atan2(dy, dx) / (2 * Math.PI) + 1.25) % 1, 1, 1), o = (y * W + x) * 4;   // red at the top
+    d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = 255 * a;
+  }
+  ctx.putImageData(img, 0, 0);
+  ringCache.set(W, c);
+  return c;
+}
+const ringAngle = h => (h - 90) * D2R;
+function drawRing(cv, ranges, colors, locks) {
+  const dpr = fit(cv), W = cv.width, ctx = cv.getContext("2d"), R = W / 2, r0 = R * RING_IN, mid = (R + r0) / 2;
+  if (W < 40) return;
+  const ring = ringImage(W);
+  ctx.clearRect(0, 0, W, W);
+  ctx.globalAlpha = ranges.length ? 0.22 : 1; ctx.drawImage(ring, 0, 0); ctx.globalAlpha = 1;
+  const band = (r, inset) => {
+    ctx.beginPath();
+    ctx.arc(R, R, R - inset, ringAngle(r.from), ringAngle(r.from + r.span));
+    ctx.arc(R, R, r0 + inset, ringAngle(r.from + r.span), ringAngle(r.from), true);
+    ctx.closePath();
+  };
+  for (const r of ranges) {   // the picked stretches in full colour, outlined, with a handle at each end
+    ctx.save(); band(r, -1); ctx.clip(); ctx.drawImage(ring, 0, 0); ctx.restore();
+    band(r, dpr); ctx.lineWidth = 2 * dpr; ctx.strokeStyle = "rgba(255,255,255,.92)";
+    ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 6 * dpr; ctx.stroke(); ctx.shadowBlur = 0;
+    for (const h of [r.from, r.from + r.span]) {
+      const x = R + Math.cos(ringAngle(h)) * mid, y = R + Math.sin(ringAngle(h)) * mid;
+      ctx.beginPath(); ctx.arc(x, y, 8 * dpr, 0, 2 * Math.PI); ctx.fillStyle = "#fff"; ctx.fill();
+      ctx.lineWidth = 2.5 * dpr; ctx.strokeStyle = "rgba(0,0,0,.55)"; ctx.stroke();
+    }
+  }
+  colors.forEach((c, i) => {   // where each palette colour sits: just inside the ring, paler ones further in
+    const [h, s] = rgbToHsv(rgb(c)), a = ringAngle(h * 360), rr = r0 - 12 * dpr - (1 - s) * 10 * dpr, kept = locks && locks[i];
+    ctx.beginPath(); ctx.arc(R + Math.cos(a) * rr, R + Math.sin(a) * rr, 5.5 * dpr, 0, 2 * Math.PI); ctx.fillStyle = c; ctx.fill();
+    ctx.lineWidth = (kept ? 2.5 : 1.5) * dpr; ctx.strokeStyle = kept ? "#ffb52e" : "rgba(255,255,255,.85)"; ctx.stroke();
+  });
+}
+// target: { colors() -> five colours, set(colors, final), locks: five booleans (shows the swatches to keep) or null }
+function makePicker(host, target) {
+  host.innerHTML = `
+    ${target.locks ? `<div class="pk-sw" role="group" aria-label="The palette: tap a colour to keep it when you shuffle">${
+      [0, 1, 2, 3, 4].map(i => `<button type="button" data-lock="${i}" aria-pressed="false">${LOCK}</button>`).join("")}</div>` : ""}
+    <div class="pk-ring"><canvas aria-label="Colour ring: drag across the colours you want"></canvas>
+      <button type="button" class="pk-roll" aria-label="Shuffle: new colours from your ranges">${DICE}</button></div>
+    <div class="pk-ranges" aria-live="polite"></div>
+    <div class="pk-row"><span class="seg">${MIXES.map(([k, l]) => `<button type="button" class="btn small" data-mix="${k}">${l}</button>`).join("")}</span></div>`;
+  const cv = $("canvas", host), roll = $(".pk-roll", host), locks = target.locks || [];
+  let drag = null, shown = null, last = 0, pend = null, rolls = 0, key = "";
+  const painted = () => {
+    const s = drag.sweep;
+    if (Math.abs(s) < 6) return { from: (drag.h0 + 348) % 360, span: 24 };   // a tap: a narrow band around that colour
+    return s > 0 ? { from: drag.h0, span: s } : { from: (drag.h0 + s + 360) % 360, span: -s };
+  };
+  const ranges = () => drag && drag.kind === "paint" ? addRange(PK.ranges, painted()) : PK.ranges;
+  function paint(force) {
+    const cols = shown || target.colors(), rs = ranges();
+    const k = `${cv.clientWidth}|${cols}|${JSON.stringify(rs)}|${locks}|${PK.mix}`;
+    if (!force && k === key) return;
+    key = k;
+    drawRing(cv, rs, cols, target.locks);
+    cols.forEach((c, i) => roll.style.setProperty(`--c${i}`, c));
+    $$("[data-lock]", host).forEach((b, i) => {
+      b.style.background = cols[i]; b.setAttribute("aria-pressed", String(!!locks[i]));
+      b.setAttribute("aria-label", `Colour ${i + 1}: ${locks[i] ? "kept when shuffling" : "tap to keep it"}`);
+    });
+    for (const b of $$("[data-mix]", host)) b.setAttribute("aria-pressed", String(b.dataset.mix === PK.mix));
+    const chip = (r, i) => `<span class="pk-chip"><i style="background:linear-gradient(90deg,${
+      [0, 0.25, 0.5, 0.75, 1].map(u => hsvHex((r.from + u * r.span) / 360, 1, 1)).join(",")})"></i><button type="button" data-drop="${i}" aria-label="Remove this range">&times;</button></span>`;
+    const keep = target.locks ? " Tap a colour above to keep it." : "";
+    $(".pk-ranges", host).innerHTML = rs.length
+      ? rs.map(chip).join("") + (rs.length < 2 ? `<span class="hint">Drag again for a second range.${keep}</span>` : "")
+      : `<span class="hint">Drag across the ring over the colours you want (with none picked, the dice uses them all).${keep}</span>`;
+  }
+  function apply(final) {   // a palette from the ranges; sent at most every 70 ms while dragging
+    shown = rangePalette(ranges(), PK.mix, PK.seed, target.colors(), locks);
+    paint(true);
+    clearTimeout(pend);
+    const now = performance.now(), cols = shown;
+    if (final || now - last > 70) { last = now; target.set(cols, final); }
+    else pend = setTimeout(() => { last = performance.now(); target.set(cols, false); }, 70);
+    if (final) setTimeout(() => { if (!drag) shown = null; }, 700);   // then show what the Mac has again
+  }
+  const polar = e => {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
+    return { hue: ((Math.atan2(y, x) / D2R + 90) % 360 + 360) % 360, dist: Math.hypot(x, y) / (r.width / 2) };
+  };
+  cv.addEventListener("pointerdown", e => {
+    const p = polar(e);
+    if (p.dist < RING_IN - 0.1 || p.dist > 1.1) return;   // the ring only
+    e.preventDefault(); cv.setPointerCapture(e.pointerId);
+    for (const [i, r] of PK.ranges.entries()) for (const end of [0, 1]) {   // grabbed a handle: stretch that range
+      if (hueGap(p.hue, r.from + end * r.span) < 8) { drag = { kind: "end", i, end }; return; }
+    }
+    drag = { kind: "paint", h0: p.hue, last: p.hue, sweep: 0 };
+    apply(false);
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!drag) return;
+    const p = polar(e);
+    if (drag.kind === "paint") {
+      drag.sweep = clamp(drag.sweep + ((p.hue - drag.last + 540) % 360 - 180), -360, 360);
+      drag.last = p.hue;
+    } else {   // the other end stays put
+      const r = PK.ranges[drag.i], other = drag.end ? r.from : r.from + r.span;
+      const span = clamp(((drag.end ? p.hue - other : other - p.hue) % 360 + 360) % 360, 6, 360);
+      PK.ranges[drag.i] = drag.end ? { from: r.from, span } : { from: ((other - span) % 360 + 360) % 360, span };
+    }
+    apply(false);
+  });
+  const done = () => {
+    if (!drag) return;
+    if (drag.kind === "paint") PK.ranges = addRange(PK.ranges, painted());
+    drag = null; savePicks(); apply(true);
+  };
+  cv.addEventListener("pointerup", done);
+  cv.addEventListener("pointercancel", done);
+  roll.addEventListener("click", () => {
+    PK.seed = newSeed(); savePicks();
+    $("svg", roll).style.transform = `rotate(${++rolls * 180}deg)`;
+    apply(true);
+  });
+  host.addEventListener("click", e => {
+    const b = e.target.closest("button[data-mix], button[data-lock], button[data-drop]"); if (!b) return;
+    if (b.dataset.mix) { PK.mix = b.dataset.mix; savePicks(); apply(true); }
+    else if (b.dataset.lock !== undefined) { locks[+b.dataset.lock] = !locks[+b.dataset.lock]; savePicks(); paint(true); }
+    else { PK.ranges = PK.ranges.filter((_, i) => i !== +b.dataset.drop); savePicks(); apply(true); }
+  });
+  return { paint };   // the owner paints it once there's a palette to show
+}
+function shuffleLive() {   // the Show tab's dice: the same ranges and kept colours as Perform's
+  PK.seed = newSeed(); savePicks();
+  setPalette(rangePalette(PK.ranges, PK.mix, PK.seed, shownPalette().colors, PK.locks), true);
 }
 
 // ---------- server ----------
@@ -712,6 +943,7 @@ async function loadMeta() {
   ({ deg_per_step: DEG_PER_STEP, steps_per_turn: STEPS_PER_TURN } = S.meta.geometry);
   S.cfg = S.meta.config;
   if (S.meta.search && S.meta.search.at) S.search = S.meta.search;
+  fillSetKeys($("#sets")); fillSetKeys($("#pfSets"));
   onScenes();
   onConfig();
 }
@@ -739,10 +971,42 @@ function onScenes() {
   if (S.tab === "setup" && !document.activeElement?.closest?.("#setup input, #setup select")) renderSetup();
 }
 
+// ---------- sets and strobe frequency (Show and Perform) ----------
+const FREQS = [[0, "Off"], [0.5, "½×"], [1, "1×"], [2, "2×"], [4, "4×"]];
+const activeSet = () => (S.vis && S.vis.set !== undefined ? S.vis.set : S.cfg.show.set) || "";
+const setLabel = k => (S.meta.sets.find(([s]) => s === k) || [k, k])[1];
+function setGroups() {   // the active set's scenes by group, leaving out groups it has none in
+  const mine = scenes().filter(s => (s.set || "") === activeSet());
+  return groups().map(g => [g, mine.filter(s => s.group === g)]).filter(([, list]) => list.length);
+}
+function fillSetKeys(host) {
+  host.innerHTML = S.meta.sets.map(([k, l]) => `<button type="button" class="btn small" data-set="${k}">${esc(l)}</button>`).join("");
+  for (const b of $$("[data-set]", host)) b.addEventListener("click", () => api("show", { set: b.dataset.set }));
+}
+function fillFreqKeys(host) {
+  host.innerHTML = FREQS.map(([v, l]) => `<button type="button" class="btn small" data-freq="${v}">${l}</button>`).join("");
+  for (const b of $$("[data-freq]", host)) b.addEventListener("click", () => api("show", { strobe_freq: +b.dataset.freq }));
+}
+function freqText(v) {   // how often the playing scene flashes at this setting
+  const sc = sceneBy(v.scene), fx = sc ? sc.spec.fx : null, n = fx ? (fx.strobe + fx.lightning) * v.strobe_freq : 0;
+  if (!fx || !(fx.strobe + fx.lightning)) return "no random strobes in this scene";
+  return v.strobe_freq ? `about ${n < 1 ? n.toFixed(1) : Math.round(n)} a minute in this scene` : "off";
+}
+function paintSetAndFreq(v) {
+  for (const b of $$("[data-set]")) b.setAttribute("aria-pressed", String(b.dataset.set === activeSet()));
+  for (const b of $$("[data-freq]")) b.setAttribute("aria-pressed", String(+b.dataset.freq === v.strobe_freq));
+  for (const id of ["#freqHint", "#pfFreqHint"]) $(id).textContent = freqText(v);
+  if ($("#scenes").dataset.set !== activeSet()) buildPlaylist();   // switched here or on another device
+  if ($("#pfCols").dataset.set !== activeSet()) buildPerformScenes();
+}
+
 // ---------- Show tab ----------
 function buildPlaylist() {
-  $("#scenes").innerHTML = groups().map(g => `<div class="pl-col"><span class="silk">${GROUP_LABEL[g]}</span>${
-    scenes().filter(s => s.group === g).map(sc => `<button class="track" data-name="${esc(sc.name)}" title="${esc(sc.blurb)}" aria-pressed="false">
+  const cols = setGroups();
+  $("#scenes").dataset.set = activeSet();
+  $("#scenes").style.setProperty("--cols", Math.max(1, cols.length));
+  $("#scenes").innerHTML = cols.map(([g, list]) => `<div class="pl-col"><span class="silk">${GROUP_LABEL[g]}</span>${
+    list.map(sc => `<button class="track" data-name="${esc(sc.name)}" title="${esc(sc.blurb)}" aria-pressed="false">
       <span class="sw">${sc.palette.slice(0, 3).map(c => `<i style="background:${c}"></i>`).join("")}</span><span>${esc(sc.label)}</span></button>`).join("")}</div>`).join("");
   for (const b of $$("#scenes .track")) b.addEventListener("click", () => api("scene", { name: b.dataset.name }));
   paintPlaylist();
@@ -753,10 +1017,10 @@ function paintPlaylist() {
 function paintLivePal() {
   const host = $("#livePal"); if (!host || document.activeElement?.closest?.("#livePal")) return;
   const p = shownPalette();
-  const key = p.colors.join() + p.on;
+  const key = p.colors.join() + p.on + PK.locks;
   if (host.dataset.key === key) return;
   host.dataset.key = key;
-  host.innerHTML = p.colors.map((c, i) => `<label class="swatch" style="background:${c}" title="Colour ${i + 1}"><input type="color" data-i="${i}" value="${c}"></label>`).join("");
+  host.innerHTML = p.colors.map((c, i) => `<label class="swatch ${PK.locks[i] ? "locked" : ""}" style="background:${c}" title="Colour ${i + 1}${PK.locks[i] ? " (kept when shuffling)" : ""}"><input type="color" data-i="${i}" value="${c}"></label>`).join("");
   for (const inp of $$("input", host)) {
     inp.addEventListener("input", () => { inp.parentElement.style.background = inp.value; });
     inp.addEventListener("change", () => { const cols = [...shownPalette().colors]; cols[+inp.dataset.i] = inp.value; setPalette(cols); });
@@ -795,6 +1059,9 @@ function setupShowControls() {
   });
   inten.addEventListener("change", () => { S.sliding = false; api("show", { intensity: inten.value / 100 }); });
   $("#liveToggle").addEventListener("click", () => api("palette", { on: !livePalette().on }));
+  $("#shuffleShow").innerHTML = `${DICE}Shuffle`;
+  $("#shuffleShow").addEventListener("click", shuffleLive);
+  fillFreqKeys($("#freq"));
   $("#phrase").innerHTML = Array.from({ length: 32 }, () => "<i></i>").join("");
 }
 
@@ -805,41 +1072,24 @@ function setGroupOpen(g, open) {
   el.classList.toggle("open", open);
   for (const h of $$(":scope > .pf-head", el)) h.setAttribute("aria-expanded", String(open));
   if (open) S.open.add(g); else S.open.delete(g);
-  S.wheelKey = null;
 }
 function buildPerformScenes() {
   const host = $("#pfCols"); if (!host) return;
-  host.innerHTML = groups().map(g => `<div class="col vfd"><span class="silk" style="padding:4px 6px;color:var(--vfd-mid)">${GROUP_LABEL[g]}</span>${
-    scenes().filter(s => s.group === g).map(s => `<button class="track" data-pick="${esc(s.name)}" data-g="${g}" aria-pressed="false"><span>${esc(s.label)}</span></button>`).join("")}</div>`).join("");
+  const cols = setGroups();
+  host.dataset.set = activeSet();
+  host.style.setProperty("--cols", Math.max(1, cols.length));
+  host.innerHTML = cols.map(([g, list]) => `<div class="col vfd"><span class="silk" style="padding:4px 6px;color:var(--vfd-mid)">${GROUP_LABEL[g]}</span>${
+    list.map(s => `<button class="track" data-pick="${esc(s.name)}" data-g="${g}" aria-pressed="false"><span>${esc(s.label)}</span></button>`).join("")}</div>`).join("");
   for (const b of $$("[data-pick]", host)) b.addEventListener("click", () => api("group", { group: b.dataset.g, name: b.dataset.pick }));
 }
-function renderGenOpts() {
-  for (const b of $$("#pfGen .btn")) b.setAttribute("aria-pressed", String(b.dataset.gen === S.gen));
-  const host = $("#pfGenOpts");
-  if (S.gen === "one") {
-    host.innerHTML = `<span class="silk">Style</span><span class="seg">${GEN_STYLES.map(([k, l]) =>
-      `<button class="btn small" data-style="${k}" aria-pressed="${k === S.genStyle}">${l}</button>`).join("")}</span>
-      <span class="hint">Pick a colour on the wheel: the palette is built around it.</span>`;
-    for (const b of $$("[data-style]", host)) b.addEventListener("click", () => {
-      S.genStyle = b.dataset.style; renderGenOpts(); setPalette(genFromOne(shownPalette().colors[0], S.genStyle));
-    });
-  } else if (S.gen === "two") {
-    const bases = S.genBases || shownPalette().colors.slice(0, 2);
-    host.innerHTML = `<span class="silk">Picks</span>${bases.map((c, i) =>
-      `<button class="swatch ${i === S.genSel ? "sel" : ""}" data-base="${i}" style="background:${c}" aria-label="Pick ${i + 1}"></button>`).join("")}
-      <span class="hint">Choose a pick, then a colour on the wheel. The palette blends between them.</span>`;
-    for (const b of $$("[data-base]", host)) b.addEventListener("click", () => { S.genSel = +b.dataset.base; renderGenOpts(); S.wheelKey = null; });
-  } else {
-    host.innerHTML = `<span class="hint">Tap a colour above, then pick on the wheel to change just that one.</span>`;
-  }
-}
+let pfPicker = null;
 function paintPerformPalette() {
-  const p = shownPalette(), key = p.colors.join() + p.on + S.palSel + S.gen;
-  if ($("#pfPal").dataset.key === key) return;
-  $("#pfPal").dataset.key = key;
-  $("#pfPal").innerHTML = p.colors.map((c, i) => `<button class="swatch ${S.gen === "edit" && i === S.palSel ? "sel" : ""}" data-pal="${i}" style="background:${c}" aria-label="Colour ${i + 1}"></button>`).join("");
-  for (const b of $$("[data-pal]", $("#pfPal"))) b.addEventListener("click", () => { S.palSel = +b.dataset.pal; S.gen = "edit"; renderGenOpts(); S.wheelKey = null; $("#pfPal").dataset.key = ""; });
-  $("#pfPalHead").innerHTML = p.colors.map(c => `<span class="swatch" style="background:${c};width:22px;height:22px"></span>`).join("");
+  const p = shownPalette(), head = $("#pfPalHead"), key = p.colors.join();
+  if (head.dataset.key !== key) {
+    head.dataset.key = key;
+    head.innerHTML = p.colors.map(c => `<span class="swatch" style="background:${c};width:22px;height:22px"></span>`).join("");
+  }
+  if (S.open.has("colors")) pfPicker.paint();
 }
 function setupPerform() {
   for (const g of $$(".pf-group")) for (const h of $$(":scope > .pf-head", g))
@@ -855,74 +1105,14 @@ function setupPerform() {
   for (const b of $$("#pfPhrase .btn")) b.addEventListener("click", () => api("audio", { phrase_bars: +b.dataset.v }));
   $("#pfFollow").addEventListener("click", () => api("follow", { on: !(S.vis && S.vis.follow) }));
   $("#pfAuto").addEventListener("click", () => api("show", { auto: !(S.vis && S.vis.auto) }));
-  for (const b of $$("#pfGen .btn")) b.addEventListener("click", () => {
-    S.gen = b.dataset.gen;
-    if (S.gen === "two") S.genBases = shownPalette().colors.slice(0, 2);
-    renderGenOpts(); S.wheelKey = null; $("#pfPal").dataset.key = "";
-  });
-  renderGenOpts();
+  fillFreqKeys($("#pfFreq"));
+  pfPicker = makePicker($("#pfPicker"), { locks: PK.locks, colors: () => shownPalette().colors, set: setPalette });
   $("#pfLive").addEventListener("click", () => api("palette", { on: !livePalette().on }));
   $("#pfPresets").innerHTML = PALETTES.map(([name, cols], i) =>
     `<button class="preset" data-preset="${i}"><span class="bar">${cols.map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${esc(name)}</b></button>`).join("");
-  for (const b of $$("[data-preset]")) b.addEventListener("click", () => setPalette(PALETTES[+b.dataset.preset][1]));
-  // colour wheel: hue around, saturation outwards (lights want full brightness)
-  const wheel = $("#wheel");
-  let dragging = false, last = 0, pend = null;
-  const pick = e => {
-    const r = wheel.getBoundingClientRect(), x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
-    const R = r.width / 2 - 2, s = clamp(Math.hypot(x, y) / R, 0, 1), h = (Math.atan2(y, x) / (2 * Math.PI) + 1) % 1;
-    return toHex(hsvToRgb(h, s, 1));
-  };
-  const paletteFor = hex => {
-    if (S.gen === "one") return genFromOne(hex, S.genStyle);
-    if (S.gen === "two") {
-      S.genBases = S.genBases || shownPalette().colors.slice(0, 2);
-      S.genBases[S.genSel] = hex;
-      return genFromTwo(S.genBases[0], S.genBases[1]);
-    }
-    const cols = [...shownPalette().colors]; cols[S.palSel] = hex; return cols;
-  };
-  const send = (hex, save) => {
-    S.wheelLocal = hex; S.wheelKey = null;
-    const now = performance.now();
-    clearTimeout(pend);
-    if (save || now - last > 70) { last = now; setPalette(paletteFor(hex), save); if (S.gen === "two") renderGenOpts(); }
-    else pend = setTimeout(() => { last = performance.now(); setPalette(paletteFor(hex), false); }, 70);
-  };
-  wheel.addEventListener("pointerdown", e => { dragging = true; wheel.setPointerCapture(e.pointerId); send(pick(e), false); });
-  wheel.addEventListener("pointermove", e => { if (dragging) send(pick(e), false); });
-  const up = e => { if (!dragging) return; dragging = false; send(pick(e), true); setTimeout(() => { S.wheelLocal = null; }, 500); };
-  wheel.addEventListener("pointerup", up); wheel.addEventListener("pointercancel", () => { dragging = false; S.wheelLocal = null; });
-}
-let wheelImg = null;
-function drawWheel() {
-  const cv = $("#wheel"); if (!visible(cv)) return;
-  const p = shownPalette();
-  const hex = S.wheelLocal || (S.gen === "two" ? (S.genBases || p.colors)[S.genSel] : S.gen === "one" ? p.colors[0] : p.colors[S.palSel]);
-  const key = `${cv.clientWidth}:${hex}:${p.colors.join()}:${S.gen}`;
-  if (S.wheelKey === key) return;
-  S.wheelKey = key;
-  const ctx = cv.getContext("2d"), dpr = fit(cv), W = cv.width, H = cv.height, R = Math.min(W, H) / 2 - 2 * dpr;
-  if (!wheelImg || wheelImg.w !== W) {
-    const img = ctx.createImageData(W, H), d = img.data;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const dx = x - W / 2, dy = y - H / 2, dist = Math.hypot(dx, dy), o = (y * W + x) * 4;
-      if (dist > R + dpr) continue;
-      const [r, g, b] = hsvToRgb((Math.atan2(dy, dx) / (2 * Math.PI) + 1) % 1, Math.min(1, dist / R), 1);
-      d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = dist > R ? 255 * (R + dpr - dist) / dpr : 255;
-    }
-    wheelImg = { w: W, img };
-  }
-  ctx.clearRect(0, 0, W, H);
-  ctx.putImageData(wheelImg.img, 0, 0);
-  const marks = S.gen === "edit" ? p.colors.map((c, i) => [c, i === S.palSel]) : [[hex, true]];
-  for (const [c, sel] of marks) {
-    const [h, s] = rgbToHsv(rgb(c)), a = h * 2 * Math.PI, mx = W / 2 + Math.cos(a) * s * R, my = H / 2 + Math.sin(a) * s * R;
-    const r = (sel ? 11 : 7) * dpr;
-    ctx.lineWidth = 3 * dpr; ctx.strokeStyle = "#000"; ctx.beginPath(); ctx.arc(mx, my, r, 0, 2 * Math.PI); ctx.stroke();
-    ctx.lineWidth = 1.5 * dpr; ctx.strokeStyle = sel ? "#fff" : "rgba(255,255,255,.6)"; ctx.stroke();
-    ctx.fillStyle = c; ctx.beginPath(); ctx.arc(mx, my, r - 3 * dpr, 0, 2 * Math.PI); ctx.fill();
-  }
+  for (const b of $$("[data-preset]")) b.addEventListener("click", () => {   // a preset is a whole palette: nothing kept
+    PK.locks.fill(false); savePicks(); setPalette(PALETTES[+b.dataset.preset][1]);
+  });
 }
 function safetyNote() {   // a sentence for the banner when beams are held off
   if (!S.cfg.safety.on) return "Beam safety is OFF (Setup). Beams can point anywhere.";
@@ -970,7 +1160,6 @@ function setTab(tab) {
   if (tab === "setup") renderSetup();
   if (tab === "make") { renderMake(); sendPreview(); }
   if (tab === "show") buildPlaylist();
-  S.wheelKey = null;
 }
 function onConfig() {
   if (!S.meta) return;
@@ -1070,12 +1259,13 @@ const SHOW_IF = {   // hide fields that don't apply to the current choices
     floor: l => !has(["off", "solid"], l.pattern),
     depth: l => l.pulse !== "none", decay: l => !has(["none", "breathe"], l.pulse) || l.pattern === "rain",
     rate: l => !has(["off", "solid"], l.pattern) || has(["scroll", "random", "rainbow"], l.color),
-    width: l => has(["chase", "bounce", "midout", "wave"], l.pattern), count: l => l.pattern === "sparkle",
-    density: l => has(["rain", "twinkle"], l.pattern),
+    width: l => has(["chase", "bounce", "midout", "wave", "wander"], l.pattern), count: l => has(["sparkle", "eyes"], l.pattern),
+    density: l => has(["rain", "twinkle", "glitch"], l.pattern),
     reverse: l => has(["chase", "bounce", "fill", "wave"], l.pattern) || has(["ab", "spread", "scroll", "rainbow"], l.color),
     flip_bars: l => has(["chase", "bounce", "midout", "fill"], l.pattern),
   },
-  fx: { lightning_level: f => f.lightning > 0, lightning_beams: f => f.lightning > 0 },
+  fx: { lightning_level: f => f.lightning > 0, lightning_beams: f => f.lightning > 0,
+        strobe_len: f => f.strobe > 0, strobe_beams: f => f.strobe > 0 },
 };
 function blankSpec() {
   const sp = { palette: ["#ff1f5a", "#ff6a3d", "#ffb000", "#00e1ff", "#7b2cff"] };
@@ -1097,7 +1287,7 @@ function fieldShown(sec, f, d) {
 function fmtNum(f, v, d) {
   if (["level", "floor", "depth", "speed", "spin", "density", "lightning_level"].includes(f.key)) return `${Math.round(v * 100)}%`;
   if (f.key === "width") return `${Math.round(v * 100)}% of the bar`;
-  if (f.key === "rate") return `${+(+v).toFixed(2)} ${d && d.clock === "seconds" ? "s" : "beats"}`;
+  if (f.key === "rate" || f.key === "strobe_len") return `${+(+v).toFixed(2)} ${d && d.clock === "seconds" ? "s" : +v === 1 ? "beat" : "beats"}`;
   return String(+(+v).toFixed(2));
 }
 function fieldHtml(sec, f, v, d) {
@@ -1133,15 +1323,18 @@ function renderMake() {
     const fields = S.meta.schema[sec].filter(f => fieldShown(sec, f, d)).map(f => fieldHtml(sec, f, vals[f.key], d)).join("");
     const pal = sec === "general" ? `<div class="full mk-pal"><span class="silk">Palette</span>${d.palette.map((c, i) =>
       `<label class="swatch" style="background:${c}" title="Colour ${i + 1}"><input type="color" data-pal="${i}" value="${c}"></label>`).join("")}
-      <button class="btn small" id="mkGen1">Build from colour 1</button><button class="btn small" id="mkGen2">Blend 1 &rarr; 2</button>
-      <span class="fhint">The live palette (Perform) replaces these while it's on.</span></div>` : "";
+      <span class="fhint">The live palette (Perform) replaces these while it's on.</span></div>
+      <details class="full mk-ranges" ${m.ranges ? "open" : ""}><summary>Fill at random from colour ranges</summary><div class="picker" id="mkPicker"></div></details>` : "";
     return `<fieldset><legend>${title}</legend><div class="form">${fields}${pal}</div></fieldset>`;
   }).join("");
   $("#make").innerHTML = `
     <div class="mk-bar">
       <div class="row">
-        <select id="mkPick" style="flex:1;min-width:0">${groups().map(g => `<optgroup label="${GROUP_LABEL[g]}">${
-          scenes().filter(s => s.group === g).map(s => `<option value="${esc(s.name)}" ${!m.isNew && s.name === m.name ? "selected" : ""}>${esc(s.label)}${s.builtin ? (s.modified ? " (edited)" : "") : " (yours)"}</option>`).join("")}</optgroup>`).join("")}
+        <select id="mkPick" style="flex:1;min-width:0">${S.meta.sets.map(([set, setName]) => groups().map(g => {
+          const list = scenes().filter(s => (s.set || "") === set && s.group === g);
+          return list.length ? `<optgroup label="${esc(setName)}: ${GROUP_LABEL[g]}">${list.map(s =>
+            `<option value="${esc(s.name)}" ${!m.isNew && s.name === m.name ? "selected" : ""}>${esc(s.label)}${s.builtin ? (s.modified ? " (edited)" : "") : " (yours)"}</option>`).join("")}</optgroup>` : "";
+        }).join("")).join("")}
           ${m.isNew ? `<option selected>${esc(d.label)} (not saved)</option>` : ""}</select>
       </div>
       <div class="row" style="margin-top:8px">
@@ -1181,8 +1374,14 @@ function renderMake() {
   });
   $("#mkRevert").addEventListener("click", () => { selectMake(S.make.name); renderMake(); sendPreview(); });
   $("#mkPlay").addEventListener("click", () => api("scene", { name: S.make.name }).then(() => sendPreview()));
-  $("#mkGen1").addEventListener("click", () => { S.make.draft.palette = genFromOne(S.make.draft.palette[0], "similar"); changed(true); });
-  $("#mkGen2").addEventListener("click", () => { S.make.draft.palette = genFromTwo(S.make.draft.palette[0], S.make.draft.palette[1]); changed(true); });
+  const ranges = $(".mk-ranges", $("#make"));
+  ranges.addEventListener("toggle", () => { S.make.ranges = ranges.open; if (ranges.open) mkPicker.paint(true); });
+  const mkPicker = makePicker($("#mkPicker"), { locks: null, colors: () => S.make.draft.palette, set(cols) {
+    S.make.draft.palette = [...cols];
+    $$("[data-pal]", $("#make")).forEach((el, i) => { el.value = cols[i]; el.parentElement.style.background = cols[i]; });
+    changed(false);
+  } });
+  if (ranges.open) mkPicker.paint(true);
   for (const el of $$("[data-sec]", $("#make"))) {
     const sec = el.dataset.sec, key = el.dataset.key, f = S.meta.schema[sec].find(x => x.key === key);
     const target = () => sec === "general" ? S.make.draft : S.make.draft[sec];
@@ -1256,7 +1455,7 @@ function renderSetup() {
         <label>Lowest beam angle: <span class="val" id="sfLowV">${sf.low}&deg;</span>
           <input type="range" id="sfLow" min="-20" max="60" step="1" value="${sf.low}"><span class="fhint">0 = level. Raise it if level beams still reach anyone (stairs, a loft).</span></label>
         <label>Highest beam angle: <span class="val" id="sfHighV">${sf.high}&deg;</span>
-          <input type="range" id="sfHigh" min="100" max="270" step="1" value="${sf.high}"><span class="fhint">180 = level into the wall; 270 = straight down the wall under the bar (lights the wall, not the room).</span></label>
+          <input type="range" id="sfHigh" min="90" max="270" step="1" value="${sf.high}"><span class="fhint">180 = level into the wall; 270 = straight down the wall under the bar. On a windowsill, a little over 90 keeps beams from tilting back into the house.</span></label>
       </div>
       <div class="form" style="margin-top:10px">${c.fixtures.map((f, i) => `
         <label>${esc(f.id)}: beams stop at CH1<input data-limit="${i}" type="number" min="0" max="255" placeholder="none" value="${f.limit ?? ""}">
@@ -1350,10 +1549,10 @@ function renderSetup() {
         <label>Tilt width<select id="sweep">${[15, 20, 30, 40, 50, 60, 75, 90].map(n => `<option value="${n}" ${Math.round(sh.sweep_width) === n ? "selected" : ""}>±${n}°</option>`).join("")}</select></label>
       </div>
       <p class="hint">Scenes whose tilt width is 0 use this. Everything else is set per scene in Make.</p>
-      <p class="silk" style="margin-top:12px">Auto mode picks from</p>
-      <div class="chips">${scenes().filter(s => s.group !== "ambient").map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
+      <p class="silk" style="margin-top:12px">Auto mode picks from (${esc(setLabel(activeSet()))} set)</p>
+      <div class="chips">${setGroups().filter(([g]) => g !== "ambient").flatMap(([, list]) => list).map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
       <p class="silk" style="margin-top:12px">Ambient when the music stops</p>
-      <div class="chips">${scenes().filter(s => s.group === "ambient").map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
+      <div class="chips">${setGroups().filter(([g]) => g === "ambient").flatMap(([, list]) => list).map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
     </fieldset>
 
     <fieldset><legend>Channel test</legend>
@@ -1936,7 +2135,10 @@ function drawTilt(cv, v, fx) {
   ctx.textAlign = "right"; ctx.font = `${10 * dpr}px ${MONO}`;
   ctx.fillText(v.spin ? "SPIN" : fx.calibrated ? `${Math.round(shown)}°` : "?°", W - 6 * dpr, 5 * dpr);
   ctx.textBaseline = "bottom"; ctx.fillStyle = v.safe ? CRT_DIM : "rgba(255,120,100,0.95)";
-  ctx.fillText(v.safe ? (v.why === "safety off" ? "NO SAFETY" : "BEAMS OK") : (v.why || "").toUpperCase(), W - 6 * dpr, H - 4 * dpr);
+  const why = v.safe ? (v.why === "safety off" ? "NO SAFETY" : "BEAMS OK") : (v.why || "").toUpperCase(), room = W - 12 * dpr;
+  const wide = ctx.measureText(why).width;
+  if (wide > room) ctx.font = `${Math.max(6, 10 * room / wide) * dpr}px ${MONO}`;   // shrink to fit a narrow dial
+  ctx.fillText(why, W - 6 * dpr, H - 4 * dpr);
 }
 
 // ---------- drawing: both faces of a bar ----------
@@ -1999,7 +2201,7 @@ function drawSpectrum() {
 
 // ---------- displays and status (10 times a second) ----------
 const STATE_TEXT = { groove: "GROOVE", breakdown: "BREAKDOWN", drop: "DROP", ambient: "AMBIENT" };
-let marqText = "";
+let marqText = "", lastOut = "";
 function lockText(v) {
   const k = v.clock;
   if (!v.follow) return "tap tempo";
@@ -2018,14 +2220,16 @@ function updateDom() {
   if (!$("#level").children.length) $("#level").innerHTML = Array.from({ length: 10 }, () => "<i></i>").join("");
   $$("#level i").forEach((el, k) => { el.className = (k + 0.5) / 10 < lvl ? `on${k >= 8 ? " clip" : k >= 6 ? " hot" : ""}` : ""; });
   $("#src").textContent = v.audio.error ? "NO AUDIO" : (v.audio.name || "NO AUDIO").toUpperCase();
-  $("#out").innerHTML = S.cfg ? S.cfg.fixtures.map(f => {
+  const out = S.cfg ? S.cfg.fixtures.map(f => {
     const bad = v.out.errors[`${f.ip}/${f.universe}`];
     const tip = bad || `${targetText(f.ip)}, universe ${f.universe}`;
     return `<span class="${!v.out.enabled ? "" : bad ? "bad" : "ok"}" title="${esc(tip)}">${esc(f.id)}</span>`;
   }).join("") : "";
+  if (out !== lastOut) { lastOut = out; $("#out").innerHTML = out; }
   $("#previewFlag").textContent = v.preview ? "PREVIEW: SCENE BEING EDITED" : "";
   updateMountReadout();
-  if (S.tab === "perform") { updatePerform(v); drawWheel(); return; }
+  if (S.tab === "perform" || S.tab === "show") paintSetAndFreq(v);
+  if (S.tab === "perform") { updatePerform(v); return; }
   if (S.tab !== "show") return;
 
   const k = v.clock;
@@ -2036,7 +2240,8 @@ function updateDom() {
   const scene = sceneBy(v.scene);
   const state = v.blackout ? "BLACKOUT" : v.strobe ? "STROBE" : (STATE_TEXT[v.state] || v.state);
   const last = v.log[0] ? `${v.log[0].text}${v.log[0].by === "you" ? " (YOU)" : ""}` : "";
-  const text = [state, scene ? scene.label : v.scene, lock, last, safetyNote()].filter(Boolean).join("  ***  ").toUpperCase() + "  ***  ";
+  const set = activeSet() ? `${setLabel(activeSet())} set` : "";
+  const text = [state, scene ? scene.label : v.scene, set, lock, last, safetyNote()].filter(Boolean).join("  ***  ").toUpperCase() + "  ***  ";
   if (text !== marqText) { marqText = text; $("#marq").textContent = text; }
   const pos = k.bar_in_phrase + (k.beat_in_bar + k.phase) / 4, cells = $$("#phrase i"), per = k.phrase_bars / cells.length;
   cells.forEach((el, i) => { el.className = pos >= (i + 1) * per ? "on" : pos >= i * per ? "now" : ""; });
@@ -2135,9 +2340,13 @@ function setupDrag() {
 }
 
 // ---------- main loop ----------
-let lastDom = 0;
+let lastDom = 0, lastDraw = 0;
 function safely(fn) { try { fn(); } catch (e) { console.error(e); } }   // one broken drawing mustn't stop the rest
 function frame(t) {
+  requestAnimationFrame(frame);
+  // ~30 fps: the state arrives 30 times a second, and a 120 Hz iPad would otherwise draw 4 times for nothing
+  if (t - lastDraw < 30) return;
+  lastDraw = t;
   for (const id of ["#sheet", "#pfSheet"]) if (visible($(id))) safely(() => drawSheet($(id), t));
   if (S.cfg) {
     const v = S.vis && S.vis.fixtures, fxs = S.cfg.fixtures;
@@ -2147,7 +2356,6 @@ function frame(t) {
   safely(drawSpectrum);
   safely(updateFast);
   if (t - lastDom > 100) { lastDom = t; safely(updateDom); }
-  requestAnimationFrame(frame);
 }
 
 for (const b of $$(".tabs .key")) b.addEventListener("click", () => setTab(b.dataset.tab));

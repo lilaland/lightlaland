@@ -1,4 +1,4 @@
-# lightlaland handoff (2026-10-09)
+# lightlaland handoff (2026-10-29)
 
 lightlaland is a Python app (v0.2.0, stdlib HTTP server + numpy + sounddevice) that listens to a
 vinyl DJ set, tracks beat/phrase/breakdown/drop/record changes, runs light scenes, and drives two
@@ -13,6 +13,10 @@ calibration, ambient scenes, 5-colour palettes and the desk-style UI. Nothing
 from round 2 has been seen on the real bars yet; both bars need the Mount calibration before any
 beam lights. Sections 1d and earlier describe the vertical-mount era where they differ; sections
 2 and 3 are history (how the channel map was found).
+
+**2026-10-29:** Halloween round (section 1h): scene sets, a Halloween set and a windowsill scene,
+random strobe bursts with a live Strobe freq control, a colour-range palette picker, a lighter
+UI style. None of it has been seen on the real bars yet.
 
 ---
 
@@ -186,7 +190,61 @@ Bar B: user set CH84 / A001 (said identical); not camera-checked. User is testin
 - Scenes that use the disco range (`ball_span` / saved ball aims): Ball jitter, Ball storm, Cross,
   Ping pong, Pendulum, Sweep + jitter's resting light. Near-useless on this rig (user to decide,
   not deleted): Spiral (CH2 spin, so beams are always dark; LED/strip show only), Far edge
-  ("corner" lands just above the balls from both bars).
+  ("corner" lands just above the balls from both bars). Spiral was deleted in 1h.
+
+## 1h. Halloween round (2026-10-29)
+
+The user asked for Halloween scenes with patterns on the beams and "shiners" (read as the LED
+side) and only the odd strobe by default, with a separate frequency control; a scene for the bars
+on the windowsill facing the street ("a deadzone for beams a little above 90 to avoid the
+houses", which the user will set themselves); a colour picker where you pick one or two ranges and
+the rest is filled at random; a less clunky style; optimizations and cleanup.
+
+- **Sets** (`scenes.SETS`: "" everyday, "halloween", "window"; spec field `set`; `show.set`).
+  `Director.pick` only picks from the active set: the asked-for group if the set has one, else any
+  of the set's scenes, so the window set can never auto-play a room scene (crowd scenes turn the
+  LED side out and the beams back into the house). `cmd_show set=...` also swaps out a playing
+  scene from another set at once. The Halloween ambient preset moved into the Halloween set.
+- **Strobe bursts** (`fx.strobe` bursts a minute of real time, `strobe_len`, `strobe_beams`;
+  `scenes.strobe_burst`): hard on/off 16ths on the beat grid (8/s on the seconds clock), both
+  bars together, starting on a beat with probability rate/BPM. `show.strobe_freq` (0-4, UI Off ½×
+  1× 2× 4×) scales these and lightning; Off stops all random flashes. Measured: 30/min at 1x lights
+  the whites for ~250 frames a minute, as computed.
+- **Patterns**: `wander` (ghost: `noise1` drifts a soft band), `eyes` (pairs two apart open,
+  blink once and move; `count` pairs), `glitch` (whole-bar and single-segment cut-outs that
+  stutter; `density`); pulse `heartbeat` (lub-dub every 2 beats).
+- **`h01` was half broken**: its weights were 12.9898 + 31.4159k, and 31.4159 is ~10 pi, so every
+  argument added the same angle mod 2 pi and (a, b) looked like (a + 1, b - 1) (corr 0.18). Two
+  pairs of eyes marched in step. Weights are now 12.9898 + 78.233k (corr ~0); every random pattern
+  (rain, lightning...) is still random, just different. `test_scenes` guards it.
+- **Scenes**: Halloween set = Pumpkin patch, Ghost train, Monster mash (groove), Witching hour,
+  Tell-tale heart (calm), It's alive!, Poltergeist (peak), Halloween, Haunted house (ambient).
+  Window set = Haunted window (seconds clock): sweep around `out` + lift 55 +-20, so 35-75 degrees,
+  pair mirror, never `face: leds`. Spiral deleted: beams always dark, and its spin held the next
+  scene's beams dark for 8 s+ (`BeamGuard` settle). 39 presets.
+- **Safety**: `safety.high` minimum is now 90 (was 100), so the windowsill deadzone "a little above
+  90" can be set. `test_safety` runs every scene with beams allowed only 25-95 degrees.
+  On the windowsill the per-fixture `limit` and `ball_span` (room measurements) still apply;
+  the Mount calibration should be redone after moving the bars.
+- **Palette picker** (Perform > Palette, Make > "Fill at random from colour ranges", Show > Shuffle):
+  a hue ring (red at the top); drag paints a range, a tap makes a 24-degree one, handles stretch
+  one; at most two (a new one replaces one it overlaps, else the nearer). `rangePalette` deals the
+  five slots round the ranges (colour 1 from range 1, colour 2 from range 2) and spreads each
+  range's slots across it, seeded (mulberry32) so dragging doesn't flicker; the dice re-seeds.
+  Tapped swatches are kept. Ranges, mix (vivid / soft / mixed), seed and kept colours live in
+  localStorage `lightlaland.ranges` (per device). The old wheel modes (edit one / 1 colour /
+  2 colours, `genFromOne`/`genFromTwo`) are gone. Five Halloween palette presets added.
+- **Style**: system font (SF on Apple), softer keys (1 px travel, pressed = amber outline), rounder
+  panels with faint screws, sentence-case hints and pad captions, horizontally scrolling presets on
+  touch screens, tilt dial text shrinks to fit.
+- **Optimizations / cleanup**: canvases draw at ~30 fps instead of every display frame (the state
+  only arrives at 30 Hz; a 120 Hz iPad drew 4x for nothing). Sparkle no longer seeds a `Random` per
+  segment per frame (cached per step, 45x less work). SSE encodes the state once per frame for all
+  pages (`Engine.vis_json`). Removed: `Ctx.build` (unused), engine `_hex` (duplicate of
+  `rgb_hex`), `/api/meta` `targets` and `source` and the audio sources' `kind` (unused).
+  Checked at 390x844, 1180x820 and 1440x900 with Playwright on a `--dry-run` copy: no console
+  errors, no horizontal overflow on the phone; the picker was driven with drags (palette hues
+  landed inside the ranges, a kept colour survived a shuffle).
 
 ## 2. The channel map: printed chart vs what the code assumes (historical)
 
@@ -324,8 +382,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # or double
 .venv/bin/python -m lightlaland [--no-audio] [--dry-run] [--wav mix.wav] [--port 8080] [--config path]
 .venv/bin/python -m lightlaland.find        # ArtPoll scan (won't hear the 2.x node without an alias)
 .venv/bin/python -m tests.test_analyzer     # synthetic vinyl mix -> beat/phase/event accuracy (~1 min)
-.venv/bin/python -m tests.test_scenes       # every scene renders valid DMX; scene maker commands (~1 s)
-.venv/bin/python -m tests.test_safety       # beams never lit below level against a simulated head (~5 s)
+.venv/bin/python -m tests.test_scenes       # every scene renders valid DMX; scene maker, sets, strobe bursts (~3 s)
+.venv/bin/python -m tests.test_safety       # beams never lit outside the safe angles against a simulated head (~8 s)
 ```
 
 Last test result: beat phase error mean ≤5 ms, p95 ≤9 ms, max 13 ms. Breakdown, drop and record

@@ -14,12 +14,14 @@ reflections, or from above (PLAN); the keys are at its bottom right.
 
 - **Perform** (opens first on an iPad or phone): both bars and their tilt at the top, with the
   magic sheet folding out below. Then Tempo (Tap, One, phrase start, nudge, phrase length),
-  Palette (five-colour palettes: presets, or built from one or two colours on the wheel), and
-  Scenes: Groove / Break / Drop / Ambient pick a random scene from that group (Drop also flashes
-  and restarts the phrase), or open the list to pick one. Auto, Strobe and Blackout stay at the
-  bottom. On a phone only one section is open at a time.
-- **Show** (the Mac): magic sheet, the VFD (BPM, beats, phrase, spectrum), big pads, the scene
-  list, the live palette, speed and master brightness.
+  Palette (drag across one or two stretches of the colour ring and the five colours are drawn
+  at random from them; the dice draws again, a tapped colour is kept; or pick a preset), and
+  Scenes: the set (Everyday / Halloween / Window), Groove / Break / Drop / Ambient, which pick a
+  random scene of that group from the set (Drop also flashes and restarts the phrase), Strobe
+  freq, or open the list to pick one. Auto, Strobe and Blackout stay at the bottom. On a phone
+  only one section is open at a time.
+- **Show** (the Mac): magic sheet, the VFD (BPM, beats, phrase, spectrum), big pads, the set,
+  Strobe freq and the set's scene list, the live palette (with Shuffle), speed and master brightness.
 - **Mount**: set each bar's tilt (point the beams straight up, then say which way the room is),
   check it, and save aims at the ball cluster. **Beams stay off
   until this is done.**
@@ -46,11 +48,30 @@ and until a bar's tilt has been set on the Mount tab. Each bar can also have its
 the first CH1 step toward the room where its beams would reach people (Setup > Beam safety).
 The LED side isn't limited. Setup > Beam
 safety has the angles and a master switch; a highest angle above 180 also allows beams pointing
-down the wall under the bar (270 = straight down that side).
+down the wall under the bar (270 = straight down that side), and one just over 90 keeps them
+from ever tilting back past straight up (for the windowsill, below).
 
 Movement is smoothed by default (Setup > Music): the motor speed follows how fast the scene
 moves, so slow tilts glide instead of jumping one 2-degree step at a time. `python -m tests.test_safety` runs every scene
 against a simulated head and fails if a beam is ever lit pointing low.
+
+## Halloween
+
+Pick the **Halloween** set (Perform > Scenes, or above the scene list on Show): auto mode and the
+Groove / Break / Drop / Ambient pads then only play its nine scenes (Pumpkin patch, Ghost train,
+Monster mash, Witching hour, Tell-tale heart, It's alive!, Poltergeist, Halloween, Haunted
+house). They put patterns on the beams and the LED side (ghosts drifting, eyes that open and
+blink, a dying bulb, a heartbeat) and keep the whites for the odd strobe burst. **Strobe freq**
+(Off, ½×, 1×, 2×, 4×) scales those bursts and any lightning in every scene; Off stops them all.
+
+**Window** is for the bars on the windowsill, facing the street: its scene, Haunted window,
+keeps the beams 35-75 degrees up, high over the street, the two curtains crossing
+like searchlights with ghosts drifting along them, candlelight in the window, and now and then
+lightning or a strobe burst. It never turns the LED side out, which would point the beams back
+into the house. Choosing the set plays it at once, and auto mode never leaves the set. For the
+deadzone, set Setup > Beam safety: raise the lowest angle until the beams clear the rooftops,
+and lower the highest to a little over 90 so they can't tilt back into the room. Redo the tilt
+on the Mount tab after moving the bars.
 
 ## Run it
 
@@ -153,7 +174,7 @@ If you added the 2.x alias while testing, remove it:
 | `lightlaland/artnet.py` | ArtDMX sending (unicast or broadcast) and node search |
 | `lightlaland/analyzer.py` | Beat tracking, breakdown/drop, record changes, spectrum |
 | `lightlaland/clock.py` | Shared beat/bar/phrase clock, tap and downbeat |
-| `lightlaland/scenes.py` | Scene specs (data), their schema, the renderer and the built-in presets (groove, calm, peak, ambient) |
+| `lightlaland/scenes.py` | Scene specs (data), their schema, the renderer and the built-in presets (groove, calm, peak, ambient; everyday, Halloween and window sets) |
 | `lightlaland/engine.py` | 40 fps loop, auto director, overlays, beam safety guard, Art-Net output |
 | `lightlaland/fixture.py` | The 84-channel map |
 | `lightlaland/geometry.py` | Tilt geometry (CH1 <-> beam angle, targets in the room) and the safe ranges |

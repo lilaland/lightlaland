@@ -1,6 +1,7 @@
 """The show loop: clock -> director -> scene -> overlays -> beam safety -> DMX -> Art-Net,
 40 times a second."""
 import collections
+import json
 import math
 import queue
 import random
@@ -9,7 +10,7 @@ import time
 
 from . import geometry
 from .fixture import N_BEAMS, N_WHITE, Frame, encode, speed_value
-from .scenes import Ctx, hex_rgb, library
+from .scenes import Ctx, hex_rgb, library, rgb_hex
 
 DROP_BARS = 8          # peak section length after a drop
 MAX_BREAK_BARS = 32    # give up waiting for a drop after this long
@@ -34,10 +35,13 @@ class Director:
         self.rng = random.Random()
 
     def pick(self, group):
-        rot = self.engine.app.config["rotation"]
+        """A random scene from the chosen set: from `group` if the set has any there, else any
+        of the set's scenes (so the window set never plays a scene made for the room)."""
+        cfg = self.engine.app.config
         scenes = list(self.engine.library.values())
-        names = [s.name for s in scenes if s.group == group and rot.get(s.name, True)]
-        names = names or [s.name for s in scenes if s.group == group]
+        pool = [s for s in scenes if s.set == cfg["show"]["set"]] or scenes
+        pool = [s for s in pool if s.group == group] or pool
+        names = [s.name for s in pool if cfg["rotation"].get(s.name, True)] or [s.name for s in pool]
         options = [n for n in names if n != self.engine.scene] or names
         return self.rng.choice(options)
 
@@ -147,10 +151,6 @@ class BeamGuard:
         return True, ""
 
 
-def _hex(rgb):
-    return "#%02x%02x%02x" % tuple(max(0, min(255, int(v * 255 + 0.5))) for v in rgb)
-
-
 def _copy_cfg(config):
     """Small per-frame snapshot so the UI can edit config while the show runs."""
     with config.lock:
@@ -191,6 +191,7 @@ class Engine:
         self.calib = None   # {"fixture": i, "pos": ch1}
         self.test = None    # {"fixture": i, "pos": ch1, "channels": {index: value}}
         self.vis = {}
+        self._vis_json = (None, b"{}")
         self.fps = 0.0
         self.running = False
 
@@ -220,6 +221,13 @@ class Engine:
 
     def note(self, text, by="auto"):
         self.log.appendleft({"text": text, "by": by, "t": time.perf_counter()})
+
+    def vis_json(self):
+        """The latest visual state as JSON, encoded once however many pages are watching."""
+        vis, cached = self.vis, self._vis_json
+        if cached[0] is not vis:
+            cached = self._vis_json = (vis, json.dumps(vis, separators=(",", ":")).encode())
+        return cached[1]
 
     def push_event(self, ev):
         self.events.put(ev)
@@ -282,8 +290,7 @@ class Engine:
         else:
             scene = self.current()
             palette = self._palette(scene, show["palette"])
-            ctx = Ctx(cfg, info, palette, self.prev, speed=show["speed"], build=build,
-                      secs=now - self.t0, windows=windows)
+            ctx = Ctx(cfg, info, palette, self.prev, speed=show["speed"], secs=now - self.t0, windows=windows)
             frames = scene.render(ctx)
             if show.get("smooth", True):
                 self._smooth(frames, fixtures, dt)
@@ -394,8 +401,8 @@ class Engine:
                 "shown": round(shown, 1),                           # where we think they point
                 "spread": round(g.hi[i] - g.lo[i], 1),              # how unsure that is (CH1 steps)
                 "safe": safe[i][0], "why": safe[i][1], "calibrated": fx["calibrated"],
-                "beams": [_hex((r + w, g + w, b + w)) for r, g, b, w in f.beams],
-                "strip": [_hex(s) for s in f.strip],
+                "beams": [rgb_hex((r + w, g + w, b + w)) for r, g, b, w in f.beams],
+                "strip": [rgb_hex(s) for s in f.strip],
                 "white": [round(w, 3) for w in f.white],
             })
         an = self.app.analyzer()
@@ -410,7 +417,8 @@ class Engine:
             "scene": self.scene, "auto": show["auto"], "state": self.director.state,
             "preview": self.preview is not None, "palette": show["palette"], "safety": safety,
             "strobe": self.strobe, "blackout": self.blackout, "intensity": show["intensity"],
-            "speed": show["speed"], "swap": self.color_swap, "build": round(build, 3),
+            "speed": show["speed"], "set": show["set"], "strobe_freq": show["strobe_freq"],
+            "swap": self.color_swap, "build": round(build, 3),
             "fixtures": fx_vis,
             "log": [{"text": e["text"], "by": e["by"], "ago": round(now - e["t"], 1)} for e in self.log],
             "calib": self.calib, "test": self.test is not None,

@@ -5,7 +5,7 @@ The simulated head moves at the measured motor speed (faster than the engine's c
 guess), starts somewhere random, and after a spin stops at a random place, so it is always
 ahead of what the engine assumes. Uses a scratch config and never sends Art-Net.
 
-    python -m tests.test_safety          (from the project folder, ~20 s)
+    python -m tests.test_safety          (from the project folder, ~8 s)
 """
 import os
 import random
@@ -147,6 +147,19 @@ def main():
             now, _ = run(app, heads, 3.0, now, violations, name, 30)
         assert not violations, f"beams lit below 30 degrees: {violations[:5]}"
         print("  ok  a raised lowest angle (30 degrees) is respected")
+
+        # On the windowsill: beams only between 25 degrees (over the houses across the street)
+        # and 95 (never tilting back into the house). The window scene still has to light.
+        app.command({"cmd": "safety", "low": 25, "high": 95})
+        violations.clear()
+        lit_window = 0
+        for name in names:
+            eng.set_scene(name)
+            now, lit = run(app, heads, 3.0, now, violations, name, 25, 95)
+            lit_window += lit if name == "window" else 0
+        assert not violations, f"beams lit outside 25-95 degrees: {violations[:5]}"
+        assert lit_window > 0, "the window scene's beams never lit inside 25-95 degrees"
+        print(f"  ok  a windowsill deadzone (beams only 25-95 degrees) is respected; the window scene lit {lit_window} frames")
     print("safety: all good")
 
 
