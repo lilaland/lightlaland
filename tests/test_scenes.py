@@ -1,7 +1,8 @@
-"""Scene engine checks: every scene renders valid DMX, specs are sanitised, and the scene
-maker's save/delete/preview commands work. Uses a scratch config and never sends Art-Net.
+"""Scene engine checks: every scene renders valid DMX, specs are sanitised, the scene maker's
+save/delete/preview commands work, sets keep auto mode in the chosen set, and strobe bursts
+follow Strobe freq. Uses a scratch config and never sends Art-Net.
 
-    python -m tests.test_scenes          (from the project folder, takes a second)
+    python -m tests.test_scenes          (from the project folder, ~3 s)
 """
 import os
 import sys
@@ -9,9 +10,10 @@ import tempfile
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import numpy as np  # noqa: E402
 from lightlaland.app import App  # noqa: E402
 from lightlaland.fixture import STRIP, encode  # noqa: E402
-from lightlaland.scenes import PRESETS, normalize, preset  # noqa: E402
+from lightlaland.scenes import GROUPS, PRESETS, h01, normalize, preset  # noqa: E402
 
 
 def check(cond, what):
@@ -95,6 +97,54 @@ def main():
         old = normalize({"palette": {"a": "#ff0000", "b": "#00ff00"}, "move": {"target": "back"}})
         check(len(old["palette"]) == 5 and old["move"]["target"] == "crowd" and old["move"]["face"] == "leds",
               "specs saved by the old version still load")
+
+        # Sets: auto mode and the pads only pick from the chosen set.
+        cmd(cmd="show", set="halloween")
+        check(eng.library[eng.scene].set == "halloween", "choosing a set swaps out a scene from another set")
+        picks = {eng.director.pick(g) for g in GROUPS for _ in range(30)}
+        check(all(eng.library[n].set == "halloween" for n in picks) and len(picks) > 5,
+              f"auto mode picks only from the Halloween set ({len(picks)} different scenes)")
+        cmd(cmd="show", set="window")
+        picks = {eng.director.pick(g) for g in GROUPS for _ in range(10)}
+        check(eng.scene == "window" and picks == {"window"}, "the window set never plays a room scene, whatever the group")
+        cmd(cmd="show", set="")
+        picks = {eng.director.pick(g) for g in GROUPS for _ in range(30)}
+        check(all(eng.library[n].set == "" for n in picks), "everyday picks leave the Halloween scenes out")
+        check(not app.command({"cmd": "show", "set": "xmas"})["ok"], "unknown sets are refused")
+
+        # Random strobe bursts: none at Off, more at 4x than 1x, about the asked-for rate.
+        def lit_frames(freq, spec, seconds=60.0):
+            cmd(cmd="show", strobe_freq=freq)
+            cmd(cmd="preview", spec=spec)
+            lit = 0
+            for k in range(int(seconds / 0.025)):
+                eng.step(t + 100 + k * 0.025, 0.025)
+                lit += any(w > 0 for w in eng.prev[0].white)
+            return lit
+        bursts = {"white": {"pattern": "off"}, "fx": {"strobe": 30}}
+        off, one, four = (lit_frames(f, bursts) for f in (0, 1, 4))
+        # 30 bursts a minute x 4 flashes, each lit for 40% of a 16th (~2 frames at 124 BPM)
+        check(off == 0 and 120 < one < 400 and four > 2 * one,
+              f"strobe bursts: none when off, ~240 lit frames a minute at 1x, more at 4x ({off} / {one} / {four})")
+        storm = {"white": {"pattern": "off"}, "fx": {"lightning": 20}}
+        check(lit_frames(0, storm) == 0 < lit_frames(1, storm), "Strobe freq Off also stops lightning")
+        cmd(cmd="show", strobe_freq=1)
+
+        # The spooky patterns move: different segments lit at different times.
+        for pat in ("eyes", "wander", "glitch"):
+            cmd(cmd="preview", spec={"strip": {"pattern": pat, "rate": 1, "density": 0.4}})
+            states = set()
+            for k in range(160):
+                eng.step(t + 200 + k * 0.025, 0.025)
+                states.add(tuple(round(max(rgb), 1) for rgb in eng.prev[0].strip))
+            check(len(states) > 10, f"the {pat} pattern changes along the bar and over time ({len(states)} looks in 4 s)")
+        cmd(cmd="preview", spec=None)
+
+        # The hash behind every random pattern: (a, b) and (a + 1, b - 1) must not look alike
+        # (they did when its weights were equal mod 2 pi, and pairs of eyes moved in step).
+        a = np.array([h01(s, 7) for s in range(3000)])
+        b = np.array([h01(s + 1, 6) for s in range(3000)])
+        check(abs(np.corrcoef(a, b)[0, 1]) < 0.08, "the random patterns' hash doesn't repeat itself in disguise")
     print("scenes: all good")
 
 

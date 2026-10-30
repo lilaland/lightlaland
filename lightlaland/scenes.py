@@ -2,10 +2,12 @@
 does this frame, from musical time (or plain seconds, for ambient scenes).
 
 A spec has a palette of five colours, a movement, three light layers (the beams, the LED
-strip and the white strobes) and effects (lightning). SCHEMA lists every field with its
-default and limits; the scene maker in the web UI is built from it, and normalize() makes
-any incoming spec safe to render. The built-in scenes are PRESETS. Scenes saved from the
-maker live in the config ("scenes") and override the preset with the same name.
+strip and the white strobes) and effects (lightning, random strobe bursts). SCHEMA lists
+every field with its default and limits; the scene maker in the web UI is built from it, and
+normalize() makes any incoming spec safe to render. The built-in scenes are PRESETS. Scenes
+saved from the maker live in the config ("scenes") and override the preset with the same name.
+Each scene belongs to a set (everyday, Halloween, the Halloween window); auto mode and the
+group pads only pick from the set chosen on the Show or Perform screen.
 
 The bars are mounted horizontally, so movement is tilt: the head turns about the bar's long
 axis (see geometry.py). Beam safety is enforced by the engine, not here: a scene can ask
@@ -15,6 +17,7 @@ Fixture 0 is A (left), 1 is B (right). Index 0 of beams/strip/whites is the firs
 """
 import colorsys
 import copy
+import functools
 import math
 import random
 import re
@@ -24,6 +27,8 @@ from .fixture import N_BEAMS, N_STRIP, N_WHITE, Frame
 from .geometry import DEG_PER_STEP
 
 GROUPS = ("groove", "calm", "peak", "ambient")
+SETS = [["", "Everyday"], ["halloween", "Halloween"], ["window", "Window"]]   # window: bars on the windowsill
+SET_NAMES = {k for k, _ in SETS}
 
 
 # --- small colour/shape helpers ------------------------------------------------------------
@@ -74,10 +79,23 @@ def h01(*xs):
     """A repeatable pseudo-random number in 0..1 from some numbers (no state, so every frame
     of every scene agrees about where the raindrops and lightning are)."""
     v = 0.0
-    for k, x in enumerate(xs):
-        v += x * (12.9898 + 31.4159 * k)
+    for k, x in enumerate(xs):   # the weights must differ mod 2 pi, or (a, b) and (a + 1, b - 1) look alike
+        v += x * (12.9898 + 78.233 * k)
     s = math.sin(v + 78.233) * 43758.5453
     return s - math.floor(s)
+
+
+def noise1(x, seed):
+    """Smooth random wandering in 0..1: random values at whole x, eased between."""
+    k = math.floor(x)
+    a, b = h01(seed, k), h01(seed, k + 1)
+    return a + (b - a) * ease(x - k)
+
+
+@functools.lru_cache(maxsize=64)
+def sparkle_set(step, i, n, count):
+    """Which segments sparkle during one step (worked out once, not once per segment)."""
+    return frozenset(random.Random(step * 7919 + i * 104729 + n).sample(range(n), min(count, n)))
 
 
 # --- the spec ------------------------------------------------------------------------------
@@ -87,11 +105,13 @@ FACES = [["beams", "The beams"], ["leds", "The LED side"],
          ["auto", "Beams if it's safe, else the LED side"]]
 PULSES = [["none", "Steady"], ["beat", "Every beat"], ["8th", "8ths"], ["16th", "16ths"],
           ["offbeat", "Off-beats"], ["2beat", "Every other beat"], ["one", "The 1 of each bar"],
-          ["breathe", "Slow breathe"]]
+          ["breathe", "Slow breathe"], ["heartbeat", "Heartbeat (lub-dub every 2 beats)"]]
 PATTERNS = [["off", "Off"], ["solid", "All on"], ["chase", "Chase"], ["bounce", "Bounce"],
             ["midout", "Rings from the middle"], ["fill", "Fill from one end"], ["wave", "Wave"],
             ["shimmer", "Shimmer"], ["sparkle", "Sparkle"], ["twinkle", "Twinkle"], ["rain", "Rain drops"],
-            ["flicker", "Fire flicker"], ["alternate", "Alternate segments"]]
+            ["flicker", "Fire flicker"], ["alternate", "Alternate segments"],
+            ["wander", "Ghost (a glow drifting about)"], ["eyes", "Eyes (pairs that open and blink)"],
+            ["glitch", "Glitch (a dying bulb)"]]
 COLOURS = [["own", "A uses colour 1, B uses 2"], ["a", "Colour 1"], ["b", "Colour 2"], ["c", "Colour 3"],
            ["ab", "Gradient 1 to 2"], ["spread", "Whole palette along the bar"],
            ["scroll", "Palette scrolling along"], ["random", "Random palette colours"],
@@ -123,9 +143,10 @@ def _layer(colour=True, default_pattern="off"):
         _num("depth", 1.0, 0, 1, 0.05, "Pulse depth", "0 = steady, 1 = full flashes"),
         _num("decay", 6, 1, 16, 0.5, "Flash length", "Higher = shorter flashes"),
         _num("rate", 2, 0.25, 32, 0.25, "Cycle", "Beats (or seconds on the seconds clock) for one chase, wave, drop..."),
-        _num("width", 0.25, 0.05, 1, 0.01, "Band width", "Share of the bar a band or wave covers"),
-        _num("count", 2, 1, 8, 1, "Sparkles at once"),
-        _num("density", 0.3, 0.02, 1, 0.02, "How many", "Share of segments that rain or twinkle at a time"),
+        _num("width", 0.25, 0.05, 1, 0.01, "Band width", "Share of the bar a band, wave or ghost covers"),
+        _num("count", 2, 1, 8, 1, "How many at once", "Sparkles, or pairs of eyes"),
+        _num("density", 0.3, 0.02, 1, 0.02, "How many",
+             "Rain and twinkle: share of segments at a time. Glitch: how often it cuts out"),
         _bool("reverse", False, "Run from the other end"),
         _bool("flip_bars", False, "Reverse every other bar"),
         _choice("b", "same", B_MODES, "Light B"),
@@ -138,6 +159,7 @@ SCHEMA = {
         {"key": "label", "kind": "text", "default": "New scene", "label": "Name"},
         _choice("group", "groove", [["groove", "Groove"], ["calm", "Break (calm)"], ["peak", "Drop (peak)"],
                                     ["ambient", "Ambient (no music needed)"]], "Used for"),
+        _choice("set", "", SETS, "Set", "Auto mode and the group pads only pick from the set chosen on Show or Perform"),
         {"key": "blurb", "kind": "text", "default": "", "label": "Description"},
         _choice("clock", "beats", [["beats", "The music's beats"], ["seconds", "Seconds (ambient)"]], "Runs on"),
         _num("swap", 0, 0, 16, 1, "Swap colours 1 and 2 every (bars)", "0 = never"),
@@ -170,6 +192,10 @@ SCHEMA = {
         _num("lightning", 0, 0, 20, 0.5, "Lightning (strikes a minute)", "0 = none. Strikes flash the whites"),
         _num("lightning_level", 1.0, 0.1, 1, 0.05, "Lightning brightness"),
         _bool("lightning_beams", False, "Lightning also flashes the beams"),
+        _num("strobe", 0, 0, 30, 0.5, "Strobe bursts (a minute)",
+             "0 = none. Now and then the whites strobe for a moment. Strobe freq on Show or Perform scales these and lightning"),
+        _num("strobe_len", 1, 0.25, 4, 0.25, "Burst length", "Beats (or seconds on the seconds clock)"),
+        _bool("strobe_beams", False, "Bursts also strobe the beams"),
     ],
 }
 DEFAULT_PALETTE = ["#ff1f5a", "#ff6a3d", "#ffb000", "#00e1ff", "#7b2cff"]
@@ -256,18 +282,18 @@ def target_elevation(fx, room, points, name):
 
 # --- context: time, colours and aiming helpers for one frame ----------------------------------
 class Ctx:
-    def __init__(self, cfg, info, palette, prev, speed=1.0, build=0.0, secs=0.0, windows=None):
+    def __init__(self, cfg, info, palette, prev, speed=1.0, secs=0.0, windows=None):
         self.fixtures = cfg["fixtures"]
         self.n = len(self.fixtures)
         self.room = cfg["room"]
         self.points = {p["id"]: p for p in cfg["points"]}
         self.sweep = float(cfg["show"]["sweep_width"])
+        self.flash = float(cfg["show"]["strobe_freq"])   # scales strobe bursts and lightning (0 = none)
         self.ranges = [geometry.safe_range(fx, cfg["safety"]) for fx in self.fixtures]   # (low, high)
         self.windows = windows or [[] for _ in range(self.n)]   # copies of the safe arc per fixture
         self.info = info
         self.palette = palette          # list of five (r, g, b)
         self.prev = prev
-        self.build = build
         self.speed = speed
         rb = (info["beat"] - info["anchor"]) * speed  # beats since the phrase started
         self.rb = rb
@@ -322,7 +348,7 @@ class Ctx:
 
 
 # --- rendering a spec --------------------------------------------------------------------------
-PULSE_PERIOD = {"beat": 1.0, "8th": 0.5, "16th": 0.25, "offbeat": 1.0, "2beat": 2.0, "one": 4.0}
+PULSE_PERIOD = {"beat": 1.0, "8th": 0.5, "16th": 0.25, "offbeat": 1.0, "2beat": 2.0, "one": 4.0, "heartbeat": 2.0}
 JITTER_DIV = {"16th": 4, "8th": 2, "beat": 1}
 STORM_WHITE = (0.8, 0.86, 1.0)
 
@@ -335,6 +361,9 @@ def envelope(layer, t, is_b):
     shift = period / 2 if is_b and layer["b"] == "offset" else 0.0
     if kind == "breathe":
         return 0.5 - 0.5 * math.cos(2 * math.pi * (t + shift) / 8.0)
+    if kind == "heartbeat":   # lub, a softer dub, then a rest
+        ph = (t + shift) % period
+        return max(flash(ph, layer["decay"]), 0.7 * flash(ph - 0.35, layer["decay"]) if ph >= 0.35 else 0.0)
     start = 0.5 if kind == "offbeat" else 0.0
     # Sub-beat pulses decay over their own length; slower ones over beats.
     ph = ((t - start + shift) % period) / min(period, 1.0)
@@ -373,9 +402,7 @@ def pattern_value(layer, x, s, u, t, c, i, n, seed):
         period = rate * (0.6 + 0.8 * h01(seed, 1))
         return (0.5 + 0.5 * math.sin(2 * math.pi * (t / period + h01(seed, 2)))) ** 1.6
     if pat == "sparkle":
-        step = int(math.floor(t / rate))
-        lit = random.Random(step * 7919 + i * 104729 + n).sample(range(n), min(layer["count"], n))
-        return 1.0 if s in lit else 0.0
+        return 1.0 if s in sparkle_set(int(math.floor(t / rate)), i, n, layer["count"]) else 0.0
     if pat == "rain":
         return drop(seed, t, rate, layer["density"], layer["decay"], False)
     if pat == "twinkle":
@@ -388,6 +415,28 @@ def pattern_value(layer, x, s, u, t, c, i, n, seed):
     if pat == "alternate":
         k = int(math.floor(t / rate)) + (1 if i % 2 and layer["b"] == "offset" else 0)
         return 1.0 if (s + k) % 2 == 0 else 0.0
+    if pat == "wander":   # a ghost: a soft glow drifting to a new spot every cycle, fading in and out
+        own = 7.0 if i % 2 and layer["b"] == "offset" else 0.0   # B's own path, else it follows A
+        centre = min(1.0, max(0.0, 0.5 + 1.6 * (noise1(t / rate + own, 11) - 0.5)))
+        return max(0.0, 1 - abs(x - centre) / w) * (0.3 + 0.7 * noise1(t / (rate * 1.7) + own, 13))
+    if pat == "eyes":   # pairs of eyes open somewhere, blink once, close, and open somewhere else
+        lseed, sx, v = seed - s, int(round(x * (n - 1))), 0.0
+        for k in range(layer["count"]):
+            cyc = t / rate + h01(lseed, k, 1)
+            slot, frac = math.floor(cyc), cyc % 1.0
+            left = int(h01(lseed, k, slot, 2) * max(1, n - 2))
+            if sx != left and sx != left + 2:
+                continue
+            blink = abs(frac - (0.3 + 0.4 * h01(lseed, k, slot, 3))) < 0.035
+            v = max(v, 0.0 if blink else min(1.0, frac / 0.12, (1 - frac) / 0.12))
+        return v
+    if pat == "glitch":   # a dying bulb: on, but the whole bar or single segments cut out and stutter
+        k = t / rate * 8.0
+        slot = math.floor(k)
+        for sd, salt, chance in ((seed - s, 5, layer["density"]), (seed, 6, layer["density"] * 0.4)):
+            if h01(sd, slot, salt) < chance:
+                return 1.0 if (k * 3.0) % 1.0 < 0.5 * h01(sd, slot, salt + 2) else 0.08
+        return 1.0
     return 0.0
 
 
@@ -437,9 +486,9 @@ def render_layer(layer, c, i, n, t, salt):
     return out
 
 
-def lightning(fx, secs, i):
+def lightning(fx, secs, i, freq=1.0):
     """Thunderstorm flashes: random strikes of a few quick flashes (always in seconds)."""
-    rate = fx["lightning"]
+    rate = fx["lightning"] * freq
     if rate <= 0:
         return 0.0
     env, now = 0.0, math.floor(secs)
@@ -454,6 +503,25 @@ def lightning(fx, secs, i):
             if 0 <= dt < 0.6:
                 env = max(env, amp * math.exp(-dt * 16))
     return env * fx["lightning_level"]
+
+
+def strobe_burst(fx, c, t, clock):
+    """Random strobe bursts: now and then a moment of hard white flashes, 16ths on the beat
+    grid (eight a second on the seconds clock). fx["strobe"] is bursts a minute of real time,
+    scaled by the show's strobe frequency. Returns (in a burst, flash on)."""
+    rate = fx["strobe"] * c.flash
+    if rate <= 0:
+        return False, 0.0
+    if clock == "seconds":
+        unit, sub = 1.0 / c.speed, 8
+    else:   # whole BPM, so a tempo wobbling by a hair can't switch a burst on and off
+        unit, sub = 60.0 / (max(40, round(c.info["bpm"])) * c.speed), 4
+    chance = rate * unit / 60.0   # that a burst starts on any one beat (or second)
+    length, now = fx["strobe_len"], math.floor(t)
+    for k in range(now, now - math.ceil(length) - 1, -1):   # bursts that started up to `length` ago
+        if t - k < length and h01(k, 51) < chance:
+            return True, (1.0 if ((t - k) * sub) % 1.0 < 0.4 else 0.0)
+    return False, 0.0
 
 
 def jitter_offset(m, sign, t):
@@ -502,35 +570,41 @@ class Scene:
     def __init__(self, spec, builtin=False, modified=False):
         self.spec = normalize(spec)
         self.name, self.label, self.group = self.spec["name"], self.spec["label"], self.spec["group"]
+        self.set = self.spec["set"]
         self.blurb = self.spec["blurb"]
         self.palette = self.spec["palette"]
         self.builtin, self.modified = builtin, modified
 
     def render(self, c):
-        sp = self.spec
+        sp, fx = self.spec, self.spec["fx"]
         t = c.secs if sp["clock"] == "seconds" else c.rb
         bar = int(t // 4)
         if sp["swap"] and (bar // sp["swap"]) % 2:
             c.palette = [c.palette[1], c.palette[0]] + list(c.palette[2:])
+        burst, on = strobe_burst(fx, c, t, sp["clock"])
         out = []
         for i in range(c.n):
             f = render_move(sp["move"], c, i, t, bar)
             f.beams = [rgbw(col, lv) for col, lv in render_layer(sp["beams"], c, i, N_BEAMS, t, 1)]
             f.strip = [scale3(col, lv) for col, lv in render_layer(sp["strip"], c, i, N_STRIP, t, 2)]
             f.white = [lv for _, lv in render_layer(sp["white"], c, i, N_WHITE, t, 3)]
-            strike = lightning(sp["fx"], c.secs, i)
+            strike = lightning(fx, c.secs, i, c.flash)
             if strike > 0.01:
                 f.white = [max(w, strike) for w in f.white]
                 f.strip = [mix(s, STORM_WHITE, min(1.0, strike * 0.8)) for s in f.strip]
-                if sp["fx"]["lightning_beams"]:
+                if fx["lightning_beams"]:
                     f.beams = [(r, g, b, max(w, strike)) for r, g, b, w in f.beams]
+            if burst:   # both bars together: a hard on/off strobe, not a fade
+                f.white = [on] * N_WHITE
+                if fx["strobe_beams"]:
+                    f.beams = [(0.0, 0.0, 0.0, on)] * N_BEAMS
             out.append(f)
         return out
 
     def summary(self):
-        return {"name": self.name, "label": self.label, "group": self.group, "blurb": self.blurb,
-                "palette": self.palette, "builtin": self.builtin, "modified": self.modified,
-                "spec": self.spec}
+        return {"name": self.name, "label": self.label, "group": self.group, "set": self.set,
+                "blurb": self.blurb, "palette": self.palette, "builtin": self.builtin,
+                "modified": self.modified, "spec": self.spec}
 
 
 # --- presets -----------------------------------------------------------------------------------
@@ -539,6 +613,10 @@ def _p(name, label, group, blurb, palette, move=None, beams=None, strip=None, wh
     return {"name": name, "label": label, "group": group, "blurb": blurb, "palette": palette, "swap": swap,
             "clock": clock, "move": move or {}, "beams": beams or {"pattern": "off"},
             "strip": strip or {"pattern": "off"}, "white": white or {"pattern": "off"}, "fx": fx or {}}
+
+
+def _halloween(*args, **kw):
+    return dict(_p(*args, **kw), set="halloween")
 
 
 CROWD = {"target": "crowd", "face": "leds", "speed": 0.8}   # LED side to the dance floor, beams up and away
@@ -619,11 +697,6 @@ PRESETS = [normalize(p) for p in [
        move=dict(CROWD),
        strip={"pattern": "solid", "color": "scroll", "rate": 4, "level": 0.9, "b": "offset"},
        white={"pattern": "alternate", "rate": 1, "pulse": "offbeat", "decay": 12}),
-    _p("spiral", "Spiral", "peak", "Bars roll over and over while a band runs along them (beams stay off while spinning)",
-       ["#00f0ff", "#ff3df5", "#7af6ff", "#ff8cf9", "#ffffff"],
-       move={"mode": "spin", "spin": 0.35, "pair": "mirror"},
-       strip={"pattern": "chase", "rate": 2, "width": 0.16, "b": "offset"},
-       white={"pattern": "solid", "pulse": "one", "decay": 8}),
     _p("fill", "Fill + flash", "peak", "The bar fills from one end over each bar, then everything flashes on the 1",
        ["#ff5e00", "#00ffd0", "#ff9a5c", "#66ffe3", "#ffffff"],
        move=dict(CROWD),
@@ -669,13 +742,6 @@ PRESETS = [normalize(p) for p in [
        strip={"pattern": "solid", "color": "spread", "level": 0.18, "pulse": "breathe", "depth": 0.5},
        beams={"pattern": "solid", "color": "c", "level": 0.08, "pulse": "breathe", "depth": 0.5},
        fx={"lightning": 2, "lightning_level": 0.5}),
-    _p("halloween", "Halloween", "ambient", "Pumpkin orange and witchy purple rolling past, candle flicker, the odd crack of lightning",
-       ["#ff6a00", "#8a2be2", "#ff9e3d", "#5a189a", "#ffd166"], clock="seconds",
-       move={"mode": "sweep", "target": "ceiling", "sweep": 20, "period": 6, "speed": 0.3, "pair": "mirror"},
-       beams={"pattern": "solid", "color": "own", "level": 0.4, "pulse": "breathe", "depth": 0.5},
-       strip={"pattern": "wave", "color": "spread", "rate": 12, "width": 0.8, "level": 0.8, "floor": 0.25, "b": "offset"},
-       white={"pattern": "off"},
-       fx={"lightning": 1.2, "lightning_level": 0.9, "lightning_beams": True}),
     _p("campfire", "Campfire", "ambient", "Embers and flames flickering along the LED side, a warm glow above",
        ["#ff3c00", "#ff7a00", "#ffb000", "#c21800", "#ffd36b"], clock="seconds",
        move=dict(CROWD, speed=0.3),
@@ -706,6 +772,77 @@ PRESETS = [normalize(p) for p in [
        ["#d4ff4f", "#ffe36b", "#a8ff6b", "#fff2a8", "#d4ff4f"], clock="seconds",
        move=dict(CROWD, speed=0.2),
        strip={"pattern": "twinkle", "color": "random", "rate": 2.5, "density": 0.15, "level": 0.9}),
+
+    # Halloween (the party set): patterns on the beams and the LED side, the whites only for
+    # the odd strobe burst (Strobe freq on Show / Perform turns those up or off)
+    _halloween("pumpkin", "Pumpkin patch", "groove", "Pumpkin orange and witch purple chase along both curtains on the balls, candlelight flickers on the LED side, and now and then a strobe burst",
+               ["#ff6a00", "#8a2be2", "#ffa31a", "#b47dff", "#ffd166"],
+               move={"mode": "aim", "target": "balls", "speed": 0.9, "pair": "mirror", "converge": 12},
+               beams={"pattern": "chase", "color": "own", "rate": 2, "width": 0.35, "floor": 0.15, "pulse": "beat",
+                      "decay": 4, "depth": 0.35, "b": "mirror"},
+               strip={"pattern": "flicker", "color": "random", "rate": 1.5, "level": 0.35, "floor": 0.1},
+               fx={"strobe": 2, "strobe_beams": True}),
+    _halloween("ghosts", "Ghost train", "groove", "Pale ghosts drift along the curtains as they tilt across the ceiling, the LED side glowing like mist",
+               ["#d8fff6", "#b8a6ff", "#7dffd8", "#eae4ff", "#ffffff"],
+               move={"mode": "sweep", "target": "ceiling", "sweep": 30, "period": 2, "speed": 0.6, "pair": "mirror"},
+               beams={"pattern": "wander", "color": "own", "rate": 4, "width": 0.45, "floor": 0.05, "b": "offset"},
+               strip={"pattern": "wave", "color": "ab", "rate": 8, "width": 1.0, "level": 0.3, "floor": 0.1},
+               fx={"strobe": 1.5, "strobe_beams": True}),
+    _halloween("monster", "Monster mash", "groove", "LED side to the dance floor: slime green and purple bounce end to end while the beams trade places on the wall behind, every beat",
+               ["#39ff14", "#9d00ff", "#a6ff4d", "#d580ff", "#ffffff"],
+               move=dict(CROWD),
+               strip={"pattern": "bounce", "color": "own", "rate": 2, "width": 0.22, "b": "mirror"},
+               beams={"pattern": "alternate", "color": "own", "rate": 1, "level": 0.8, "b": "offset"},
+               fx={"strobe": 2.5}),
+    _halloween("witching", "Witching hour", "calm", "Purple and green roll across the ceiling to a slow heartbeat while stars twinkle on the LED side",
+               ["#7b2cff", "#00ff9c", "#b47dff", "#66ffc4", "#e0d0ff"],
+               move={"mode": "aim", "target": "ceiling", "speed": 0.4},
+               beams={"pattern": "wave", "color": "ab", "rate": 8, "width": 0.8, "floor": 0.2, "level": 0.8,
+                      "pulse": "heartbeat", "decay": 4, "depth": 0.45, "b": "offset"},
+               strip={"pattern": "twinkle", "color": "spread", "rate": 3, "density": 0.3, "level": 0.5},
+               fx={"strobe": 1}),
+    _halloween("heart", "Tell-tale heart", "calm", "Blood red on the balls: a heartbeat thumps through A, then B, building to the drop",
+               ["#ff0022", "#b3001b", "#ff4d5e", "#5c0010", "#ffffff"],
+               move={"mode": "aim", "target": "balls", "speed": 0.5},
+               beams={"pattern": "solid", "color": "own", "pulse": "heartbeat", "decay": 5, "depth": 0.9, "b": "offset"},
+               strip={"pattern": "solid", "color": "c", "level": 0.15, "pulse": "heartbeat", "decay": 5, "depth": 0.9,
+                      "b": "offset"},
+               fx={"strobe": 1}),
+    _halloween("alive", "It's alive!", "peak", "Frankenstein's lab: electric green curtains glitch as they hop across the balls, lightning cracks and the strobes burst more often",
+               ["#a6ff00", "#d8fff6", "#00ffcc", "#6a00ff", "#ffffff"],
+               move={"mode": "hop", "hops": 4, "hop_every": 1, "jitter": 1, "pair": "mirror"},
+               beams={"pattern": "glitch", "color": "own", "rate": 2, "density": 0.3, "pulse": "8th", "decay": 6, "depth": 0.3},
+               strip={"pattern": "midout", "color": "ab", "rate": 1, "width": 0.3, "flip_bars": True, "level": 0.6},
+               fx={"lightning": 4, "lightning_beams": True, "strobe": 4, "strobe_len": 2, "strobe_beams": True}),
+    _halloween("poltergeist", "Poltergeist", "peak", "Things go bump: beams sparkle at random on 16ths while the curtains jitter on the balls and the LED side glitches",
+               ["#ff6a00", "#7b2cff", "#39ff14", "#ff1f5a", "#ffffff"],
+               move={"mode": "aim", "target": "balls", "speed": 1, "jitter": 2, "jitter_rate": "16th", "pair": "mirror"},
+               beams={"pattern": "sparkle", "color": "random", "rate": 0.25, "count": 3, "floor": 0.1, "pulse": "16th",
+                      "decay": 9, "depth": 0.5},
+               strip={"pattern": "glitch", "color": "random", "rate": 2, "density": 0.4, "level": 0.6},
+               fx={"strobe": 4, "strobe_beams": True}),
+    _halloween("halloween", "Halloween", "ambient", "Pumpkin orange and witchy purple rolling past, candle flicker, the odd crack of lightning",
+               ["#ff6a00", "#8a2be2", "#ff9e3d", "#5a189a", "#ffd166"], clock="seconds",
+               move={"mode": "sweep", "target": "ceiling", "sweep": 20, "period": 6, "speed": 0.3, "pair": "mirror"},
+               beams={"pattern": "solid", "color": "own", "level": 0.4, "pulse": "breathe", "depth": 0.5},
+               strip={"pattern": "wave", "color": "spread", "rate": 12, "width": 0.8, "level": 0.8, "floor": 0.25, "b": "offset"},
+               white={"pattern": "off"},
+               fx={"lightning": 1.2, "lightning_level": 0.9, "lightning_beams": True}),
+    _halloween("haunted", "Haunted house", "ambient", "LED side to the room: eyes open in the dark and blink, a dying bulb flickers up the wall, thunder now and then",
+               ["#ffae42", "#6a0dad", "#2bff88", "#ff3b00", "#fff1c1"], clock="seconds",
+               move=dict(CROWD, speed=0.3),
+               strip={"pattern": "eyes", "color": "c", "rate": 7, "count": 2, "level": 0.9},
+               beams={"pattern": "glitch", "color": "a", "rate": 4, "density": 0.2, "level": 0.5},
+               fx={"lightning": 1.5, "lightning_level": 0.9, "lightning_beams": True, "strobe": 1}),
+
+    # Halloween window: the bars on the windowsill facing the street. Beams stay high in the sky
+    # (never level at the houses, never back over the house) and the LED side never turns out.
+    dict(_p("window", "Haunted window", "ambient", "Bars on the windowsill: beams sweep the sky 35-75 degrees up, crossing like searchlights with ghosts drifting along them; candlelight flickers in the window, now and then lightning or a strobe burst",
+            ["#ff6a00", "#7b2cff", "#39ff14", "#ff1a1a", "#fff1c1"], clock="seconds", swap=6,
+            move={"mode": "sweep", "target": "out", "lift": 55, "sweep": 20, "period": 3, "speed": 0.35, "pair": "mirror"},
+            beams={"pattern": "wander", "color": "own", "rate": 5, "width": 0.5, "floor": 0.2, "b": "offset"},
+            strip={"pattern": "flicker", "color": "random", "rate": 1.5, "level": 0.6, "floor": 0.15},
+            fx={"strobe": 1.5, "strobe_beams": True, "lightning": 1, "lightning_level": 0.8}), set="window"),
 ]]
 PRESET_NAMES = {p["name"] for p in PRESETS}
 

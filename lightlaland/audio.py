@@ -29,8 +29,6 @@ def list_inputs():
 class AudioInput:
     """Sound-card input. Analysis runs on a worker thread, never in the audio callback."""
 
-    kind = "input"
-
     def __init__(self, make_analyzer):
         self.make_analyzer = make_analyzer  # sample rate -> Analyzer
         self.analyzer = None
@@ -121,8 +119,6 @@ def read_wav(path):
 
 class WavInput:
     """Plays a WAV file (if an output device exists) and feeds it to the analyzer in real time."""
-
-    kind = "wav"
 
     def __init__(self, path, make_analyzer):
         self.path = path
