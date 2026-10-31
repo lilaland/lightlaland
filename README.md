@@ -14,22 +14,26 @@ reflections, or from above (PLAN); the keys are at its bottom right.
 
 - **Perform** (opens first on an iPad or phone): both bars and their tilt at the top, with the
   magic sheet folding out below. Then Tempo (Tap, One, phrase start, nudge, phrase length),
-  Palette (drag across one or two stretches of the colour ring and the five colours are drawn
-  at random from them; the dice draws again, a tapped colour is kept; or pick a preset), and
-  Scenes: the set (Everyday / Halloween / Window), Groove / Break / Drop / Ambient, which pick a
-  random scene of that group from the set (Drop also flashes and restarts the phrase), Strobe
-  freq, or open the list to pick one. Auto, Strobe and Blackout stay at the bottom. On a phone
-  only one section is open at a time.
+  Palette (two colour ranges, primary and secondary: drag their circles round the colour disc,
+  and make a circle bigger for more variety; Swap, Surprise me, or a preset), and Scenes: the
+  set (Everyday / Halloween / Window), Groove / Break / Drop / Ambient, which pick a random scene
+  of that group from the set (Drop also flashes and restarts the phrase), Strobe freq, and the
+  list: filter it by tag (beams, washers, strobes, disco ball), tick which scenes auto mode may
+  pick (or all on / all off for what's listed), or tap one to play it. Auto, Strobe and Blackout
+  stay at the bottom. On a phone only one section is open at a time.
 - **Show** (the Mac): magic sheet, the VFD (BPM, beats, phrase, spectrum), big pads, the set,
-  Strobe freq and the set's scene list, the live palette (with Shuffle), speed and master brightness.
+  Strobe freq, the scene list (with the same tag filter and auto boxes), the live palette's two
+  ranges (tap to edit, or Surprise me), speed and master brightness.
 - **Mount**: set each bar's tilt (point the beams straight up, then say which way the room is),
   check it, and save aims at the ball cluster. **Beams stay off
   until this is done.**
-- **Make**: the scene maker. Edit any scene (movement, beams, LED strip, whites, effects such as
-  lightning, palette) while it plays on the lights, or start one from scratch or from a copy.
+- **Make**: the scene maker. Edit any scene (colour ranges, tags, movement, beams, the LED strip
+  and its second row, whites, effects such as lightning, strobe bursts and fills) while it plays
+  on the lights, or start one from scratch or from a copy. Ticking "Keeps its own colours" stops
+  the live palette from changing a scene (rainbows, fire, rain...).
 - **Setup**: beam safety, room size and ceiling height, where the bars and targets are (drag
-  them on the magic sheet), the lights' network settings, audio, sync, which scenes auto mode
-  uses, a channel test, and the output switch.
+  them on the magic sheet), the lights' network settings, audio, sync, a channel test, and the
+  output switch.
 
 ## First light
 
@@ -58,20 +62,22 @@ against a simulated head and fails if a beam is ever lit pointing low.
 ## Halloween
 
 Pick the **Halloween** set (Perform > Scenes, or above the scene list on Show): auto mode and the
-Groove / Break / Drop / Ambient pads then only play its nine scenes (Pumpkin patch, Ghost train,
-Monster mash, Witching hour, Tell-tale heart, It's alive!, Poltergeist, Halloween, Haunted
-house). They put patterns on the beams and the LED side (ghosts drifting, eyes that open and
-blink, a dying bulb, a heartbeat) and keep the whites for the odd strobe burst. **Strobe freq**
-(Off, ½×, 1×, 2×, 4×) scales those bursts and any lightning in every scene; Off stops them all.
+Groove / Break / Drop / Ambient pads then only play its 13 scenes (Pumpkin patch, Ghost train,
+Monster mash, Skeleton dance, Witch's cauldron, Witching hour, Tell-tale heart, Graveyard fog,
+It's alive!, Poltergeist, Bat swarm, Halloween, Haunted house). They put patterns on the beams
+and the LED side (ghosts drifting, eyes that open and blink, a dying bulb, a heartbeat, bats
+fluttering) and keep the whites for the odd strobe burst. **Strobe freq** (Off, ¼×, ½×, 1×, 2×,
+4×) scales those bursts and any lightning in every scene; Off stops them all.
 
-**Window** is for the bars on the windowsill, facing the street: its scene, Haunted window,
-keeps the beams 35-75 degrees up, high over the street, the two curtains crossing
-like searchlights with ghosts drifting along them, candlelight in the window, and now and then
-lightning or a strobe burst. It never turns the LED side out, which would point the beams back
-into the house. Choosing the set plays it at once, and auto mode never leaves the set. For the
-deadzone, set Setup > Beam safety: raise the lowest angle until the beams clear the rooftops,
-and lower the highest to a little over 90 so they can't tilt back into the room. Redo the tilt
-on the Mount tab after moving the bars.
+**Window** is for the bars on the windowsill, facing the street. Its nine scenes keep the beams
+35-75 degrees up, high over the street, and never turn the LED side out (that would point the
+beams back into the house). Eight are for the children walking past, with no strobes or
+lightning: Pumpkin parade, Candy corn, Friendly ghosts, Bat flight, Witch's brew, Monster disco
+(dances to music if there is any), Spider web and Trick or treat. Haunted window is the spooky
+one, with the odd lightning and strobe burst. Choosing the set plays one at once, and auto mode
+never leaves the set. For the deadzone, set Setup > Beam safety: raise the lowest angle until the
+beams clear the rooftops, and lower the highest to a little over 90 so they can't tilt back into
+the room. Redo the tilt on the Mount tab after moving the bars.
 
 ## Run it
 

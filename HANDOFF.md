@@ -1,4 +1,4 @@
-# lightlaland handoff (2026-10-29)
+# lightlaland handoff (2026-10-31)
 
 lightlaland is a Python app (v0.2.0, stdlib HTTP server + numpy + sounddevice) that listens to a
 vinyl DJ set, tracks beat/phrase/breakdown/drop/record changes, runs light scenes, and drives two
@@ -17,6 +17,10 @@ beam lights. Sections 1d and earlier describe the vertical-mount era where they 
 **2026-10-29:** Halloween round (section 1h): scene sets, a Halloween set and a windowsill scene,
 random strobe bursts with a live Strobe freq control, a colour-range palette picker, a lighter
 UI style. None of it has been seen on the real bars yet.
+
+**2026-10-31:** scene audit (section 1i): palettes are two colour ranges, every scene reworked to use
+the whole fixture (one-at-a-time beams, the strip's second row, fills), more Halloween and kid
+window scenes, tags and auto-mode boxes in the scene lists, a wider listening BPM range.
 
 ---
 
@@ -245,6 +249,55 @@ the rest is filled at random; a less clunky style; optimizations and cleanup.
   Checked at 390x844, 1180x820 and 1440x900 with Playwright on a `--dry-run` copy: no console
   errors, no horizontal overflow on the phone; the picker was driven with drags (palette hues
   landed inside the ranges, a kept colour survived a shuffle).
+
+## 1i. Scene audit, colour ranges, the whole fixture (2026-10-31)
+
+Asked for: every indoor scene more dynamic; more Halloween scenes and a bunch of kid-friendly window
+ones; colours as a range, not five exact ones, picked as circles on a colour plot (one primary, one
+secondary); scenes like Rainbow waves left alone by the user's palette; beams shooting colours one
+at a time (down the line, back and forth, at random); tags (beams, washers, strobes, disco ball) to
+sort by; ticking which scenes auto mode uses; a ¼× strobe freq; a BPM range from below 110 to 180.
+
+- **Colour ranges** (`scenes.crange`, `range_rgb`): a palette is `{"primary": {h, s, r},
+  "secondary": {...}}`, circles on the hue/saturation disc. Colour modes sample inside them; every
+  segment has its own spot in a range and wanders slowly (`layer_colour`), so even "solid" lives.
+  `normalize` converts the old five-colour lists (and {"a","b","c"}) from colours 1 and 2; layer
+  colour "c" becomes "b". Config v5 converts the live palette (`show.palette` = {on, primary,
+  secondary}). `cmd_palette` takes primary/secondary and refuses anything malformed whole.
+- **Keeps its own colours** (`own_colors`): `Engine._colours` ignores the live palette for these:
+  both rainbows, all everyday ambient scenes, Tell-tale heart, Pumpkin parade, Candy corn.
+- **One at a time** (`ONE_AT_A_TIME`: step, pingpong, scatter; `one_lit`): one segment lit per
+  step, `rate` = one pass down the line; pingpong doesn't repeat the ends; scatter shuffles
+  rounds (`scatter_round`) so each segment lights once per round and never twice in a row. Colour
+  mode `step` gives each step a new colour, the ranges taking turns, on the same step clock
+  (`cyc`, cycles so far, is shared by pattern and colour). Also `comet` (head with a tail).
+- **The strip's second row** (`Frame.strip2`, `strip.rows`: same / split / mirror / offset / alt):
+  the fixture always had two RGB rows per position; they were driven identically. `encode` writes
+  row 2 from `strip2`; lightning and the master fader go through `Frame.map_strip`; `vis` sends
+  `strip2` and the bar drawing shows it.
+- **Fills** (`fx.fill` every N bars, `fill_len` beats; `fill_at`, `race`): the last beats of the
+  block, one beam races down the line (one pass), the strip alongside.
+- **Tags** (spec field `tags`, kind "tags"): `auto_tags` works them out for specs saved without
+  (beams/washers: layer on at 25%+; strobes: whites at 40%+ or 3+ bursts/strikes a minute; disco
+  ball: hop, or aiming the beams at the balls); explicit lists are kept. Distant storm is tagged by
+  hand. `cmd_rotation` takes `scenes` (a list) for the lists' All on / All off.
+- **Scenes** (57): everyday groove adds Shooting stars, Back and forth, Popcorn; calm adds Comet
+  tails; peak adds Laser race, Confetti; every existing one reworked (comets, one-at-a-time, rows,
+  fills). Halloween adds Skeleton dance, Witch's cauldron, Graveyard fog, Bat swarm (13 in all).
+  Window adds eight for children (`_window`: seconds clock, beams 35-75 degrees, LED side never out,
+  no strobe bursts or lightning, since strobing at 3-30 Hz is a photosensitivity risk for people
+  walking past): Pumpkin parade, Candy corn, Friendly ghosts, Bat flight, Witch's brew, Monster
+  disco (beats clock), Spider web, Trick or treat. `test_safety` checks every window scene lights
+  inside a 25-95 degree deadzone.
+- **UI**: the colour disc (`makeDisc`, hue round with red at the top, white in the middle; the
+  plane is turned a quarter so circles stay circles): drag a circle to move it, its knob or the
+  Range slider to size it, Swap, Surprise me (`surprisePair`), presets as range pairs. On Perform,
+  Make (the scene's ranges) and as two chips on Show. Scene lists (Show, Perform) have tag filters,
+  an auto box per scene and All on / All off for what's listed; Setup's auto chips are gone (and
+  their page-wide `[data-rot]` binding, which would have double-toggled the new boxes). Strobe freq
+  has ¼×. Make shows tags as chips and the new fields from the schema.
+- **Cleanup**: the ring picker and its five-colour machinery (`rangePalette`, locks, `ringImage`...),
+  `Ctx.color`, the old 5-colour `_palette` fill-up, `rgbToHsv`/`hsvHex` in the page.
 
 ## 2. The channel map: printed chart vs what the code assumes (historical)
 

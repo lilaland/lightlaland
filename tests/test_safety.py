@@ -152,14 +152,17 @@ def main():
         # and 95 (never tilting back into the house). The window scene still has to light.
         app.command({"cmd": "safety", "low": 25, "high": 95})
         violations.clear()
-        lit_window = 0
+        window_lit = {}
         for name in names:
             eng.set_scene(name)
             now, lit = run(app, heads, 3.0, now, violations, name, 25, 95)
-            lit_window += lit if name == "window" else 0
+            if eng.library[name].set == "window":
+                window_lit[name] = lit
         assert not violations, f"beams lit outside 25-95 degrees: {violations[:5]}"
-        assert lit_window > 0, "the window scene's beams never lit inside 25-95 degrees"
-        print(f"  ok  a windowsill deadzone (beams only 25-95 degrees) is respected; the window scene lit {lit_window} frames")
+        dark = [n for n, lit in window_lit.items() if not lit]
+        assert not dark, f"window scenes whose beams never lit inside 25-95 degrees: {dark}"
+        print(f"  ok  a windowsill deadzone (beams only 25-95 degrees) is respected, and all "
+              f"{len(window_lit)} window scenes light their beams inside it")
     print("safety: all good")
 
 
