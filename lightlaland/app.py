@@ -12,7 +12,7 @@ from .clock import BeatClock
 from .config import Config
 from .engine import GROUP_FOR_STATE, Engine
 from .fixture import BEAMS, STRIP, WHITE
-from .scenes import GROUPS, HEX_RE, SET_NAMES, Scene, normalize, preset, slug, target_elevation
+from .scenes import GROUPS, SET_NAMES, Scene, normalize, preset, slug, target_elevation, to_range
 
 IP_RE = re.compile(r"^\d{1,3}(\.\d{1,3}){3}$")
 
@@ -210,15 +210,12 @@ class App:
         return {"saved": True}
 
     def cmd_palette(self, b):
-        """The live palette (five colours for every scene). "save": false while dragging."""
+        """The live palette: two colour ranges every scene uses (except those that keep their
+        own colours). "save": false while dragging."""
+        ranges = {k: to_range(b[k]) for k in ("primary", "secondary") if k in b}   # all valid, or nothing changes
         with self.config.lock:
             pal = self.config.data["show"]["palette"]
-            if "colors" in b:
-                cols = b["colors"]
-                if not (isinstance(cols, list) and len(cols) == 5
-                        and all(isinstance(c, str) and HEX_RE.fullmatch(c) for c in cols)):
-                    raise ValueError("a palette is five colours like #ff0080")
-                pal["colors"] = [c.lower() for c in cols]
+            pal.update(ranges)
             if "on" in b:
                 pal["on"] = bool(b["on"])
         return {"saved": bool(b.get("save", True))}
@@ -262,10 +259,13 @@ class App:
         self.engine.set_preview(None if spec is None else Scene(spec))
 
     def cmd_rotation(self, b):
-        if b["scene"] not in self.engine.library:
+        """Whether auto mode may pick a scene ("scene"), or several at once ("scenes")."""
+        names = b["scenes"] if "scenes" in b else [b["scene"]]
+        if not isinstance(names, list) or any(n not in self.engine.library for n in names):
             raise ValueError("no such scene")
         with self.config.lock:
-            self.config.data["rotation"][b["scene"]] = bool(b["on"])
+            for name in names:
+                self.config.data["rotation"][name] = bool(b["on"])
         return {"saved": True}
 
     # --- calibration -------------------------------------------------------------------------
@@ -415,7 +415,7 @@ class App:
                 restart = True
             if "bpm_min" in b or "bpm_max" in b:
                 lo = _clamp(float(b.get("bpm_min", a["bpm_min"])), 60, 180)
-                hi = _clamp(float(b.get("bpm_max", a["bpm_max"])), lo + 5, min(200, lo * 1.95))
+                hi = _clamp(float(b.get("bpm_max", a["bpm_max"])), lo + 5, min(200, lo * 1.99))   # as Analyzer.set_range
                 a["bpm_min"], a["bpm_max"] = lo, hi
                 an = self.analyzer()
                 if an is not None:

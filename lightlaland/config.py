@@ -4,8 +4,11 @@ import json
 import os
 import threading
 
-VERSION = 4   # 2: bars mounted horizontally (tilt model), beam safety, palettes. 3: no Blahaj.
+from .scenes import DEFAULT_PALETTE, to_range
+
+VERSION = 5   # 2: bars mounted horizontally (tilt model), beam safety, palettes. 3: no Blahaj.
 #               4: no cross point (horizontal curtains can only meet in the ball corner)
+#               5: the live palette is two colour ranges, not five colours
 
 FIXTURE = {
     "ip": "broadcast", "universe": 0, "address": 1,   # or the node's IP
@@ -48,7 +51,7 @@ DEFAULT = {
     ],
     "audio": {
         "device": None,          # None = system default input
-        "bpm_min": 115, "bpm_max": 150,
+        "bpm_min": 92, "bpm_max": 183,   # slow sets to drum & bass; under 2:1, so no octave mistakes
         "sync_ms": 40,           # lookahead so lights land on the beat (audio + DMX latency)
         "phrase_bars": 16,
         "follow_audio": True,    # False = manual tempo (tap / nudge)
@@ -57,8 +60,9 @@ DEFAULT = {
     "show": {
         "auto": True, "intensity": 1.0, "speed": 1.0,
         "sweep_width": 40,       # degrees either side of a sweep's centre (scenes with sweep 0)
-        # Live palette: when on, every scene uses these five colours instead of its own.
-        "palette": {"on": False, "colors": ["#ff1f5a", "#ff6a3d", "#ffb000", "#00e1ff", "#7b2cff"]},
+        # Live palette: when on, scenes draw their colours from these two ranges instead of their
+        # own (circles on the colour disc: hue, saturation, radius).
+        "palette": dict(copy.deepcopy(DEFAULT_PALETTE), on=False),
         "ambient_on_silence": True,   # when the music stops, auto mode plays an ambient scene
         "smooth": True,          # motor speed follows the move, so slow tilts glide
         "set": "",               # which set of scenes auto mode and the pads pick from ("" = everyday)
@@ -79,6 +83,23 @@ def _migrate(data):
     _migrate_v2(data)
     _migrate_v3(data)
     _migrate_v4(data)
+    _migrate_v5(data)
+
+
+def _migrate_v5(data):
+    """Version 5: the live palette's first two colours become the middles of its two ranges, and
+    the old default listening range (115-150 BPM) widens to slow sets and drum & bass."""
+    if data.get("version", 1) >= 5:
+        return
+    pal = data.get("show", {}).get("palette")
+    if isinstance(pal, dict) and "colors" in pal:
+        cols = pal.pop("colors") or []
+        for key, k in (("primary", 0), ("secondary", 1)):
+            pal[key] = to_range(cols[k] if len(cols) > k else None, DEFAULT_PALETTE[key])
+    audio = data.get("audio", {})
+    if (audio.get("bpm_min"), audio.get("bpm_max")) == (115, 150):   # never changed, so widen it
+        audio["bpm_min"], audio["bpm_max"] = DEFAULT["audio"]["bpm_min"], DEFAULT["audio"]["bpm_max"]
+    data["version"] = 5
 
 
 def _migrate_v4(data):

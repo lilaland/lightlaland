@@ -10,7 +10,7 @@ import time
 
 from . import geometry
 from .fixture import N_BEAMS, N_WHITE, Frame, encode, speed_value
-from .scenes import Ctx, hex_rgb, library, rgb_hex
+from .scenes import Ctx, library, rgb_hex
 
 DROP_BARS = 8          # peak section length after a drop
 MAX_BREAK_BARS = 32    # give up waiting for a drop after this long
@@ -156,7 +156,7 @@ def _copy_cfg(config):
     with config.lock:
         d = config.data
         show = dict(d["show"])
-        show["palette"] = dict(show["palette"], colors=list(show["palette"]["colors"]))
+        show["palette"] = {k: (dict(v) if isinstance(v, dict) else v) for k, v in show["palette"].items()}
         return {
             "fixtures": [dict(fx, targets=dict(fx["targets"])) for fx in d["fixtures"]],
             "points": [dict(p) for p in d["points"]],
@@ -289,8 +289,8 @@ class Engine:
             frames = self._calib_frames(fixtures)
         else:
             scene = self.current()
-            palette = self._palette(scene, show["palette"])
-            ctx = Ctx(cfg, info, palette, self.prev, speed=show["speed"], secs=now - self.t0, windows=windows)
+            ctx = Ctx(cfg, info, self._colours(scene, show["palette"]), self.prev, speed=show["speed"],
+                      secs=now - self.t0, windows=windows)
             frames = scene.render(ctx)
             if show.get("smooth", True):
                 self._smooth(frames, fixtures, dt)
@@ -311,11 +311,12 @@ class Engine:
         self.prev = frames
         self._publish(now, dt, info, frames, fixtures, show, build, safe, safety)
 
-    def _palette(self, scene, live):
-        pal = [hex_rgb(c) for c in (live["colors"] if live.get("on") else scene.palette)]
-        if self.color_swap and len(pal) > 1:
-            pal[0], pal[1] = pal[1], pal[0]
-        return pal
+    def _colours(self, scene, live):
+        """The two colour ranges for this frame: the live palette's, unless the scene keeps its
+        own (rainbows, fire...), swapped after a record change."""
+        pal = live if live.get("on") and not scene.spec["own_colors"] else scene.palette
+        pair = [pal["primary"], pal["secondary"]]
+        return pair[::-1] if self.color_swap else pair
 
     def _smooth(self, frames, fixtures, dt):
         """Vector speed: run the motor only as fast as the move needs. CH1 has 2.1 degree steps,
@@ -356,7 +357,7 @@ class Engine:
                 frames[i] = f.dark()
             elif k < 0.999:
                 f.beams = [tuple(v * k for v in b) for b in f.beams]
-                f.strip = [tuple(v * k for v in s) for s in f.strip]
+                f.map_strip(lambda s: tuple(v * k for v in s))
                 f.white = [w * k for w in f.white]
 
     def _calib_frames(self, fixtures):
@@ -403,6 +404,7 @@ class Engine:
                 "safe": safe[i][0], "why": safe[i][1], "calibrated": fx["calibrated"],
                 "beams": [rgb_hex((r + w, g + w, b + w)) for r, g, b, w in f.beams],
                 "strip": [rgb_hex(s) for s in f.strip],
+                "strip2": [rgb_hex(s) for s in f.strip2] if f.strip2 is not None else None,
                 "white": [round(w, 3) for w in f.white],
             })
         an = self.app.analyzer()

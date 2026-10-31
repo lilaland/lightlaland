@@ -14,6 +14,7 @@ Measured with the webcam probe (tools/channel_probe.py) on light A, 2026-10-08:
 So the LED face is 8 positions along the bar, each with two RGB segments and a white.
 Group/segment 1 is at the same end of the bar for beams, strip and whites. Index 0 of
 every list below is that end; set "flip" on the fixture to number from the other end.
+The two strip rows can show different colours (Frame.strip2); by default both show `strip`.
 
 The map is plain tables of 1-based channel numbers, so a different layout (or a second
 fixture model) only needs new tables.
@@ -37,9 +38,16 @@ class Frame:
     beams: list = field(default_factory=lambda: [(0.0, 0.0, 0.0, 0.0)] * N_BEAMS)
     strip: list = field(default_factory=lambda: [(0.0, 0.0, 0.0)] * N_STRIP)
     white: list = field(default_factory=lambda: [0.0] * N_WHITE)
+    strip2: list = None     # the strip's second row, if it differs from the first
 
     def dark(self):
         return Frame(pos=self.pos, spin=self.spin, speed=self.speed)
+
+    def map_strip(self, fn):
+        """Apply fn to every strip segment, in both rows."""
+        self.strip = [fn(s) for s in self.strip]
+        if self.strip2 is not None:
+            self.strip2 = [fn(s) for s in self.strip2]
 
 
 def to_byte(v):
@@ -69,14 +77,15 @@ def encode(frame, fx):
     ch[SPEED - 1] = speed_value(frame.speed, fx)
 
     flip = fx.get("flip", False)
-    beams = frame.beams[::-1] if flip else frame.beams
-    strip = frame.strip[::-1] if flip else frame.strip
-    white = frame.white[::-1] if flip else frame.white
+    order = (lambda xs: xs[::-1]) if flip else (lambda xs: xs)
+    beams, white = order(frame.beams), order(frame.white)
+    strip = order(frame.strip)
+    strip2 = strip if frame.strip2 is None else order(frame.strip2)
     for rgbw, chans in zip(beams, BEAMS):
         for v, c in zip(rgbw, chans):
             ch[c - 1] = to_byte(v)
-    for rgb, rows in zip(strip, STRIP):
-        for chans in rows:              # both rows of a position show the same colour
+    for rgb1, rgb2, (row1, row2) in zip(strip, strip2, STRIP):
+        for rgb, chans in ((rgb1, row1), (rgb2, row2)):
             for v, c in zip(rgb, chans):
                 ch[c - 1] = to_byte(v)
     for w, c in zip(white, WHITE):

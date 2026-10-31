@@ -221,8 +221,16 @@ body.editing .sheet canvas { cursor: move; }
 }
 @media (hover: hover) { .track:hover:not([aria-pressed="true"]) { background: rgba(107, 251, 230, .08); } }
 .track span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.track .sw { display: inline-flex; gap: 1px; flex: 0 0 auto; }
-.track .sw i { width: 5px; height: 9px; }
+.track .sw { display: inline-flex; gap: 2px; flex: 0 0 auto; }
+.track .sw i { width: 9px; height: 10px; border-radius: 2px; }
+.track .nm { flex: 1; min-width: 0; }
+.track .tg { display: inline-flex; gap: 3px; flex: 0 0 auto; opacity: .75; }
+.track .tg svg { width: 11px; height: 11px; }
+.trk { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.chk { flex: 0 0 auto; width: 18px; height: 18px; padding: 0; border: 1px solid var(--vfd-mid); border-radius: 4px; background: transparent; cursor: pointer;
+  display: grid; place-items: center; transition: background .12s; }
+.chk[aria-pressed="true"] { background: var(--vfd-mid); }
+.chk[aria-pressed="true"]::after { content: ""; width: 9px; height: 5px; margin-top: -2px; border: solid #031512; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
 .track[aria-pressed="true"] { background: var(--vfd); color: #031512; text-shadow: none; }
 .track.off { opacity: .45; }
 .pl-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 10px; }
@@ -232,10 +240,7 @@ body.editing .sheet canvas { cursor: move; }
   border: 1px solid rgba(0, 0, 0, .8); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(0,0,0,.25), 0 1px 2px rgba(0,0,0,.6);
 }
 .swatch input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; border: 0; padding: 0; cursor: pointer; }
-.swatch.locked::after { content: ""; position: absolute; right: -4px; top: -4px; width: 9px; height: 9px; border-radius: 50%;
-  background: var(--amber); box-shadow: 0 0 0 2px var(--panel-2); }
 .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; }
-#shuffleShow svg { width: 15px; height: 15px; margin-right: 6px; vertical-align: -3px; }
 .fader { display: inline-flex; align-items: center; gap: 8px; }
 input[type=range] { accent-color: var(--amber); width: 150px; }
 
@@ -278,8 +283,6 @@ legend { padding: 0 6px; font: 700 10px var(--ui); letter-spacing: .16em; text-t
 .chips .btn { min-width: 38px; }
 .mk-bar { position: sticky; top: 0; z-index: 2; padding: 6px 0 10px; background: linear-gradient(#26272b 85%, transparent); }
 .mk-pal { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.mk-ranges summary { cursor: pointer; padding: 6px 0; color: var(--silk); font: 600 12px var(--ui); letter-spacing: .02em; text-transform: none; }
-.mk-ranges .picker { max-width: 300px; margin: 4px auto 0; }
 .status-vfd { padding: 8px 10px; font-size: 13px; letter-spacing: .06em; line-height: 1.45; }
 .status-vfd .bad { color: #ff8a80; text-shadow: 0 0 6px rgba(255, 90, 80, .6); }
 
@@ -320,35 +323,29 @@ body.tab-perform .perform { display: grid; }
 .pf-row .btn { min-height: 44px; padding: 8px 14px; }
 .pf-row .seg .btn { min-width: 44px; }
 
-/* colour ranges: a hue ring you drag across; the palette is drawn at random from what you picked */
-.picker { display: flex; flex-direction: column; gap: 12px; }
-.pk-sw { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-.pk-sw button {
-  position: relative; height: 52px; padding: 0; border: 0; border-radius: 12px; cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 2px 6px rgba(0, 0, 0, .35); transition: transform .12s, box-shadow .15s;
-}
-.pk-sw button:active { transform: scale(.96); }
-.pk-sw button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9), 0 2px 6px rgba(0, 0, 0, .35); }
-.pk-sw svg { position: absolute; right: 5px; top: 5px; width: 20px; height: 20px; padding: 4px; border-radius: 50%;
-  background: rgba(0, 0, 0, .6); color: #fff; opacity: 0; transform: scale(.5); transition: opacity .15s, transform .15s; }
-.pk-sw button[aria-pressed="true"] svg { opacity: 1; transform: none; }
-.pk-ring { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: 0 auto; }
-.pk-ring canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
-.pk-roll {
-  position: absolute; left: 50%; top: 50%; width: 40%; aspect-ratio: 1; transform: translate(-50%, -50%);
-  display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
-  background: conic-gradient(var(--c0) 0 20%, var(--c1) 0 40%, var(--c2) 0 60%, var(--c3) 0 80%, var(--c4) 0);
-  box-shadow: 0 0 0 3px #1f2023, 0 0 0 4px rgba(255, 255, 255, .1), 0 8px 22px rgba(0, 0, 0, .5); transition: transform .12s;
-}
-.pk-roll:active { transform: translate(-50%, -50%) scale(.95); }
-.pk-roll svg { width: 50%; height: 50%; padding: 13%; border-radius: 50%; background: rgba(16, 17, 19, .9); color: #f4f0e6;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .5); transition: transform .5s cubic-bezier(.3, 1.4, .5, 1); }
-.pk-ranges { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; min-height: 36px; text-align: center; }
-.pk-chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border-radius: 999px;
-  background: rgba(0, 0, 0, .3); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
-.pk-chip i { width: 72px; height: 12px; border-radius: 6px; }
-.pk-chip button { width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .08); color: var(--silk); font-size: 16px; line-height: 1; cursor: pointer; }
-.pk-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+/* colour ranges: two circles on a colour disc (primary 1, secondary 2); their size is how wide the range is */
+.dk { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.dk-disc { position: relative; width: min(100%, 300px); aspect-ratio: 1; margin: 0 auto; }
+.dk-disc canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; border-radius: 50%;
+  box-shadow: 0 0 0 3px #1f2023, 0 0 0 4px rgba(255, 255, 255, .08), 0 10px 28px rgba(0, 0, 0, .45); }
+.dk-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dk-chip { display: flex; align-items: center; gap: 10px; padding: 8px 10px; min-height: 48px; border: 0; border-radius: 12px; cursor: pointer;
+  background: rgba(0, 0, 0, .28); color: var(--silk); font: 600 12px var(--ui); text-align: left;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07); transition: box-shadow .15s, background .15s; }
+.dk-chip b { width: 22px; height: 22px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: #0c0c0e; color: #fff; font-size: 11px; }
+.dk-chip i { flex: 1; height: 22px; border-radius: 7px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .15); }
+.dk-chip span { flex: 0 0 auto; }
+.dk-chip[aria-pressed="true"] { background: rgba(255, 181, 46, .1); box-shadow: inset 0 0 0 2px rgba(255, 181, 46, .65); }
+.dk-spread { display: flex; align-items: center; gap: 10px; }
+.dk-spread input { flex: 1; width: auto; }
+.dk-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.dk-row svg, #shuffleShow svg { width: 15px; height: 15px; margin-right: 6px; vertical-align: -3px; }
+.rchip { display: inline-block; width: 44px; height: 26px; border: 0; padding: 0; border-radius: 8px; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .15), 0 1px 3px rgba(0, 0, 0, .5); }
+.pf-head .rchip { width: 36px; height: 22px; cursor: inherit; }
+.mk-pal .dk { max-width: 340px; }
+.mk-tags { display: flex; flex-direction: column; gap: 6px; }
+.mk-tags svg, [data-filter] svg { width: 12px; height: 12px; margin-right: 5px; vertical-align: -1px; }
 .presets { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
 .preset { flex: 0 0 104px; scroll-snap-align: start; border: 0; border-radius: 10px; padding: 0; overflow: hidden; background: #111214; text-align: left;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 2px 6px rgba(0, 0, 0, .35); cursor: pointer; transition: transform .12s; }
@@ -417,6 +414,7 @@ body.tab-perform .perform { display: grid; }
   .pf-scene-pads, .pf-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pad { font-size: 16px; }
   .pf-foot .pad { min-height: 56px; font-size: 14px; letter-spacing: .04em; }
+  .pf-cols .track .tg { display: none; }   /* names need the room; the tag filter does the sorting */
   .pad .led { top: 7px; right: 7px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -485,7 +483,7 @@ body.tab-perform .perform { display: grid; }
       <button class="pf-head" aria-expanded="false"><span class="swatches" id="pfPalHead"></span>
         <span class="hint" id="pfColState"></span><span class="chev"></span></button>
       <div class="pf-body">
-        <div class="picker" id="pfPicker"></div>
+        <div class="dk" id="pfPicker"></div>
         <div class="row" style="margin:14px 0 12px"><button class="btn" id="pfLive"><span class="led"></span>Live palette</button>
           <span class="hint">On: every scene uses these colours. Off: each scene's own.</span></div>
         <div class="presets" id="pfPresets"></div>
@@ -503,7 +501,7 @@ body.tab-perform .perform { display: grid; }
       </div>
       <div class="pf-row"><span class="silk">Strobe freq</span><span class="seg" id="pfFreq"></span><span class="hint" id="pfFreqHint"></span></div>
       <button class="pf-head" aria-expanded="false">Scene <span class="cur" id="pfScene"></span><span class="chev"></span></button>
-      <div class="pf-body"><div class="pf-cols" id="pfCols"></div></div>
+      <div class="pf-body"><div class="pl-head" id="pfTags"></div><div class="pf-cols" id="pfCols"></div></div>
     </section>
 
     <div class="pf-foot">
@@ -575,6 +573,7 @@ body.tab-perform .perform { display: grid; }
     <span class="label">Scenes</span>
     <div class="pl-head"><span class="silk">Set</span><span class="seg" id="sets"></span>
       <span class="fader"><span class="silk">Strobe freq</span><span class="seg" id="freq"></span><span class="hint" id="freqHint"></span></span></div>
+    <div class="pl-head" id="tags"></div>
     <div class="vfd pl-list" id="scenes"></div>
     <div class="pl-foot">
       <span class="swatches" id="livePal"></span>
@@ -597,11 +596,12 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 let DEG_PER_STEP = 540 / 255, STEPS_PER_TURN = 170;   // replaced by /api/meta (geometry.py) on load
 const MONO = getComputedStyle(document.documentElement).getPropertyValue("--mono").trim();
+const UI_FONT = getComputedStyle(document.documentElement).getPropertyValue("--ui").trim();
 const CRT = "#3dff86", CRT_DIM = "rgba(61,255,134,0.35)", CRT_FAINT = "rgba(61,255,134,0.10)";
 const GROUP_LABEL = { groove: "Groove", calm: "Break", peak: "Drop", ambient: "Ambient" };
 const S = { meta: null, cfg: null, vis: null, tab: "show", mountFx: 0, testFx: 0, editing: false, view: "room",
             lastVis: 0, dragging: null, sliding: false, testing: false, search: null, searching: false,
-            open: new Set(), make: { name: null, draft: null, dirty: false, preview: true, ranges: false } };
+            open: new Set(), make: { name: null, draft: null, dirty: false, preview: true } };
 const narrow = () => matchMedia("(max-width: 999px)").matches;
 
 // ---------- helpers ----------
@@ -618,13 +618,6 @@ function hsvToRgb(h, s, v) {   // h 0..1
   const [r, g, b] = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][((i % 6) + 6) % 6];
   return [r * 255, g * 255, b * 255];
 }
-function rgbToHsv([r, g, b]) {
-  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
-  let h = 0;
-  if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
-  return [((h / 6) % 1 + 1) % 1, mx ? d / mx : 0, mx / 255];
-}
-const hsvHex = (h, s, v) => toHex(hsvToRgb(((h % 1) + 1) % 1, clamp(s, 0, 1), clamp(v, 0, 1)));
 function hash(i) { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); }
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function toast(msg) {
@@ -703,223 +696,149 @@ function sevenSeg(text) {
 const segCache = new Map();
 function setSeven(el, text) { if (segCache.get(el) !== text) { segCache.set(el, text); el.innerHTML = sevenSeg(text); el.setAttribute("aria-label", text.trim()); } }
 
-// ---------- palettes ----------
-const PALETTES = [
-  ["Neon Tokyo", ["#ff2e88", "#00e5ff", "#7a2cff", "#ff9e00", "#ffffff"]],
-  ["Sunset", ["#ff7b00", "#ff3d6e", "#9b2fff", "#ffb347", "#ff6fb5"]],
-  ["Ocean", ["#0047ab", "#00c2ff", "#00a6a6", "#5ab4ff", "#00ffd0"]],
-  ["Aurora", ["#00ff9c", "#00c2ff", "#7b2cff", "#00ffd0", "#c77dff"]],
-  ["Fire", ["#ff2a00", "#ff7a00", "#ffb000", "#c21800", "#ffd36b"]],
-  ["Ice", ["#6ec1ff", "#bfe9ff", "#3a86ff", "#ffffff", "#d6f5ff"]],
-  ["Candy", ["#ff5fa2", "#ffb86b", "#9b8cff", "#5ce1ff", "#fff3c4"]],
-  ["Vapor", ["#ff71ce", "#01cdfe", "#05ffa1", "#b967ff", "#fffb96"]],
-  ["Halloween", ["#ff6a00", "#8a2be2", "#ff9e3d", "#5a189a", "#ffd166"]],
-  ["Pumpkin", ["#ff6a00", "#8a2be2", "#ffa31a", "#b47dff", "#ffd166"]],
-  ["Witch", ["#7b2cff", "#00ff9c", "#b47dff", "#66ffc4", "#e0d0ff"]],
-  ["Slime", ["#39ff14", "#9d00ff", "#a6ff4d", "#d580ff", "#ffffff"]],
-  ["Blood moon", ["#ff0022", "#b3001b", "#ff4d5e", "#ff7a00", "#ffffff"]],
-  ["Ghost", ["#d8fff6", "#b8a6ff", "#7dffd8", "#eae4ff", "#ffffff"]],
-  ["Forest", ["#2ecc71", "#9be15d", "#00a35c", "#c6ff6b", "#0b6e4f"]],
-  ["Berry", ["#e91e63", "#7b1fa2", "#c2185b", "#9c27b0", "#f48fb1"]],
-  ["Lava", ["#ff1e00", "#ff006e", "#ff8800", "#b5179e", "#ffd000"]],
-  ["Mint", ["#00d1b2", "#a8e6cf", "#3eb489", "#dcedc1", "#7fffd4"]],
-  ["Gold", ["#ffb700", "#ffd166", "#ff8c00", "#fff1c1", "#e0a100"]],
-  ["Club red", ["#ff0000", "#ff3355", "#990000", "#ff6666", "#ffffff"]],
-  ["Deep blue", ["#0033ff", "#0099ff", "#3300cc", "#66a3ff", "#ffffff"]],
-];
-
 // ---------- colour ranges ----------
-// Drag across the colour ring over the colours you want, and again for a second stretch; the
-// palette is drawn at random from them (colour 1 from the first range and colour 2 from the
-// second, so A and B differ). The dice draws again; a tapped swatch is kept. Per device.
-const MIXES = [["vivid", "Vivid"], ["soft", "Soft"], ["mixed", "Mixed"]];
-const RING_IN = 0.64;   // the ring's inner edge, as a share of its radius
+// A palette is two ranges, primary and secondary: circles on the colour disc (hue round it with
+// red at the top, saturation from white in the middle to full at the edge, radius = how wide).
+// Scenes draw their colours from anywhere inside. rangeRgb mirrors scenes.range_rgb.
+function rangeRgb(rg, u, v) {
+  const a = 2 * Math.PI * u, d = rg.r * Math.sqrt(clamp(v, 0, 1)), h = rg.h * D2R;
+  const x = rg.s * Math.cos(h) + d * Math.cos(a), y = rg.s * Math.sin(h) + d * Math.sin(a);
+  return hsvToRgb(((Math.atan2(y, x) / (2 * Math.PI)) % 1 + 1) % 1, Math.min(1, Math.hypot(x, y)), 1);
+}
+const rangeHex = (rg, u = 0, v = 0) => toHex(rangeRgb(rg, u, v));
+function rangeCss(rg) {   // a swatch: across the range, edge to middle to edge
+  const t = (rg.h + 90) / 360;
+  return `linear-gradient(90deg, ${rangeHex(rg, t + 0.5, 1)}, ${rangeHex(rg)}, ${rangeHex(rg, t, 1)})`;
+}
+const R2 = (h, s, r) => ({ h, s, r });
+const PALETTES = [   // name, primary, secondary
+  ["Neon", R2(330, 1, 0.12), R2(185, 1, 0.12)], ["Sunset", R2(25, 1, 0.15), R2(320, 0.85, 0.18)],
+  ["Ocean", R2(210, 1, 0.15), R2(175, 1, 0.15)], ["Aurora", R2(150, 1, 0.2), R2(265, 0.85, 0.2)],
+  ["Fire", R2(15, 1, 0.12), R2(40, 1, 0.12)], ["Ice", R2(200, 0.45, 0.18), R2(0, 0, 0.1)],
+  ["Candy", R2(330, 0.6, 0.2), R2(200, 0.6, 0.2)], ["Vapor", R2(310, 0.7, 0.15), R2(180, 0.8, 0.15)],
+  ["Pumpkin", R2(25, 1, 0.1), R2(275, 0.85, 0.12)], ["Slime", R2(110, 1, 0.12), R2(280, 1, 0.1)],
+  ["Witch", R2(272, 0.9, 0.12), R2(155, 1, 0.12)], ["Blood moon", R2(355, 1, 0.06), R2(20, 1, 0.1)],
+  ["Ghost", R2(165, 0.2, 0.12), R2(255, 0.35, 0.12)], ["Forest", R2(130, 0.9, 0.18), R2(80, 0.8, 0.15)],
+  ["Gold", R2(42, 1, 0.1), R2(30, 0.4, 0.15)], ["Club red", R2(355, 1, 0.05), R2(0, 0, 0.05)],
+  ["Deep blue", R2(230, 1, 0.1), R2(205, 0.8, 0.12)],
+];
 const DICE = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/>${
   [[8.2, 8.2], [15.8, 8.2], [12, 12], [8.2, 15.8], [15.8, 15.8]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6" fill="currentColor"/>`).join("")}</svg>`;
-const LOCK = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 11V8a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/></svg>`;
-const PK = { ranges: [], mix: "vivid", seed: 1, locks: [false, false, false, false, false] };
-try {
-  const saved = JSON.parse(localStorage.getItem("lightlaland.ranges") || "{}");
-  if (Array.isArray(saved.ranges)) PK.ranges = saved.ranges.filter(r => r && isFinite(r.from) && r.span > 0 && r.span <= 360).slice(0, 2);
-  if (MIXES.some(([k]) => k === saved.mix)) PK.mix = saved.mix;
-  if (Number.isInteger(saved.seed)) PK.seed = saved.seed;
-  if (Array.isArray(saved.locks) && saved.locks.length === 5) PK.locks.forEach((_, i) => { PK.locks[i] = !!saved.locks[i]; });
-} catch (e) { /* private mode, or nothing saved yet */ }
-function savePicks() { try { localStorage.setItem("lightlaland.ranges", JSON.stringify(PK)); } catch (e) { /* private mode */ } }
-const newSeed = () => (Math.random() * 2 ** 31) | 0;
-function seeded(seed) {   // mulberry32: one seed always gives the same palette, until the dice rolls
-  let a = seed | 0;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function surprisePair() {   // any hue, and the other one well round the disc from it
+  const rnd = (a, b) => +(a + (b - a) * Math.random()).toFixed(2), h = Math.round(Math.random() * 360);
+  return { primary: R2(h, rnd(0.75, 1), rnd(0.08, 0.2)), secondary: R2(Math.round(h + rnd(100, 220)) % 360, rnd(0.6, 1), rnd(0.08, 0.2)) };
 }
-const SPREAD = { 1: [0], 2: [0, 1], 3: [0, 2, 1], 5: [0, 4, 2, 1, 3] };   // which slice of its range each colour takes
-function rangePalette(ranges, mix, seed, base, locks) {
-  const rnd = seeded(seed), out = [...base];
-  const rs = ranges.length ? ranges : [{ from: rnd() * 360, span: 360 }];   // nothing picked: anything goes
-  rs.forEach((r, k) => {
-    const slots = [0, 1, 2, 3, 4].filter(s => s % rs.length === k), n = slots.length;
-    const order = r.span >= 300 && n === 5 ? [0, 2, 4, 1, 3] : SPREAD[n];   // all the way round: evenly
-    slots.forEach((slot, j) => {
-      const hue = r.from + (order[j] + 0.15 + 0.7 * rnd()) / n * r.span;
-      const soft = mix === "soft" || (mix === "mixed" && (slot === 2 || slot === 4));
-      const sat = soft ? 0.3 + 0.25 * rnd() : 0.82 + 0.18 * rnd();   // drawn even when kept, so a lock doesn't reshuffle the rest
-      if (!locks[slot]) out[slot] = hsvHex(hue / 360, sat, 1);
-    });
-  });
-  return out;
-}
-const inArc = (h, r) => ((h - r.from) % 360 + 360) % 360 <= r.span;
-const hueGap = (a, b) => Math.abs(((a - b) % 360 + 540) % 360 - 180);
-function addRange(ranges, r) {   // a new range replaces one it overlaps, else joins; with two already, the nearer goes
-  const mid = q => q.from + q.span / 2;
-  let i = ranges.findIndex(q => inArc(r.from, q) || inArc(q.from, r));
-  if (i < 0 && ranges.length < 2) return [...ranges, r];
-  if (i < 0) i = hueGap(mid(ranges[0]), mid(r)) <= hueGap(mid(ranges[1]), mid(r)) ? 0 : 1;
-  return ranges.map((q, k) => k === i ? r : q);
-}
-const ringCache = new Map();   // canvas size -> the hue ring, drawn once
-function ringImage(W) {
-  if (ringCache.has(W)) return ringCache.get(W);
+const discCache = new Map();   // canvas size -> the colour disc, drawn once
+function discImage(W) {
+  if (discCache.has(W)) return discCache.get(W);
   const c = document.createElement("canvas"); c.width = c.height = W;
-  const ctx = c.getContext("2d"), img = ctx.createImageData(W, W), d = img.data, R = W / 2, r0 = R * RING_IN;
+  const ctx = c.getContext("2d"), img = ctx.createImageData(W, W), d = img.data, R = W / 2 - 1;
   for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
-    const dx = x + 0.5 - R, dy = y + 0.5 - R, dist = Math.hypot(dx, dy), a = clamp(Math.min(dist - r0, R - dist) + 0.5, 0, 1);
+    const dx = x + 0.5 - W / 2, dy = y + 0.5 - W / 2, dist = Math.hypot(dx, dy), a = clamp(R - dist + 0.5, 0, 1);
     if (!a) continue;
-    const [r, g, b] = hsvToRgb((Math.atan2(dy, dx) / (2 * Math.PI) + 1.25) % 1, 1, 1), o = (y * W + x) * 4;   // red at the top
+    const [r, g, b] = hsvToRgb((Math.atan2(dx, -dy) / (2 * Math.PI) + 1) % 1, Math.min(1, dist / R), 1), o = (y * W + x) * 4;
     d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = 255 * a;
   }
   ctx.putImageData(img, 0, 0);
-  ringCache.set(W, c);
+  discCache.set(W, c);
   return c;
 }
-const ringAngle = h => (h - 90) * D2R;
-function drawRing(cv, ranges, colors, locks) {
-  const dpr = fit(cv), W = cv.width, ctx = cv.getContext("2d"), R = W / 2, r0 = R * RING_IN, mid = (R + r0) / 2;
-  if (W < 40) return;
-  const ring = ringImage(W);
-  ctx.clearRect(0, 0, W, W);
-  ctx.globalAlpha = ranges.length ? 0.22 : 1; ctx.drawImage(ring, 0, 0); ctx.globalAlpha = 1;
-  const band = (r, inset) => {
-    ctx.beginPath();
-    ctx.arc(R, R, R - inset, ringAngle(r.from), ringAngle(r.from + r.span));
-    ctx.arc(R, R, r0 + inset, ringAngle(r.from + r.span), ringAngle(r.from), true);
-    ctx.closePath();
-  };
-  for (const r of ranges) {   // the picked stretches in full colour, outlined, with a handle at each end
-    ctx.save(); band(r, -1); ctx.clip(); ctx.drawImage(ring, 0, 0); ctx.restore();
-    band(r, dpr); ctx.lineWidth = 2 * dpr; ctx.strokeStyle = "rgba(255,255,255,.92)";
-    ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 6 * dpr; ctx.stroke(); ctx.shadowBlur = 0;
-    for (const h of [r.from, r.from + r.span]) {
-      const x = R + Math.cos(ringAngle(h)) * mid, y = R + Math.sin(ringAngle(h)) * mid;
-      ctx.beginPath(); ctx.arc(x, y, 8 * dpr, 0, 2 * Math.PI); ctx.fillStyle = "#fff"; ctx.fill();
-      ctx.lineWidth = 2.5 * dpr; ctx.strokeStyle = "rgba(0,0,0,.55)"; ctx.stroke();
-    }
-  }
-  colors.forEach((c, i) => {   // where each palette colour sits: just inside the ring, paler ones further in
-    const [h, s] = rgbToHsv(rgb(c)), a = ringAngle(h * 360), rr = r0 - 12 * dpr - (1 - s) * 10 * dpr, kept = locks && locks[i];
-    ctx.beginPath(); ctx.arc(R + Math.cos(a) * rr, R + Math.sin(a) * rr, 5.5 * dpr, 0, 2 * Math.PI); ctx.fillStyle = c; ctx.fill();
-    ctx.lineWidth = (kept ? 2.5 : 1.5) * dpr; ctx.strokeStyle = kept ? "#ffb52e" : "rgba(255,255,255,.85)"; ctx.stroke();
-  });
-}
-// target: { colors() -> five colours, set(colors, final), locks: five booleans (shows the swatches to keep) or null }
-function makePicker(host, target) {
+// Where a range's middle sits, relative to the disc's middle, for a disc of radius R (the colour
+// plane turned so red is at the top; a quarter turn keeps circles circles).
+const discXY = (rg, R) => [R * rg.s * Math.sin(rg.h * D2R), -R * rg.s * Math.cos(rg.h * D2R)];
+// target: { get() -> {primary, secondary}, set(palette, final) }
+function makeDisc(host, target) {
   host.innerHTML = `
-    ${target.locks ? `<div class="pk-sw" role="group" aria-label="The palette: tap a colour to keep it when you shuffle">${
-      [0, 1, 2, 3, 4].map(i => `<button type="button" data-lock="${i}" aria-pressed="false">${LOCK}</button>`).join("")}</div>` : ""}
-    <div class="pk-ring"><canvas aria-label="Colour ring: drag across the colours you want"></canvas>
-      <button type="button" class="pk-roll" aria-label="Shuffle: new colours from your ranges">${DICE}</button></div>
-    <div class="pk-ranges" aria-live="polite"></div>
-    <div class="pk-row"><span class="seg">${MIXES.map(([k, l]) => `<button type="button" class="btn small" data-mix="${k}">${l}</button>`).join("")}</span></div>`;
-  const cv = $("canvas", host), roll = $(".pk-roll", host), locks = target.locks || [];
-  let drag = null, shown = null, last = 0, pend = null, rolls = 0, key = "";
-  const painted = () => {
-    const s = drag.sweep;
-    if (Math.abs(s) < 6) return { from: (drag.h0 + 348) % 360, span: 24 };   // a tap: a narrow band around that colour
-    return s > 0 ? { from: drag.h0, span: s } : { from: (drag.h0 + s + 360) % 360, span: -s };
-  };
-  const ranges = () => drag && drag.kind === "paint" ? addRange(PK.ranges, painted()) : PK.ranges;
-  function paint(force) {
-    const cols = shown || target.colors(), rs = ranges();
-    const k = `${cv.clientWidth}|${cols}|${JSON.stringify(rs)}|${locks}|${PK.mix}`;
-    if (!force && k === key) return;
-    key = k;
-    drawRing(cv, rs, cols, target.locks);
-    cols.forEach((c, i) => roll.style.setProperty(`--c${i}`, c));
-    $$("[data-lock]", host).forEach((b, i) => {
-      b.style.background = cols[i]; b.setAttribute("aria-pressed", String(!!locks[i]));
-      b.setAttribute("aria-label", `Colour ${i + 1}: ${locks[i] ? "kept when shuffling" : "tap to keep it"}`);
-    });
-    for (const b of $$("[data-mix]", host)) b.setAttribute("aria-pressed", String(b.dataset.mix === PK.mix));
-    const chip = (r, i) => `<span class="pk-chip"><i style="background:linear-gradient(90deg,${
-      [0, 0.25, 0.5, 0.75, 1].map(u => hsvHex((r.from + u * r.span) / 360, 1, 1)).join(",")})"></i><button type="button" data-drop="${i}" aria-label="Remove this range">&times;</button></span>`;
-    const keep = target.locks ? " Tap a colour above to keep it." : "";
-    $(".pk-ranges", host).innerHTML = rs.length
-      ? rs.map(chip).join("") + (rs.length < 2 ? `<span class="hint">Drag again for a second range.${keep}</span>` : "")
-      : `<span class="hint">Drag across the ring over the colours you want (with none picked, the dice uses them all).${keep}</span>`;
-  }
-  function apply(final) {   // a palette from the ranges; sent at most every 70 ms while dragging
-    shown = rangePalette(ranges(), PK.mix, PK.seed, target.colors(), locks);
-    paint(true);
+    <div class="dk-disc"><canvas aria-label="Colour disc: drag the circles to choose the two colour ranges"></canvas></div>
+    <div class="dk-pair">${[["primary", "Primary"], ["secondary", "Secondary"]].map(([k, l], i) =>
+      `<button type="button" class="dk-chip" data-which="${k}"><b>${i + 1}</b><i></i><span>${l}</span></button>`).join("")}</div>
+    <label class="dk-spread"><span class="silk">Range</span><input type="range" min="0" max="0.5" step="0.01" aria-label="How wide the chosen range is"><span class="hint">exact &harr; wide</span></label>
+    <div class="dk-row"><button type="button" class="btn small" data-swap>Swap</button><button type="button" class="btn small" data-dice>${DICE}Surprise me</button></div>`;
+  const cv = $("canvas", host), spread = $("input", host);
+  let sel = "primary", drag = null, local = null, last = 0, pend = null, key = "";
+  const pal = () => local || target.get();
+  const other = k => (k === "primary" ? "secondary" : "primary");
+  function send(p, final) {   // show it at once; tell the Mac at most every 70 ms while dragging
+    local = p; paint(true);
     clearTimeout(pend);
-    const now = performance.now(), cols = shown;
-    if (final || now - last > 70) { last = now; target.set(cols, final); }
-    else pend = setTimeout(() => { last = performance.now(); target.set(cols, false); }, 70);
-    if (final) setTimeout(() => { if (!drag) shown = null; }, 700);   // then show what the Mac has again
+    const now = performance.now();
+    if (final || now - last > 70) { last = now; target.set(p, final); }
+    else pend = setTimeout(() => { last = performance.now(); target.set(p, false); }, 70);
+    if (final) setTimeout(() => { if (!drag) local = null; }, 700);   // then follow what the Mac says again
   }
-  const polar = e => {
-    const r = cv.getBoundingClientRect(), x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
-    return { hue: ((Math.atan2(y, x) / D2R + 90) % 360 + 360) % 360, dist: Math.hypot(x, y) / (r.width / 2) };
+  const point = e => {   // the pointer, in CSS px from the disc's middle
+    const r = cv.getBoundingClientRect();
+    return { X: e.clientX - r.left - r.width / 2, Y: e.clientY - r.top - r.height / 2, R: r.width / 2 - 1 };
   };
+  const reach = (rg, R) => Math.max(rg.r * R, 8);   // a circle's drawn radius (an exact colour still shows)
+  function moveTo(X, Y, R) {   // the chosen circle's middle to this point, kept on the disc
+    const cur = pal(), s = Math.min(1, Math.hypot(X, Y) / R), h = (Math.atan2(X, -Y) / D2R + 360) % 360;
+    send({ ...cur, [sel]: { ...cur[sel], h: +h.toFixed(1), s: +s.toFixed(3) } }, false);
+  }
   cv.addEventListener("pointerdown", e => {
-    const p = polar(e);
-    if (p.dist < RING_IN - 0.1 || p.dist > 1.1) return;   // the ring only
+    const p = point(e), cur = pal();
+    if (Math.hypot(p.X, p.Y) > p.R + 16) return;
     e.preventDefault(); cv.setPointerCapture(e.pointerId);
-    for (const [i, r] of PK.ranges.entries()) for (const end of [0, 1]) {   // grabbed a handle: stretch that range
-      if (hueGap(p.hue, r.from + end * r.span) < 8) { drag = { kind: "end", i, end }; return; }
-    }
-    drag = { kind: "paint", h0: p.hue, last: p.hue, sweep: 0 };
-    apply(false);
+    const near = (k, slack) => { const [x, y] = discXY(cur[k], p.R); return Math.hypot(p.X - x, p.Y - y) <= Math.max(cur[k].r * p.R, slack); };
+    const [kx, ky] = discXY(cur[sel], p.R);
+    if (Math.hypot(p.X - kx - reach(cur[sel], p.R), p.Y - ky) < 16) { drag = { kind: "size" }; return; }   // the knob
+    if (!near(sel, 16) && near(other(sel), 16)) sel = other(sel);
+    const [x, y] = discXY(cur[sel], p.R);
+    if (near(sel, 16)) drag = { kind: "move", dx: p.X - x, dy: p.Y - y };
+    else { drag = { kind: "move", dx: 0, dy: 0 }; moveTo(p.X, p.Y, p.R); }
+    paint(true);
   });
   cv.addEventListener("pointermove", e => {
     if (!drag) return;
-    const p = polar(e);
-    if (drag.kind === "paint") {
-      drag.sweep = clamp(drag.sweep + ((p.hue - drag.last + 540) % 360 - 180), -360, 360);
-      drag.last = p.hue;
-    } else {   // the other end stays put
-      const r = PK.ranges[drag.i], other = drag.end ? r.from : r.from + r.span;
-      const span = clamp(((drag.end ? p.hue - other : other - p.hue) % 360 + 360) % 360, 6, 360);
-      PK.ranges[drag.i] = drag.end ? { from: r.from, span } : { from: ((other - span) % 360 + 360) % 360, span };
-    }
-    apply(false);
+    const p = point(e), cur = pal();
+    if (drag.kind === "move") return moveTo(p.X - drag.dx, p.Y - drag.dy, p.R);
+    const [x, y] = discXY(cur[sel], p.R);
+    send({ ...cur, [sel]: { ...cur[sel], r: +clamp(Math.hypot(p.X - x, p.Y - y) / p.R, 0, 0.5).toFixed(3) } }, false);
   });
-  const done = () => {
-    if (!drag) return;
-    if (drag.kind === "paint") PK.ranges = addRange(PK.ranges, painted());
-    drag = null; savePicks(); apply(true);
-  };
+  const done = () => { if (!drag) return; drag = null; send(pal(), true); };
   cv.addEventListener("pointerup", done);
   cv.addEventListener("pointercancel", done);
-  roll.addEventListener("click", () => {
-    PK.seed = newSeed(); savePicks();
-    $("svg", roll).style.transform = `rotate(${++rolls * 180}deg)`;
-    apply(true);
-  });
+  spread.addEventListener("input", () => { const cur = pal(); send({ ...cur, [sel]: { ...cur[sel], r: +spread.value } }, false); });
+  spread.addEventListener("change", () => send(pal(), true));
   host.addEventListener("click", e => {
-    const b = e.target.closest("button[data-mix], button[data-lock], button[data-drop]"); if (!b) return;
-    if (b.dataset.mix) { PK.mix = b.dataset.mix; savePicks(); apply(true); }
-    else if (b.dataset.lock !== undefined) { locks[+b.dataset.lock] = !locks[+b.dataset.lock]; savePicks(); paint(true); }
-    else { PK.ranges = PK.ranges.filter((_, i) => i !== +b.dataset.drop); savePicks(); apply(true); }
+    const b = e.target.closest("button"); if (!b || !host.contains(b)) return;
+    if (b.dataset.which) { sel = b.dataset.which; paint(true); }
+    else if (b.hasAttribute("data-swap")) { const cur = pal(); send({ primary: cur.secondary, secondary: cur.primary }, true); }
+    else if (b.hasAttribute("data-dice")) send(surprisePair(), true);
   });
-  return { paint };   // the owner paints it once there's a palette to show
+  function paint(force) {
+    const p = pal(), k = `${cv.clientWidth}|${JSON.stringify(p)}|${sel}`;
+    if (!force && k === key) return;
+    key = k;
+    for (const b of $$("[data-which]", host)) {
+      b.setAttribute("aria-pressed", String(b.dataset.which === sel));
+      $("i", b).style.background = rangeCss(p[b.dataset.which]);
+    }
+    if (document.activeElement !== spread) spread.value = p[sel].r;
+    const dpr = fit(cv), W = cv.width; if (W < 40) return;
+    const ctx = cv.getContext("2d"), R = W / 2 - dpr;
+    ctx.clearRect(0, 0, W, W); ctx.drawImage(discImage(W), 0, 0);
+    for (const which of [other(sel), sel]) {   // the chosen one on top, solid, with its size knob
+      const [x, y] = discXY(p[which], R).map(v => v + W / 2), rad = Math.max(p[which].r * R, 8 * dpr), on = which === sel;
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, 2 * Math.PI);
+      ctx.lineWidth = (on ? 4 : 3) * dpr; ctx.strokeStyle = "rgba(0,0,0,.5)"; ctx.stroke();
+      ctx.lineWidth = (on ? 2.25 : 1.5) * dpr; ctx.strokeStyle = on ? "#fff" : "rgba(255,255,255,.8)";
+      ctx.setLineDash(on ? [] : [5 * dpr, 4 * dpr]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(10,10,12,.7)"; ctx.beginPath(); ctx.arc(x, y, 8 * dpr, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.font = `700 ${10 * dpr}px ${UI_FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(which === "primary" ? "1" : "2", x, y + 0.5 * dpr);
+      if (on) {
+        ctx.beginPath(); ctx.arc(x + rad, y, 7 * dpr, 0, 2 * Math.PI); ctx.fillStyle = "#fff"; ctx.fill();
+        ctx.lineWidth = 2 * dpr; ctx.strokeStyle = "rgba(0,0,0,.55)"; ctx.stroke();
+      }
+    }
+  }
+  return { paint };
 }
-function shuffleLive() {   // the Show tab's dice: the same ranges and kept colours as Perform's
-  PK.seed = newSeed(); savePicks();
-  setPalette(rangePalette(PK.ranges, PK.mix, PK.seed, shownPalette().colors, PK.locks), true);
+function editPalette() {   // what the picker starts from: the live palette, or the playing scene's own while it's off
+  const live = livePalette(), sc = S.vis && sceneBy(S.vis.scene);
+  const p = live.on || !sc ? live : sc.palette;
+  return { primary: p.primary, secondary: p.secondary };
 }
 
 // ---------- server ----------
@@ -957,13 +876,12 @@ const scenes = () => S.meta.scenes;
 const sceneBy = name => scenes().find(s => s.name === name);
 const groups = () => S.meta.groups;
 function livePalette() { return (S.vis && S.vis.palette) || S.cfg.show.palette; }
-function shownPalette() {   // what the lights use right now: the live palette, or the scene's own
-  const live = livePalette();
-  if (live.on) return { colors: live.colors, on: true };
-  const sc = S.vis && sceneBy(S.vis.scene);
-  return { colors: sc ? sc.palette : live.colors, on: false };
+function shownPalette() {   // the ranges the lights use right now: the live palette's, or the scene's own
+  const live = livePalette(), sc = S.vis && sceneBy(S.vis.scene);
+  const p = live.on && !(sc && sc.spec.own_colors) ? live : sc ? sc.palette : live;
+  return { primary: p.primary, secondary: p.secondary, on: p === live && !!live.on };
 }
-function setPalette(colors, save = true) { return api("palette", { on: true, colors, save }); }
+function setPalette(p, save = true) { return api("palette", { on: true, primary: p.primary, secondary: p.secondary, save }); }
 function onScenes() {
   buildPlaylist();
   buildPerformScenes();
@@ -971,18 +889,43 @@ function onScenes() {
   if (S.tab === "setup" && !document.activeElement?.closest?.("#setup input, #setup select")) renderSetup();
 }
 
-// ---------- sets and strobe frequency (Show and Perform) ----------
-const FREQS = [[0, "Off"], [0.5, "½×"], [1, "1×"], [2, "2×"], [4, "4×"]];
+// ---------- sets, tags and strobe frequency (Show and Perform) ----------
+const FREQS = [[0, "Off"], [0.25, "¼×"], [0.5, "½×"], [1, "1×"], [2, "2×"], [4, "4×"]];
+const TAG_LABEL = { beams: "Beams", washers: "Washers", strobes: "Strobes", discoball: "Disco ball" };
+const TAG_ICON = {
+  beams: `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 11V2M6 11 2.2 3M6 11l3.8-8" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`,
+  washers: `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 9.5h10M2.6 9.5a3.4 3.4 0 0 1 6.8 0M6 2v2M2.3 4.1l1.3 1.3M9.7 4.1 8.4 5.4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>`,
+  strobes: `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.2.8 2.6 7h3.1l-1 4.2L9.4 5H6.2z" fill="currentColor"/></svg>`,
+  discoball: `<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6.5" r="4.3" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M1.8 6.5h8.4M6 2.2v8.6M2.7 4.4h6.6M2.7 8.6h6.6M6 .3v1.9" stroke="currentColor" stroke-width=".8"/></svg>`,
+};
+let tagFilter = "";
+try { tagFilter = localStorage.getItem("lightlaland.tag") || ""; } catch (e) { /* private mode */ }
 const activeSet = () => (S.vis && S.vis.set !== undefined ? S.vis.set : S.cfg.show.set) || "";
 const setLabel = k => (S.meta.sets.find(([s]) => s === k) || [k, k])[1];
-function setGroups() {   // the active set's scenes by group, leaving out groups it has none in
-  const mine = scenes().filter(s => (s.set || "") === activeSet());
+const listKey = () => `${activeSet()}|${tagFilter}`;
+const listed = s => (s.set || "") === activeSet() && (!tagFilter || s.tags.includes(tagFilter));
+const autoOn = name => (S.cfg.rotation || {})[name] !== false;
+function setGroups() {   // the listed scenes (this set, with the chosen tag) by group, leaving out empty groups
+  const mine = scenes().filter(listed);
   return groups().map(g => [g, mine.filter(s => s.group === g)]).filter(([, list]) => list.length);
 }
 function fillSetKeys(host) {
   host.innerHTML = S.meta.sets.map(([k, l]) => `<button type="button" class="btn small" data-set="${k}">${esc(l)}</button>`).join("");
   for (const b of $$("[data-set]", host)) b.addEventListener("click", () => api("show", { set: b.dataset.set }));
 }
+function fillTagKeys(host) {   // filter the lists by tag; switch every listed scene in or out of auto mode at once
+  host.innerHTML = `<span class="seg">${[["", "All"], ...Object.entries(TAG_LABEL)].map(([k, l]) =>
+    `<button type="button" class="btn small" data-filter="${k}">${k ? TAG_ICON[k] : ""}${l}</button>`).join("")}</span>
+    <span class="seg"><span class="silk">Auto</span><button type="button" class="btn small" data-autoall="1">All on</button><button type="button" class="btn small" data-autoall="0">All off</button></span>`;
+  for (const b of $$("[data-filter]", host)) b.addEventListener("click", () => {
+    tagFilter = b.dataset.filter;
+    try { localStorage.setItem("lightlaland.tag", tagFilter); } catch (e) { /* private mode */ }
+    buildPlaylist(); buildPerformScenes(); paintFilters();
+  });
+  for (const b of $$("[data-autoall]", host)) b.addEventListener("click", () =>
+    api("rotation", { scenes: scenes().filter(listed).map(s => s.name), on: b.dataset.autoall === "1" }));
+}
+function paintFilters() { for (const b of $$("[data-filter]")) b.setAttribute("aria-pressed", String(b.dataset.filter === tagFilter)); }
 function fillFreqKeys(host) {
   host.innerHTML = FREQS.map(([v, l]) => `<button type="button" class="btn small" data-freq="${v}">${l}</button>`).join("");
   for (const b of $$("[data-freq]", host)) b.addEventListener("click", () => api("show", { strobe_freq: +b.dataset.freq }));
@@ -996,35 +939,45 @@ function paintSetAndFreq(v) {
   for (const b of $$("[data-set]")) b.setAttribute("aria-pressed", String(b.dataset.set === activeSet()));
   for (const b of $$("[data-freq]")) b.setAttribute("aria-pressed", String(+b.dataset.freq === v.strobe_freq));
   for (const id of ["#freqHint", "#pfFreqHint"]) $(id).textContent = freqText(v);
-  if ($("#scenes").dataset.set !== activeSet()) buildPlaylist();   // switched here or on another device
-  if ($("#pfCols").dataset.set !== activeSet()) buildPerformScenes();
+  if ($("#scenes").dataset.list !== listKey()) buildPlaylist();   // switched here or on another device
+  if ($("#pfCols").dataset.list !== listKey()) buildPerformScenes();
+}
+function sceneRow(sc, attr) {   // one scene in a list: auto mode's box, then the scene with its colours and tags
+  return `<div class="trk"><button type="button" class="chk" data-rot="${esc(sc.name)}" aria-pressed="${autoOn(sc.name)}"
+    aria-label="Auto mode may pick ${esc(sc.label)}" title="Auto mode may pick it"></button><button class="track" ${attr} title="${esc(sc.blurb)}" aria-pressed="false"><span class="sw"><i style="background:${
+    rangeCss(sc.palette.primary)}"></i><i style="background:${rangeCss(sc.palette.secondary)}"></i></span><span class="nm">${
+    esc(sc.label)}</span><span class="tg">${sc.tags.map(t => TAG_ICON[t]).join("")}</span></button></div>`;
+}
+function bindChecks(host) {
+  for (const b of $$(".chk", host)) b.addEventListener("click", () => api("rotation", { scene: b.dataset.rot, on: b.getAttribute("aria-pressed") !== "true" }));
 }
 
 // ---------- Show tab ----------
 function buildPlaylist() {
-  const cols = setGroups();
-  $("#scenes").dataset.set = activeSet();
-  $("#scenes").style.setProperty("--cols", Math.max(1, cols.length));
-  $("#scenes").innerHTML = cols.map(([g, list]) => `<div class="pl-col"><span class="silk">${GROUP_LABEL[g]}</span>${
-    list.map(sc => `<button class="track" data-name="${esc(sc.name)}" title="${esc(sc.blurb)}" aria-pressed="false">
-      <span class="sw">${sc.palette.slice(0, 3).map(c => `<i style="background:${c}"></i>`).join("")}</span><span>${esc(sc.label)}</span></button>`).join("")}</div>`).join("");
-  for (const b of $$("#scenes .track")) b.addEventListener("click", () => api("scene", { name: b.dataset.name }));
+  const cols = setGroups(), host = $("#scenes");
+  host.dataset.list = listKey();
+  host.style.setProperty("--cols", Math.max(1, cols.length));
+  host.innerHTML = cols.length ? cols.map(([g, list]) => `<div class="pl-col"><span class="silk">${GROUP_LABEL[g]}</span>${
+    list.map(sc => sceneRow(sc, `data-name="${esc(sc.name)}"`)).join("")}</div>`).join("")
+    : `<p class="hint">No scenes in this set have that tag.</p>`;
+  for (const b of $$(".track", host)) b.addEventListener("click", () => api("scene", { name: b.dataset.name }));
+  bindChecks(host);
   paintPlaylist();
 }
-function paintPlaylist() {
-  for (const b of $$("#scenes .track")) b.classList.toggle("off", (S.cfg.rotation || {})[b.dataset.name] === false);
+function paintPlaylist() {   // auto mode's boxes, and the scenes it won't pick dimmed, in both lists
+  for (const b of $$(".chk")) {
+    const on = autoOn(b.dataset.rot);
+    b.setAttribute("aria-pressed", String(on));
+    b.nextElementSibling.classList.toggle("off", !on);
+  }
 }
-function paintLivePal() {
-  const host = $("#livePal"); if (!host || document.activeElement?.closest?.("#livePal")) return;
-  const p = shownPalette();
-  const key = p.colors.join() + p.on + PK.locks;
+function paintLivePal() {   // the ranges the lights use now; tap one to edit on Perform
+  const host = $("#livePal"), p = shownPalette(), key = JSON.stringify(p);
   if (host.dataset.key === key) return;
   host.dataset.key = key;
-  host.innerHTML = p.colors.map((c, i) => `<label class="swatch ${PK.locks[i] ? "locked" : ""}" style="background:${c}" title="Colour ${i + 1}${PK.locks[i] ? " (kept when shuffling)" : ""}"><input type="color" data-i="${i}" value="${c}"></label>`).join("");
-  for (const inp of $$("input", host)) {
-    inp.addEventListener("input", () => { inp.parentElement.style.background = inp.value; });
-    inp.addEventListener("change", () => { const cols = [...shownPalette().colors]; cols[+inp.dataset.i] = inp.value; setPalette(cols); });
-  }
+  host.innerHTML = [["primary", "Primary"], ["secondary", "Secondary"]].map(([k, l]) =>
+    `<button type="button" class="rchip" style="background:${rangeCss(p[k])}" title="${l} range: tap to edit" aria-label="${l} range: edit"></button>`).join("");
+  for (const b of $$("button", host)) b.addEventListener("click", () => { setTab("perform"); setGroupOpen("colors", true); });
 }
 function setupShowControls() {
   for (const b of $$(".pads .pad[data-pad]")) tapButton(b, () => {
@@ -1059,9 +1012,11 @@ function setupShowControls() {
   });
   inten.addEventListener("change", () => { S.sliding = false; api("show", { intensity: inten.value / 100 }); });
   $("#liveToggle").addEventListener("click", () => api("palette", { on: !livePalette().on }));
-  $("#shuffleShow").innerHTML = `${DICE}Shuffle`;
-  $("#shuffleShow").addEventListener("click", shuffleLive);
+  $("#shuffleShow").innerHTML = `${DICE}Surprise me`;
+  $("#shuffleShow").addEventListener("click", () => setPalette(surprisePair()));
   fillFreqKeys($("#freq"));
+  for (const id of ["#tags", "#pfTags"]) fillTagKeys($(id));
+  paintFilters();
   $("#phrase").innerHTML = Array.from({ length: 32 }, () => "<i></i>").join("");
 }
 
@@ -1076,20 +1031,23 @@ function setGroupOpen(g, open) {
 function buildPerformScenes() {
   const host = $("#pfCols"); if (!host) return;
   const cols = setGroups();
-  host.dataset.set = activeSet();
+  host.dataset.list = listKey();
   host.style.setProperty("--cols", Math.max(1, cols.length));
-  host.innerHTML = cols.map(([g, list]) => `<div class="col vfd"><span class="silk" style="padding:4px 6px;color:var(--vfd-mid)">${GROUP_LABEL[g]}</span>${
-    list.map(s => `<button class="track" data-pick="${esc(s.name)}" data-g="${g}" aria-pressed="false"><span>${esc(s.label)}</span></button>`).join("")}</div>`).join("");
+  host.innerHTML = cols.length ? cols.map(([g, list]) => `<div class="col vfd"><span class="silk" style="padding:4px 6px;color:var(--vfd-mid)">${GROUP_LABEL[g]}</span>${
+    list.map(s => sceneRow(s, `data-pick="${esc(s.name)}" data-g="${g}"`)).join("")}</div>`).join("")
+    : `<p class="hint">No scenes in this set have that tag.</p>`;
   for (const b of $$("[data-pick]", host)) b.addEventListener("click", () => api("group", { group: b.dataset.g, name: b.dataset.pick }));
+  bindChecks(host);
+  paintPlaylist();
 }
-let pfPicker = null;
+let pfDisc = null;
 function paintPerformPalette() {
-  const p = shownPalette(), head = $("#pfPalHead"), key = p.colors.join();
+  const p = shownPalette(), head = $("#pfPalHead"), key = JSON.stringify(p);
   if (head.dataset.key !== key) {
     head.dataset.key = key;
-    head.innerHTML = p.colors.map(c => `<span class="swatch" style="background:${c};width:22px;height:22px"></span>`).join("");
+    head.innerHTML = ["primary", "secondary"].map(k => `<span class="rchip" style="background:${rangeCss(p[k])}"></span>`).join("");
   }
-  if (S.open.has("colors")) pfPicker.paint();
+  if (S.open.has("colors")) pfDisc.paint();
 }
 function setupPerform() {
   for (const g of $$(".pf-group")) for (const h of $$(":scope > .pf-head", g))
@@ -1106,12 +1064,13 @@ function setupPerform() {
   $("#pfFollow").addEventListener("click", () => api("follow", { on: !(S.vis && S.vis.follow) }));
   $("#pfAuto").addEventListener("click", () => api("show", { auto: !(S.vis && S.vis.auto) }));
   fillFreqKeys($("#pfFreq"));
-  pfPicker = makePicker($("#pfPicker"), { locks: PK.locks, colors: () => shownPalette().colors, set: setPalette });
+  pfDisc = makeDisc($("#pfPicker"), { get: editPalette, set: setPalette });
   $("#pfLive").addEventListener("click", () => api("palette", { on: !livePalette().on }));
-  $("#pfPresets").innerHTML = PALETTES.map(([name, cols], i) =>
-    `<button class="preset" data-preset="${i}"><span class="bar">${cols.map(c => `<i style="background:${c}"></i>`).join("")}</span><b>${esc(name)}</b></button>`).join("");
-  for (const b of $$("[data-preset]")) b.addEventListener("click", () => {   // a preset is a whole palette: nothing kept
-    PK.locks.fill(false); savePicks(); setPalette(PALETTES[+b.dataset.preset][1]);
+  $("#pfPresets").innerHTML = PALETTES.map(([name, a, b], i) =>
+    `<button class="preset" data-preset="${i}"><span class="bar"><i style="background:${rangeCss(a)}"></i><i style="background:${rangeCss(b)}"></i></span><b>${esc(name)}</b></button>`).join("");
+  for (const b of $$("[data-preset]")) b.addEventListener("click", () => {
+    const [, primary, secondary] = PALETTES[+b.dataset.preset];
+    setPalette({ primary, secondary });
   });
 }
 function safetyNote() {   // a sentence for the banner when beams are held off
@@ -1129,7 +1088,8 @@ function updatePerform(v) {
   $("#pfFollow").setAttribute("aria-pressed", String(v.follow));
   for (const b of $$("[data-tempo]")) b.disabled = v.follow && v.audio.state !== "off";
   paintPerformPalette();
-  $("#pfColState").textContent = livePalette().on ? "live" : "the scene's own";
+  const sc0 = sceneBy(v.scene), keeps = livePalette().on && sc0 && sc0.spec.own_colors;
+  $("#pfColState").textContent = livePalette().on ? (keeps ? "live (this scene keeps its own)" : "live") : "the scene's own";
   $("#pfLive").setAttribute("aria-pressed", String(livePalette().on));
   const sc = sceneBy(v.scene);
   $("#pfScene").textContent = sc ? sc.label : v.scene;
@@ -1258,17 +1218,17 @@ const SHOW_IF = {   // hide fields that don't apply to the current choices
     _on: l => l.pattern !== "off",
     floor: l => !has(["off", "solid"], l.pattern),
     depth: l => l.pulse !== "none", decay: l => !has(["none", "breathe"], l.pulse) || l.pattern === "rain",
-    rate: l => !has(["off", "solid"], l.pattern) || has(["scroll", "random", "rainbow"], l.color),
-    width: l => has(["chase", "bounce", "midout", "wave", "wander"], l.pattern), count: l => has(["sparkle", "eyes"], l.pattern),
+    rate: l => !has(["off", "solid"], l.pattern) || has(["scroll", "random", "rainbow", "step"], l.color),
+    width: l => has(["chase", "bounce", "midout", "wave", "wander", "comet"], l.pattern), count: l => has(["sparkle", "eyes"], l.pattern),
     density: l => has(["rain", "twinkle", "glitch"], l.pattern),
-    reverse: l => has(["chase", "bounce", "fill", "wave"], l.pattern) || has(["ab", "spread", "scroll", "rainbow"], l.color),
-    flip_bars: l => has(["chase", "bounce", "midout", "fill"], l.pattern),
+    reverse: l => has(["chase", "bounce", "fill", "wave", "step", "pingpong", "comet"], l.pattern) || has(["ab", "spread", "scroll", "rainbow"], l.color),
+    flip_bars: l => has(["chase", "bounce", "midout", "fill", "step", "comet"], l.pattern),
   },
   fx: { lightning_level: f => f.lightning > 0, lightning_beams: f => f.lightning > 0,
-        strobe_len: f => f.strobe > 0, strobe_beams: f => f.strobe > 0 },
+        strobe_len: f => f.strobe > 0, strobe_beams: f => f.strobe > 0, fill_len: f => f.fill > 0 },
 };
 function blankSpec() {
-  const sp = { palette: ["#ff1f5a", "#ff6a3d", "#ffb000", "#00e1ff", "#7b2cff"] };
+  const sp = { palette: { primary: R2(345, 0.9, 0.12), secondary: R2(190, 1, 0.12) } };
   for (const [sec] of SECTIONS) {
     const vals = {};
     for (const f of S.meta.schema[sec]) vals[f.key] = f.default;
@@ -1297,6 +1257,8 @@ function fieldHtml(sec, f, v, d) {
   if (f.kind === "num") return `<label>${esc(f.label)}: <span class="val" id="${id}-v">${fmtNum(f, v, d)}</span>
     <input type="range" id="${id}" data-sec="${sec}" data-key="${f.key}" min="${f.min}" max="${f.max}" step="${f.step}" value="${v}">${hint}</label>`;
   if (f.kind === "bool") return `<label class="check"><input type="checkbox" id="${id}" data-sec="${sec}" data-key="${f.key}" ${v ? "checked" : ""}>${esc(f.label)}</label>`;
+  if (f.kind === "tags") return `<div class="full mk-tags"><span class="silk">${esc(f.label)}</span><span class="row">${f.options.map(([o, l]) =>
+    `<button type="button" class="btn small" data-sec="${sec}" data-key="${f.key}" data-mtag="${o}" aria-pressed="${(v || []).includes(o)}">${TAG_ICON[o]}${esc(l)}</button>`).join("")}</span>${hint}</div>`;
   return `<label class="full">${esc(f.label)}<input id="${id}" data-sec="${sec}" data-key="${f.key}" value="${esc(v)}" maxlength="80">${hint}</label>`;
 }
 function selectMake(name) {
@@ -1321,10 +1283,8 @@ function renderMake() {
   const sections = SECTIONS.map(([sec, title]) => {
     const vals = sec === "general" ? d : d[sec];
     const fields = S.meta.schema[sec].filter(f => fieldShown(sec, f, d)).map(f => fieldHtml(sec, f, vals[f.key], d)).join("");
-    const pal = sec === "general" ? `<div class="full mk-pal"><span class="silk">Palette</span>${d.palette.map((c, i) =>
-      `<label class="swatch" style="background:${c}" title="Colour ${i + 1}"><input type="color" data-pal="${i}" value="${c}"></label>`).join("")}
-      <span class="fhint">The live palette (Perform) replaces these while it's on.</span></div>
-      <details class="full mk-ranges" ${m.ranges ? "open" : ""}><summary>Fill at random from colour ranges</summary><div class="picker" id="mkPicker"></div></details>` : "";
+    const pal = sec === "general" ? `<div class="full mk-pal"><span class="silk">Colours: two ranges</span><div class="dk" id="mkDisc"></div>
+      <span class="fhint">${d.own_colors ? "This scene keeps these colours even while the live palette is on." : "The live palette (Perform) replaces these while it's on."}</span></div>` : "";
     return `<fieldset><legend>${title}</legend><div class="form">${fields}${pal}</div></fieldset>`;
   }).join("");
   $("#make").innerHTML = `
@@ -1374,14 +1334,7 @@ function renderMake() {
   });
   $("#mkRevert").addEventListener("click", () => { selectMake(S.make.name); renderMake(); sendPreview(); });
   $("#mkPlay").addEventListener("click", () => api("scene", { name: S.make.name }).then(() => sendPreview()));
-  const ranges = $(".mk-ranges", $("#make"));
-  ranges.addEventListener("toggle", () => { S.make.ranges = ranges.open; if (ranges.open) mkPicker.paint(true); });
-  const mkPicker = makePicker($("#mkPicker"), { locks: null, colors: () => S.make.draft.palette, set(cols) {
-    S.make.draft.palette = [...cols];
-    $$("[data-pal]", $("#make")).forEach((el, i) => { el.value = cols[i]; el.parentElement.style.background = cols[i]; });
-    changed(false);
-  } });
-  if (ranges.open) mkPicker.paint(true);
+  makeDisc($("#mkDisc"), { get: () => S.make.draft.palette, set(p) { S.make.draft.palette = clone(p); changed(false); } }).paint(true);
   for (const el of $$("[data-sec]", $("#make"))) {
     const sec = el.dataset.sec, key = el.dataset.key, f = S.meta.schema[sec].find(x => x.key === key);
     const target = () => sec === "general" ? S.make.draft : S.make.draft[sec];
@@ -1392,12 +1345,16 @@ function renderMake() {
       el.addEventListener("change", () => { target()[key] = el.checked; changed(true); });
     } else if (f.kind === "choice") {
       el.addEventListener("change", () => { target()[key] = el.value; changed(true); });
+    } else if (f.kind === "tags") {
+      el.addEventListener("click", () => {
+        const on = new Set(target()[key] || []), t = el.dataset.mtag;
+        if (on.has(t)) on.delete(t); else on.add(t);
+        target()[key] = f.options.map(([o]) => o).filter(o => on.has(o));
+        changed(true);
+      });
     } else {
       el.addEventListener("input", () => { target()[key] = el.value; changed(false); });
     }
-  }
-  for (const el of $$("[data-pal]", $("#make"))) {
-    el.addEventListener("input", () => { el.parentElement.style.background = el.value; S.make.draft.palette[+el.dataset.pal] = el.value; changed(false); });
   }
 }
 
@@ -1531,7 +1488,7 @@ function renderSetup() {
           <select id="dev"><option value="default">System default</option>${devs.map(d =>
             `<option value="${d.index}" ${a.device === d.index ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>
         <label>Slowest BPM<input id="bpmMin" type="number" value="${a.bpm_min}"></label>
-        <label>Fastest BPM<input id="bpmMax" type="number" value="${a.bpm_max}"></label>
+        <label>Fastest BPM<input id="bpmMax" type="number" value="${a.bpm_max}"><span class="fhint">92-183 covers slow sets to drum &amp; bass. A record below the range runs at double time, one above it at half.</span></label>
         <label class="full">Sync: <span class="val" id="syncVal">${a.sync_ms} ms</span> ahead
           <input id="sync" type="range" min="-100" max="300" step="5" value="${a.sync_ms}"></label>
         <label>Phrase length
@@ -1549,10 +1506,7 @@ function renderSetup() {
         <label>Tilt width<select id="sweep">${[15, 20, 30, 40, 50, 60, 75, 90].map(n => `<option value="${n}" ${Math.round(sh.sweep_width) === n ? "selected" : ""}>±${n}°</option>`).join("")}</select></label>
       </div>
       <p class="hint">Scenes whose tilt width is 0 use this. Everything else is set per scene in Make.</p>
-      <p class="silk" style="margin-top:12px">Auto mode picks from (${esc(setLabel(activeSet()))} set)</p>
-      <div class="chips">${setGroups().filter(([g]) => g !== "ambient").flatMap(([, list]) => list).map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
-      <p class="silk" style="margin-top:12px">Ambient when the music stops</p>
-      <div class="chips">${setGroups().filter(([g]) => g === "ambient").flatMap(([, list]) => list).map(s => `<button class="btn small" data-rot="${esc(s.name)}" aria-pressed="${(c.rotation || {})[s.name] !== false}">${esc(s.label)}</button>`).join("")}</div>
+      <p class="hint">Which scenes auto mode picks: the boxes in the scene lists (Show, or Perform &gt; Scenes).</p>
     </fieldset>
 
     <fieldset><legend>Channel test</legend>
@@ -1664,8 +1618,6 @@ function renderSetup() {
   $("#ambSil").addEventListener("change", e => api("show", { ambient_on_silence: e.target.checked }));
   $("#smooth").addEventListener("change", e => api("show", { smooth: e.target.checked }));
   $("#sweep").addEventListener("change", e => api("show", { sweep_width: +e.target.value }));
-  for (const b of $$("[data-rot]")) b.addEventListener("click", () =>
-    api("rotation", { scene: b.dataset.rot, on: b.getAttribute("aria-pressed") !== "true" }));
   for (const b of $$("[data-tfx]")) b.addEventListener("click", () => {
     S.testFx = +b.dataset.tfx;
     if (S.testing) api("test", { action: "start", fixture: S.testFx });
@@ -1709,6 +1661,7 @@ function sheetXf(cv, dpr) {
   const ox = pad + (W - room.w * s) / 2, oy = pad + (H - room.d * s) / 2;
   return { s, ox, oy, X: x => ox + x * s, Y: y => oy + y * s, inv: (px, py) => [(px - ox) / s, (py - oy) / s] };
 }
+const stripOf = v => (v.strip2 ? [...v.strip, ...v.strip2] : v.strip);   // both rows of the LED side
 function avgColour(list) {
   let r = 0, g = 0, b = 0, peak = 0;
   for (const h of list) { const c = rgb(h); r += c[0]; g += c[1]; b += c[2]; peak = Math.max(peak, ...c); }
@@ -1774,7 +1727,7 @@ function drawPlan(cv, ctx, dpr, W, H, t) {
     vis.fixtures.forEach((v, i) => {
       const fx = fxs[i]; if (!fx) return;
       const e = barEnds(fx), elev = v.spin ? null : v.shown;
-      const st = avgColour(v.strip), white = Math.max(0, ...v.white);
+      const st = avgColour(stripOf(v)), white = Math.max(0, ...v.white);
       const led = elev === null ? null : wrap180(elev + 180);
       if (led !== null && led < -5 && led > -175) {   // the LED side faces down: a pool of light below
         const out = led > -90, slope = Math.abs(Math.tan(led * D2R)) || 1e-3;
@@ -1985,7 +1938,7 @@ function drawRoom(cv, ctx, dpr, W, H, t) {
       const e = barEnds(fx), el = v.shown * D2R, dir = [e.nx * Math.cos(el), e.ny * Math.cos(el), Math.sin(el)];
       const from = u => [e.x0 + (e.x1 - e.x0) * u + e.nx * 0.12, e.y0 + (e.y1 - e.y0) * u + e.ny * 0.12, fx.z];   // the head sits ~12 cm off the wall
       // the LED side: a soft wash wherever it points
-      const st = avgColour(v.strip), white = Math.max(0, ...v.white), wash = boxExit(from(0.5), [-dir[0], -dir[1], -dir[2]]);
+      const st = avgColour(stripOf(v)), white = Math.max(0, ...v.white), wash = boxExit(from(0.5), [-dir[0], -dir[1], -dir[2]]);
       const wp = cam.proj(wash.at);
       if (wp) for (const [col, lvl] of [[st.col, st.level * 0.55], [[255, 255, 255], white * 0.55]]) {
         if (lvl < 0.03) continue;
@@ -2082,7 +2035,7 @@ function drawRoom(cv, ctx, dpr, W, H, t) {
   fxs.forEach((fx, i) => {
     const e = barEnds(fx), v = vis && vis.fixtures && vis.fixtures[i], dep = cam.depth([fx.x, fx.y, fx.z]);
     if (dep < NEAR) return;
-    const a = [e.x0, e.y0, fx.z], b = [e.x1, e.y1, fx.z], st = v ? avgColour(v.strip) : null;
+    const a = [e.x0, e.y0, fx.z], b = [e.x1, e.y1, fx.z], st = v ? avgColour(stripOf(v)) : null;
     ctx.shadowColor = CRT; ctx.shadowBlur = 8 * dpr; ctx.strokeStyle = CRT; ctx.lineCap = "round";
     ctx.lineWidth = clamp(cam.f * 0.07 / dep, 3 * dpr, 12 * dpr);
     ctx.beginPath(); cam.seg(ctx, a, b); ctx.stroke();
@@ -2121,7 +2074,7 @@ function drawTilt(cv, v, fx) {
   ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = lit ? 8 * dpr : 0;
   ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + bx * r, cy + by * r); ctx.stroke();
   ctx.setLineDash([]); ctx.shadowBlur = 0;
-  const st = avgColour(v.strip);   // the LED side points the other way
+  const st = avgColour(stripOf(v));   // the LED side points the other way
   ctx.strokeStyle = st.level > 0.03 ? rgba(st.col, 0.9) : CRT_DIM; ctx.lineWidth = 4 * dpr;
   ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - bx * r * 0.5, cy - by * r * 0.5); ctx.stroke();
   if (!v.spin && Math.abs(wrap180(v.elev - shown)) > 2) {   // where it's heading
@@ -2169,10 +2122,12 @@ function drawBar(cv, v, fx) {
   const y0 = rowH + gap;
   panel(y0, rowH, !beamsOut);
   const m = v.strip.length, cw = (L - 6 * dpr) / m, rh = (rowH - 6 * dpr) / 3, g = Math.max(1, dpr);
+  const lit = hex => (Math.max(...rgb(hex)) > 5 ? hex : "#1c1d22");
   for (let s = 0; s < m; s++) {
-    const hex = v.strip[s], on = Math.max(...rgb(hex)) > 5, w = v.white[s] || 0, x = lab + 3 * dpr + s * cw;
-    ctx.fillStyle = on ? hex : "#1c1d22";
+    const w = v.white[s] || 0, x = lab + 3 * dpr + s * cw;
+    ctx.fillStyle = lit(v.strip[s]);   // row 1, the whites, row 2
     ctx.fillRect(x + g, y0 + 3 * dpr, cw - 2 * g, rh - g);
+    ctx.fillStyle = lit((v.strip2 || v.strip)[s]);
     ctx.fillRect(x + g, y0 + 3 * dpr + 2 * rh + g, cw - 2 * g, rh - g);
     ctx.fillStyle = w > 0.02 ? `rgba(255,250,235,${0.25 + 0.75 * w})` : "#1c1d22";
     ctx.fillRect(x + g, y0 + 3 * dpr + rh + g / 2, cw - 2 * g, rh - g);

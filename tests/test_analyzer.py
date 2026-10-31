@@ -1,6 +1,7 @@
 """Run the analyzer over the synthetic vinyl mix and score it against the known beats.
 
     python -m tests.test_analyzer          (from the project folder)
+    python -m tests.test_analyzer 92 183   (with another listening range, slowest and fastest BPM)
 """
 import os
 import sys
@@ -30,10 +31,10 @@ def dominant_beats(truth):
     return out
 
 
-def run(mix, truth, block=1024):
+def run(mix, truth, block=1024, bpm_range=()):
     clock = BeatClock(bpm=124.0, now=0.0)
     events = []
-    an = Analyzer(SR, clock, on_event=events.append)
+    an = Analyzer(SR, clock, *bpm_range, on_event=events.append)
     beats = dominant_beats(truth)
     bi = 0
     errs = []  # (time, error ms, true bpm, clock bpm, record)
@@ -61,9 +62,9 @@ def summarise(errs, t_from, t_to):
             "bpm_err_p95": np.percentile(np.abs(bpm_err), 95)}
 
 
-def main():
+def main(bpm_range=()):
     mix, truth = make_mix()
-    clock, an, events, errs = run(mix, truth)
+    clock, an, events, errs = run(mix, truth, bpm_range=bpm_range)
     a, b = truth["a_beats"], truth["b_beats"]
     sections = {
         "A groove (bars 4-15)": (a[16], a[64]),
@@ -73,7 +74,7 @@ def main():
         "B pitch ride 126.5->128.5": (b[32 * 4], b[40 * 4]),
         "B after ride (bars 41-47)": (b[41 * 4], b[-1]),
     }
-    print(f"audio: {mix.size / SR:.1f} s")
+    print(f"audio: {mix.size / SR:.1f} s, listening {an.bpm_min:g}-{an.bpm_max:g} BPM")
     for name, (t0, t1) in sections.items():
         s = summarise(errs, t0, t1)
         print(f"{name:30s} n={s['n']:3d}  phase mean {s['mean_ms']:+6.1f} ms  "
@@ -88,4 +89,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(tuple(float(a) for a in sys.argv[1:3]))
