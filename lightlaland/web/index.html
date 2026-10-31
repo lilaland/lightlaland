@@ -1488,7 +1488,7 @@ function renderSetup() {
           <select id="dev"><option value="default">System default</option>${devs.map(d =>
             `<option value="${d.index}" ${a.device === d.index ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>
         <label>Slowest BPM<input id="bpmMin" type="number" value="${a.bpm_min}"></label>
-        <label>Fastest BPM<input id="bpmMax" type="number" value="${a.bpm_max}"></label>
+        <label>Fastest BPM<input id="bpmMax" type="number" value="${a.bpm_max}"><span class="fhint">92-183 covers slow sets to drum &amp; bass. A record below the range runs at double time, one above it at half.</span></label>
         <label class="full">Sync: <span class="val" id="syncVal">${a.sync_ms} ms</span> ahead
           <input id="sync" type="range" min="-100" max="300" step="5" value="${a.sync_ms}"></label>
         <label>Phrase length

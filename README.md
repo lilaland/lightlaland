@@ -149,8 +149,9 @@ If you added the 2.x alias while testing, remove it:
 
 - **Tempo and beat**: from the kick drum's onsets, by autocorrelation (tempo) and a comb
   filter (phase). The phase is nudged every ~85 ms, so pitch-fader drift and platter nudges are
-  followed. The search range defaults to 108-150 BPM. Keep it under 2:1 so the tempo can't
-  jump an octave.
+  followed. The listening range (Setup > Music) defaults to 92-183 BPM, from slow sets to drum &
+  bass; keep it under 2:1 so the tempo can't jump an octave. A record below it runs at double
+  time and one above it at half time.
 - **Breakdown and drop**: a breakdown is 6+ beats without a kick. The first strong kick
   afterwards is the drop, which also restarts the 16-bar phrase count.
 - **Build-up**: rising snare and riser activity during a breakdown speeds up the white strobe.
@@ -185,7 +186,7 @@ If you added the 2.x alias while testing, remove it:
 | `lightlaland/fixture.py` | The 84-channel map |
 | `lightlaland/geometry.py` | Tilt geometry (CH1 <-> beam angle, targets in the room) and the safe ranges |
 | `lightlaland/web/index.html` | The control page |
-| `tests/` | Synthetic vinyl mix plus a tracker accuracy test (`python -m tests.test_analyzer`), scene checks (`python -m tests.test_scenes`) and the beam-safety simulation (`python -m tests.test_safety`) |
+| `tests/` | Synthetic vinyl mix plus a tracker accuracy test (`python -m tests.test_analyzer`), slow sets, hip-hop, drum & bass and blends across the listening range (`python -m tests.test_tempo_range`), scene checks (`python -m tests.test_scenes`) and the beam-safety simulation (`python -m tests.test_safety`) |
 | `tools/channel_probe.py` | Webcam channel probe used to measure the bars (see its docstring) |
 
 ## License

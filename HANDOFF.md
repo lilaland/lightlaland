@@ -298,6 +298,22 @@ sort by; ticking which scenes auto mode uses; a ¼× strobe freq; a BPM range fr
   has ¼×. Make shows tags as chips and the new fields from the schema.
 - **Cleanup**: the ring picker and its five-colour machinery (`rangePalette`, locks, `ringImage`...),
   `Ctx.color`, the old 5-colour `_palette` fill-up, `rgbToHsv`/`hsvHex` in the page.
+- **Listening range 92-183 BPM** (config default; config v5 widens an untouched 115-150; `cmd_audio`
+  allows up to 1.99x like `Analyzer.set_range`). Measured on synthetic tracks
+  (`tests/tempo_sim.py`, `tests/test_tempo_range.py`): the tempo choice was never wrong inside the
+  range, but phase and the structure logic broke drum & bass and blends. `analyzer.py` changes:
+  onsets ignored while the window first fills (a start-up spike made a false ~121 BPM peak);
+  a full-strength kick between beats counts as kicks present, for entering and leaving a
+  breakdown (a two-step has one kick per bar on the grid, and a new record's kicks are off the
+  old grid: both made false breakdowns, and in a breakdown the tempo jump never happens);
+  the phase comb weights whole bars (per-beat decay let the "and of 3" kick pull the beat 60-80 ms);
+  phase hysteresis (`PHASE_SWITCH` 1.25: stay near the grid unless elsewhere is clearly stronger);
+  Catmull-Rom between ACF frames (linear always peaked on a whole frame: DnB read 174.4).
+  Results: all cases lock (four-on-the-floor ~4 s, two-steps 5-8 s, blends 6.5-9 s after the new
+  record gets louder), beat error p95 <= 4 ms; the 126/128 mix improved (p95 <= 7.6 ms, max 7.8 ms,
+  was 13.2). Still weak: below 92 / above 183 runs at double / half time; busy two-steps with a
+  quiet snare can lock half a beat off (a half-beat nudge fixes it and now sticks); the two-step
+  vs 2:3 tempo margin is only 1.23-1.35; all synthetic, not yet tried on real records.
 
 ## 2. The channel map: printed chart vs what the code assumes (historical)
 
@@ -435,11 +451,12 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt   # or double
 .venv/bin/python -m lightlaland [--no-audio] [--dry-run] [--wav mix.wav] [--port 8080] [--config path]
 .venv/bin/python -m lightlaland.find        # ArtPoll scan (won't hear the 2.x node without an alias)
 .venv/bin/python -m tests.test_analyzer     # synthetic vinyl mix -> beat/phase/event accuracy (~1 min)
+.venv/bin/python -m tests.test_tempo_range  # slow, hip-hop, drum & bass and blends at 92-183 BPM (~1 min)
 .venv/bin/python -m tests.test_scenes       # every scene renders valid DMX; scene maker, sets, strobe bursts (~3 s)
 .venv/bin/python -m tests.test_safety       # beams never lit outside the safe angles against a simulated head (~8 s)
 ```
 
-Last test result: beat phase error mean ≤5 ms, p95 ≤9 ms, max 13 ms. Breakdown, drop and record
+Last test result (2026-10-31): beat phase error mean ≤5.1 ms, p95 ≤7.6 ms, max 7.8 ms. Breakdown, drop and record
 change were all detected. UI checks were done earlier with Playwright in a cloud sandbox. That
 script isn't in the repo. If you change the UI, run a `--dry-run --port 8090 --config <scratch>`
 copy and check every tab at phone, iPad and desktop widths.

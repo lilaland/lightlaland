@@ -415,7 +415,7 @@ class App:
                 restart = True
             if "bpm_min" in b or "bpm_max" in b:
                 lo = _clamp(float(b.get("bpm_min", a["bpm_min"])), 60, 180)
-                hi = _clamp(float(b.get("bpm_max", a["bpm_max"])), lo + 5, min(200, lo * 1.95))
+                hi = _clamp(float(b.get("bpm_max", a["bpm_max"])), lo + 5, min(200, lo * 1.99))   # as Analyzer.set_range
                 a["bpm_min"], a["bpm_max"] = lo, hi
                 an = self.analyzer()
                 if an is not None:

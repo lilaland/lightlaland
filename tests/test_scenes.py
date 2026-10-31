@@ -217,11 +217,17 @@ def main():
 
         # A config saved before colour ranges: the live palette's first two colours become the ranges.
         old_cfg = os.path.join(tmp, "old.json")
-        with open(old_cfg, "w") as fh:
-            json.dump({"version": 4, "show": {"palette": {"on": True, "colors": ["#00ff00", "#0000ff", "#fff", "#000", "#f00"]}}}, fh)
-        pal = Config(old_cfg)["show"]["palette"]
-        check(pal["on"] and pal["primary"]["h"] == 120 and pal["secondary"]["h"] == 240 and "colors" not in pal,
-              "an older config's live palette turns into two ranges")
+        for audio in ({"bpm_min": 115, "bpm_max": 150}, {"bpm_min": 120, "bpm_max": 135}):
+            with open(old_cfg, "w") as fh:
+                json.dump({"version": 4, "audio": audio,
+                           "show": {"palette": {"on": True, "colors": ["#00ff00", "#0000ff", "#fff", "#000", "#f00"]}}}, fh)
+            cfg = Config(old_cfg)
+            pal, bpm = cfg["show"]["palette"], (cfg["audio"]["bpm_min"], cfg["audio"]["bpm_max"])
+            if audio["bpm_min"] == 115:
+                check(pal["on"] and pal["primary"]["h"] == 120 and pal["secondary"]["h"] == 240 and "colors" not in pal
+                      and bpm == (92, 183), "an older config: the live palette turns into two ranges, 115-150 BPM widens to 92-183")
+            else:
+                check(bpm == (120, 135), "but a listening range someone chose is kept")
     print("scenes: all good")
 
 

@@ -5,12 +5,15 @@ Built for a vinyl house/techno mix fed in as line audio:
 * The onset envelope is spectral flux, mostly from the kick band (35-150 Hz), normalised by a
   slow peak follower so the input level doesn't matter.
 * Tempo comes from the envelope's autocorrelation, scored at 1-8 beat multiples for precision.
-  The search range is kept under 2:1 (default 108-150 BPM, i.e. +/-8% pitch on 125 BPM
-  records) so double/half-tempo mistakes can't happen.
-* Phase comes from a comb filter over the last ~16 beats, then nudges the clock like a PLL,
-  so slow pitch-fader drift and the odd platter nudge are followed smoothly.
-* A breakdown is 6+ beats without a kick; the first strong kick after it is the drop, which
-  also resets the phrase count (drops land on the 1 of a phrase).
+  The search range is kept under 2:1 so double/half-tempo mistakes can't happen: the default
+  108-150 BPM is +/-8% pitch on 125 BPM records, and 92-183 covers slow sets to drum & bass
+  (tests/test_tempo_range.py). A record outside the range is read at a related tempo: double
+  or half when the range is close to 2:1, but 2:3 or 4:3 with a narrower one.
+* Phase comes from a comb filter over the last ~16 beats (whole bars), then nudges the clock
+  like a PLL, so slow pitch-fader drift and the odd platter nudge are followed smoothly.
+* A breakdown is 6+ beats without a kick (on the beat, or a full-strength one between beats);
+  the first strong kick after it is the drop, which also resets the phrase count (drops land
+  on the 1 of a phrase).
 * A record change is guessed from a jump in the 16-bar average spectrum. Treat it as a hint.
 """
 import collections
@@ -18,6 +21,17 @@ import math
 import threading
 
 import numpy as np
+
+
+def _cubic(y, x):
+    """y at fractional positions x (Catmull-Rom), so a peak can sit between samples."""
+    i = np.floor(x).astype(int)
+    t = x - i
+    last = y.size - 1
+    p0, p1 = y[np.maximum(i - 1, 0)], y[i]
+    p2, p3 = y[np.minimum(i + 1, last)], y[np.minimum(i + 2, last)]
+    return p1 + 0.5 * t * (p2 - p0 + t * (2 * p0 - 5 * p1 + 4 * p2 - p3
+                                          + t * (3 * (p1 - p2) + p3 - p0)))
 
 
 class Analyzer:
@@ -29,6 +43,7 @@ class Analyzer:
     ACF_MIN = 0.12          # minimum tempo evidence to steer the clock
     SILENCE_DB = -70.0      # below this the needle is up / faders are down
     CONF_MIN = 2.0          # minimum phase evidence (z-score of the comb peak)
+    PHASE_SWITCH = 1.25     # how much stronger a phase away from the grid must be to pull it
     MULTS = ((1, 1.0), (2, 0.9), (3, 0.5), (4, 0.8), (6, 0.4), (8, 0.6))
 
     def __init__(self, sr, clock, bpm_min=108.0, bpm_max=150.0, on_event=None, song_detect=True):
@@ -105,7 +120,8 @@ class Analyzer:
     def _hop(self, t_end):
         spec = np.abs(np.fft.rfft(self.buf * self.window)) ** 2
         e = self.bands @ spec
-        if self.e_ref is None:
+        if self.e_ref is None or self.hops < self.WIN // self.HOP:
+            # The window is still filling from zeros: its rising energy isn't an onset.
             self.e_ref = e + 1e-12
             self.prev_e = e
         self.e_ref = np.maximum(self.e_ref * 0.9995, e)          # peak follower, ~20 s release
@@ -161,7 +177,9 @@ class Analyzer:
         for k, w in self.MULTS:
             lag = self.lags * k
             ok = lag < n - 1
-            score[ok] += w * np.interp(lag[ok], idx, r)
+            # Smooth, not linear, between frames: a linear score always peaks on a whole-frame
+            # lag, which held the tempo up to ~0.4 BPM off and made the phase lag pitch rides.
+            score[ok] += w * _cubic(r, lag[ok])
             wsum += w
         i = int(np.argmax(score))
         bpm = self.grid[i]
@@ -175,11 +193,26 @@ class Analyzer:
         period = 60.0 * self.fr / bpm
         env = np.convolve(o, (0.25, 0.5, 0.25), mode="same")
         k = max(1, min(16, int((n - 1) // period)))
+        if k >= 4:
+            k -= k % 4
         phis = np.arange(0.0, period, 0.25)
         pos = (n - 1) - phis[:, None] - period * np.arange(k)[None, :]
-        s = np.interp(pos, idx, env) @ (0.9 ** np.arange(k))
+        # Whole bars, decaying per bar: weighting each beat by its age would let an off-beat
+        # kick (the "and" of 3 in a two-step) outweigh the bar's on-beat hits just after it.
+        s = np.interp(pos, idx, env) @ (0.9 ** (np.arange(k) // 4 * 4))
         j = int(np.argmax(s))
         conf = float((s[j] - np.median(s)) / (s.std() + 1e-9))
+        clk = self.clock
+        if clk.source == "audio" and abs(bpm - clk.bpm) / clk.bpm < 0.015:
+            # Stay with the best phase near the clock's grid unless one elsewhere is clearly
+            # stronger: where the on- and off-beat look alike (a busy two-step with a quiet
+            # snare) the grid would otherwise wander half a beat and back, and undo a nudge.
+            b = clk.beat(times[-1])
+            d = np.abs((phis - (b - math.floor(b)) * period + period / 2) % period - period / 2)
+            near = np.flatnonzero(d <= 0.2 * period)
+            jn = int(near[np.argmax(s[near])])
+            if s[j] < self.PHASE_SWITCH * s[jn]:
+                j = jn
         beat_time = float(times[-1] - phis[j] / self.fr)
         self.est = {"bpm": float(bpm), "acf": acf, "conf": conf}
         return float(bpm), beat_time, acf, conf
@@ -240,9 +273,11 @@ class Analyzer:
         win = 0.07 if self.state == "breakdown" else 0.045
         near = (times >= tb - win) & (times <= tb + win)
         prev = (times >= tb - period) & (times < tb)
+        between = (times > tb - period + win) & (times < tb - win)
         if not near.any() or not prev.any():
             return
         kick = float(flux[near, 0].max())
+        off_kick = float(flux[between, 0].max()) if between.any() else 0.0
         self.hmd.append(float(flux[prev, 1].mean() + flux[prev, 2].mean()))
         self.beat_tim.append(self._chrono(self.h_tim)[prev].mean(axis=0))
 
@@ -263,9 +298,13 @@ class Analyzer:
             return
         ref = float(np.percentile(np.asarray(self.kicks), 80))
         present = ref > 0.05 and kick > 0.35 * ref
+        # A full-strength kick between beats also means the kicks are there: a two-step has
+        # only one kick on the grid per bar, and a new record at another tempo has its kicks
+        # off our grid until the clock follows it. Basslines stay well below this.
+        off_grid = ref > 0.05 and off_kick > 0.6 * ref
 
         if self.state == "groove":
-            self.absent = 0 if present else self.absent + 1
+            self.absent = 0 if present or off_grid else self.absent + 1
             if self.absent >= 6:
                 self.state = "breakdown"
                 self.bd_hm0 = float(np.mean(list(self.hmd)[-6:])) + 1e-6
@@ -276,7 +315,7 @@ class Analyzer:
         elif self.state == "breakdown":
             self.build = float(np.clip((np.mean(list(self.hmd)[-4:]) / self.bd_hm0 - 1.0) / 1.5,
                                        0.0, 1.0))
-            if present:
+            if present or off_grid:
                 on_the_one = (n - clk.anchor) % 4 == 0
                 if kick > 0.6 * ref and on_the_one:
                     self._drop(n)

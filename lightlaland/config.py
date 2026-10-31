@@ -51,7 +51,7 @@ DEFAULT = {
     ],
     "audio": {
         "device": None,          # None = system default input
-        "bpm_min": 115, "bpm_max": 150,
+        "bpm_min": 92, "bpm_max": 183,   # slow sets to drum & bass; under 2:1, so no octave mistakes
         "sync_ms": 40,           # lookahead so lights land on the beat (audio + DMX latency)
         "phrase_bars": 16,
         "follow_audio": True,    # False = manual tempo (tap / nudge)
@@ -87,7 +87,8 @@ def _migrate(data):
 
 
 def _migrate_v5(data):
-    """Version 5: the live palette's first two colours become the middles of its two ranges."""
+    """Version 5: the live palette's first two colours become the middles of its two ranges, and
+    the old default listening range (115-150 BPM) widens to slow sets and drum & bass."""
     if data.get("version", 1) >= 5:
         return
     pal = data.get("show", {}).get("palette")
@@ -95,6 +96,9 @@ def _migrate_v5(data):
         cols = pal.pop("colors") or []
         for key, k in (("primary", 0), ("secondary", 1)):
             pal[key] = to_range(cols[k] if len(cols) > k else None, DEFAULT_PALETTE[key])
+    audio = data.get("audio", {})
+    if (audio.get("bpm_min"), audio.get("bpm_max")) == (115, 150):   # never changed, so widen it
+        audio["bpm_min"], audio["bpm_max"] = DEFAULT["audio"]["bpm_min"], DEFAULT["audio"]["bpm_max"]
     data["version"] = 5
 
 
